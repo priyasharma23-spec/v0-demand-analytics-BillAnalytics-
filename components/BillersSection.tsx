@@ -69,87 +69,46 @@ export default function BillersSection({ appState }: BillersSectionProps) {
       {/* Section 2 — Bill generation funnel card */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
 
-        {/* Header row */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill generation flow</div>
-            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Progression from Active CAs to Paid bills with drop-off analysis</div>
-          </div>
-          <div style={{ display: 'flex', background: '#f5f5f4', borderRadius: '10px', padding: '3px', gap: '2px' }}>
-            {(['all','state','biller'] as const).map(v => (
-              <button key={v} onClick={() => setFunnelView(v)} style={{
-                padding: '5px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
-                border: 'none', cursor: 'pointer', textTransform: 'capitalize',
-                background: funnelView === v ? '#fff' : 'transparent',
-                color: funnelView === v ? '#192744' : '#858ea2',
-              }}>{v}</button>
-            ))}
-          </div>
+        {/* Header */}
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill generation flow</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Active CAs → Generated → Paid progression</div>
         </div>
 
-        {/* Unified progression table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-            <thead>
-              <tr>
-                {['Stage','Count','% of total','Drop-off','Status'].map(h => (
-                  <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.12)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { stage: 'Active CAs', count: 700, pct: 100, drop: '−', dropNum: 0, color: '#C47A00', bg: '#FFF9E6' },
-                { stage: 'Bills generated', count: 530, pct: 75.7, drop: '−170', dropNum: 170, color: '#1755C8', bg: '#EAF2FF' },
-                { stage: 'Bills paid', count: 420, pct: 60, drop: '−110', dropNum: 110, color: '#1A7A45', bg: '#E6F9EF' },
-              ].map((row, idx) => (
-                <tr key={row.stage}
-                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#fafafa'}
-                  onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                >
-                  <td style={{ padding: '10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: row.bg, border: `1px solid ${row.color}20` }} />
-                      {row.stage}
-                    </div>
-                  </td>
-                  <td style={{ padding: '10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 600, color: row.color, fontSize: '14px' }}>{row.count}</td>
-                  <td style={{ padding: '10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{row.pct}%</td>
-                  <td style={{ padding: '10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                    {row.drop === '−' ? (
-                      <span style={{ fontSize: '12px', color: '#858ea2' }}>—</span>
-                    ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#E24B4A' }}>{row.drop}</span>
-                        <span style={{ fontSize: '11px', color: '#858ea2' }}>({Math.round(row.dropNum / 700 * 100)}%)</span>
-                      </div>
-                    )}
-                  </td>
-                  <td style={{ padding: '10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                    {idx === 0 ? (
-                      <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: '#EAF3DE', color: '#27500A' }}>Starting point</span>
-                    ) : (
-                      <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: idx === 1 ? '#FAEEDA' : '#EAF3DE', color: idx === 1 ? '#633806' : '#27500A' }}>
-                        {idx === 1 ? '24% drop' : 'Target reached'}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Horizontal flow with KPI cards */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {[
+            { stage: 'Active CAs', count: 700, drop: null, color: '#C47A00', bg: '#FFF9E6' },
+            { stage: 'Generated', count: 530, drop: '−170', color: '#1755C8', bg: '#EAF2FF' },
+            { stage: 'Paid', count: 420, drop: '−110', color: '#1A7A45', bg: '#E6F9EF' },
+          ].map((item, idx) => (
+            <div key={item.stage} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {/* KPI Card */}
+              <div style={{ background: item.bg, border: `1px solid ${item.color}30`, borderRadius: '10px', padding: '10px 12px', minWidth: '130px', flexShrink: 0 }}>
+                <div style={{ fontSize: '11px', color: item.color, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{item.stage}</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: item.color, marginTop: '4px', lineHeight: 1 }}>{item.count}</div>
+                {item.drop && (
+                  <div style={{ fontSize: '10px', color: '#E24B4A', fontWeight: 600, marginTop: '3px' }}>{item.drop}</div>
+                )}
+              </div>
+              {/* Arrow separator (not on last item) */}
+              {idx < 2 && (
+                <div style={{ fontSize: '14px', color: '#d0d0d0', margin: '0 2px', flexShrink: 0 }}>›</div>
+              )}
+            </div>
+          ))}
         </div>
 
-        {/* Exception summary row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid rgba(0,0,0,0.08)' }}>
+        {/* Exception summary badges */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {[
             { label: 'Not generated', val: 170, color: '#E24B4A', bg: '#FEF0F0' },
             { label: 'Unpaid', val: 110, color: '#C47A00', bg: '#FFF8ED' },
             { label: 'Pending', val: 20, color: '#854F0B', bg: '#FAEEDA' },
           ].map(e => (
-            <div key={e.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', background: e.bg, borderRadius: '8px' }}>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: e.color, minWidth: '28px' }}>{e.val}</div>
-              <div style={{ fontSize: '11px', color: e.color, fontWeight: 500 }}>{e.label}</div>
+            <div key={e.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', background: e.bg, borderRadius: '8px', fontSize: '12px' }}>
+              <span style={{ fontWeight: 600, color: e.color }}>{e.val}</span>
+              <span style={{ color: e.color, fontWeight: 500 }}>{e.label}</span>
             </div>
           ))}
         </div>
