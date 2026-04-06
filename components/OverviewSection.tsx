@@ -253,6 +253,72 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
     }
   };
 
+  const approvalQueueItems = [
+    {
+      key: 'action-required',
+      title: 'Action required',
+      count: 34,
+      countColor: '#A32D2D',
+      tag: 'Bill copy failed',
+      tagColor: '#791F1F',
+      tagBg: '#FCEBEB',
+      desc: 'BBPS fetch failed · payment blocked',
+      borderColor: '#F7C1C1',
+      iconBg: '#FCEBEB',
+      iconPath: (
+        <>
+          <path d="M8 3v5" stroke="#A32D2D" strokeWidth="1.5" strokeLinecap="round"/>
+          <circle cx="8" cy="11.5" r="0.75" fill="#A32D2D"/>
+          <circle cx="8" cy="8" r="6.5" stroke="#A32D2D" strokeWidth="1.2"/>
+        </>
+      ),
+    },
+    {
+      key: 'not-generated',
+      title: 'Not generated',
+      count: 170,
+      countColor: '#854F0B',
+      tag: 'No bill this month',
+      tagColor: '#633806',
+      tagBg: '#FAEEDA',
+      desc: 'Active CAs · no bill generated this month',
+      borderColor: '#FAC775',
+      iconBg: '#FAEEDA',
+      iconPath: (
+        <>
+          <rect x="3" y="2" width="10" height="12" rx="1.5" stroke="#854F0B" strokeWidth="1.2"/>
+          <path d="M5.5 6h5M5.5 8.5h5M5.5 11h3" stroke="#854F0B" strokeWidth="1.2" strokeLinecap="round"/>
+          <path d="M11 10l3 3" stroke="#854F0B" strokeWidth="1.2" strokeLinecap="round"/>
+          <path d="M11 13l3-3" stroke="#854F0B" strokeWidth="1.2" strokeLinecap="round"/>
+        </>
+      ),
+    },
+    {
+      key: 'copy-pending',
+      title: 'Copy pending',
+      count: 62,
+      countColor: '#185FA5',
+      tag: 'Auto-fetch in progress',
+      tagColor: '#0C447C',
+      tagBg: '#E6F1FB',
+      desc: 'Bill copy being fetched · no action needed',
+      borderColor: '#B5D4F4',
+      iconBg: '#E6F1FB',
+      iconPath: (
+        <>
+          <path d="M8 3v2.5" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M8 10.5V13" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M3 8h2.5" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M10.5 8H13" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M4.5 4.5l1.8 1.8" stroke="#185FA5" strokeWidth="1.2" strokeLinecap="round"/>
+          <path d="M9.7 9.7l1.8 1.8" stroke="#185FA5" strokeWidth="1.2" strokeLinecap="round"/>
+          <path d="M11.5 4.5L9.7 6.3" stroke="#185FA5" strokeWidth="1.2" strokeLinecap="round"/>
+          <path d="M6.3 9.7L4.5 11.5" stroke="#185FA5" strokeWidth="1.2" strokeLinecap="round"/>
+        </>
+      ),
+    },
+  ]
+
   return (
     <div style={{ padding: '20px', background: '#f5f6fa', minHeight: '100vh' }}>
       {/* Topbar */}
@@ -302,6 +368,56 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
         {recentEntities.map(e => (
           <PinChip key={e.name} name={e.name} type={e.type} dashed={true} onClick={() => handleSelectEntity(e.name, e.type)} />
         ))}
+      </div>
+
+      {/* Approval queue */}
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+          Approval queue
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '10px' }}>
+          {approvalQueueItems.map(item => (
+            <div
+              key={item.key}
+              onClick={() => onSectionChange('billers')}
+              style={{
+                background: '#fff',
+                border: `0.5px solid ${item.borderColor}`,
+                borderRadius: '12px',
+                padding: '14px 16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px',
+                transition: 'border-color 0.12s',
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = '#2500D7'}
+              onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = item.borderColor}
+            >
+              {/* Icon dot */}
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '8px',
+                background: item.iconBg, display: 'flex', alignItems: 'center',
+                justifyContent: 'center', flexShrink: 0,
+              }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  {item.iconPath}
+                </svg>
+              </div>
+              {/* Text */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>{item.title}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: item.countColor, marginLeft: '8px', flexShrink: 0 }}>{item.count}</div>
+                </div>
+                <div style={{ fontSize: '11px', fontWeight: 500, color: item.tagColor, background: item.tagBg, borderRadius: '4px', padding: '2px 7px', display: 'inline-block', marginBottom: '4px' }}>
+                  {item.tag}
+                </div>
+                <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '2px' }}>{item.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Summary cards */}
