@@ -80,6 +80,25 @@ export const CAS: Record<string, string[]> = {
   'WB-KOLKATA': ['WB-KOL-CA001', 'WB-KOL-CA002']
 };
 
+export const BILL_CATEGORIES = [
+  'Electricity',
+  'Water',
+  'Gas',
+  'Telecom - Postpaid',
+  'Telecom - Broadband',
+  'DTH',
+  'Insurance',
+  'Loan Repayment',
+  'FASTag',
+  'Municipal Tax',
+  'Housing Society',
+  'Education Fees',
+  'Hospital',
+  'Cable TV',
+] as const;
+
+export type BillCategory = typeof BILL_CATEGORIES[number] | 'all';
+
 export const YEARLY_LABELS = ['FY22', 'FY23', 'FY24', 'FY25'];
 export const MONTHLY_LABELS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 

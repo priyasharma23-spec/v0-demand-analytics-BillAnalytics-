@@ -1,13 +1,28 @@
 'use client';
 
 import React, { useState } from 'react';
-import { STATES, BRANCHES, CAS } from '@/lib/calculations';
+import { STATES, BRANCHES, CAS, BILL_CATEGORIES, BillCategory } from '@/lib/calculations';
+
+interface AppState {
+  view: 'yearly' | 'monthly';
+  stateF: string;
+  branchF: string;
+  caF: string;
+  billCategory: BillCategory;
+  section: string;
+}
 
 interface DashboardNavProps {
   activeProduct: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst';
   onProductChange: (product: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst') => void;
   activeSection: string;
   onSectionChange: (section: string) => void;
+  appState: AppState;
+  onStateChange: (state: string) => void;
+  onBranchChange: (branch: string) => void;
+  onCAChange: (ca: string) => void;
+  onBillCategoryChange: (category: string) => void;
+  onPeriodChange: (period: string) => void;
 }
 
 export default function DashboardNav({
@@ -15,11 +30,17 @@ export default function DashboardNav({
   onProductChange,
   activeSection,
   onSectionChange,
+  appState,
+  onStateChange,
+  onBranchChange,
+  onCAChange,
+  onBillCategoryChange,
+  onPeriodChange,
 }: DashboardNavProps) {
-  const [state, setState] = useState('');
-  const [branch, setBranch] = useState('');
-  const [ca, setCA] = useState('');
-  const [billCategory, setBillCategory] = useState('');
+  const [localState, setLocalState] = useState('');
+  const [localBranch, setLocalBranch] = useState('');
+  const [localCA, setLocalCA] = useState('');
+  const [localBillCategory, setLocalBillCategory] = useState('all');
   const [period, setPeriod] = useState('1Y');
 
   const sections = [
@@ -41,25 +62,25 @@ export default function DashboardNav({
   const showSectionPills = activeProduct === 'bill-payment';
 
   const getStateOptions = () => {
-    return Object.entries(STATES).map(([key, name]) => ({
-      value: key,
+    return STATES.map((name) => ({
+      value: name,
       label: name,
     }));
   };
 
   const getBranchOptions = () => {
-    if (!state) return [];
-    const branches = BRANCHES[state as keyof typeof BRANCHES] || {};
-    return Object.entries(branches).map(([key, name]) => ({
-      value: key,
+    if (appState.stateF === 'all') return [];
+    const branches = BRANCHES[appState.stateF] || [];
+    return branches.map((name) => ({
+      value: name,
       label: name,
     }));
   };
 
   const getCAOptions = () => {
-    if (!branch) return [];
-    const caMap = CAS[branch as keyof typeof CAS] || [];
-    return caMap.map((ca) => ({
+    if (appState.branchF === 'all') return [];
+    const caList = CAS[appState.branchF] || [];
+    return caList.map((ca) => ({
       value: ca,
       label: ca,
     }));
@@ -117,11 +138,9 @@ export default function DashboardNav({
         {/* State filter pill */}
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <select
-            value={state}
+            value={appState.stateF}
             onChange={(e) => {
-              setState(e.target.value);
-              setBranch('');
-              setCA('');
+              onStateChange(e.target.value);
             }}
             style={{
               height: '36px',
@@ -150,7 +169,7 @@ export default function DashboardNav({
               (e.target as HTMLSelectElement).style.borderBottomColor = '#F3F4F6';
             }}
           >
-            <option value="">All States</option>
+            <option value="all">All States</option>
             {getStateOptions().map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -180,12 +199,11 @@ export default function DashboardNav({
         {/* Branch filter pill */}
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <select
-            value={branch}
+            value={appState.branchF}
             onChange={(e) => {
-              setBranch(e.target.value);
-              setCA('');
+              onBranchChange(e.target.value);
             }}
-            disabled={!state}
+            disabled={appState.stateF === 'all'}
             style={{
               height: '36px',
               background: '#ffffff',
@@ -202,10 +220,10 @@ export default function DashboardNav({
               color: '#858EA2',
               fontWeight: 400,
               appearance: 'none',
-              cursor: state ? 'pointer' : 'not-allowed',
+              cursor: appState.stateF !== 'all' ? 'pointer' : 'not-allowed',
               transition: 'border-color 0.2s',
               fontFamily: '"Inter", sans-serif',
-              opacity: state ? 1 : 0.5,
+              opacity: appState.stateF !== 'all' ? 1 : 0.5,
               transition: 'border-color 0.2s',
               fontFamily: '"Inter", sans-serif',
             }}
@@ -218,7 +236,7 @@ export default function DashboardNav({
               (e.target as HTMLSelectElement).style.borderBottomColor = '#F3F4F6';
             }}
           >
-            <option value="">All Branches</option>
+            <option value="all">All Branches</option>
             {getBranchOptions().map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -248,9 +266,9 @@ export default function DashboardNav({
         {/* CA filter pill */}
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <select
-            value={ca}
-            onChange={(e) => setCA(e.target.value)}
-            disabled={!branch}
+            value={appState.caF}
+            onChange={(e) => onCAChange(e.target.value)}
+            disabled={appState.branchF === 'all'}
             style={{
               height: '36px',
               background: '#ffffff',
@@ -267,10 +285,10 @@ export default function DashboardNav({
               color: '#858EA2',
               fontWeight: 400,
               appearance: 'none',
-              cursor: branch ? 'pointer' : 'not-allowed',
+              cursor: appState.branchF !== 'all' ? 'pointer' : 'not-allowed',
               transition: 'border-color 0.2s',
               fontFamily: '"Inter", sans-serif',
-              opacity: branch ? 1 : 0.5,
+              opacity: appState.branchF !== 'all' ? 1 : 0.5,
               transition: 'border-color 0.2s',
               fontFamily: '"Inter", sans-serif',
             }}
@@ -283,7 +301,7 @@ export default function DashboardNav({
               (e.target as HTMLSelectElement).style.borderBottomColor = '#F3F4F6';
             }}
           >
-            <option value="">All CAs</option>
+            <option value="all">All CAs</option>
             {getCAOptions().map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -317,7 +335,10 @@ export default function DashboardNav({
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
             <select
               value={period}
-              onChange={(e) => setPeriod(e.target.value)}
+              onChange={(e) => {
+                setPeriod(e.target.value);
+                onPeriodChange(e.target.value);
+              }}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -360,8 +381,8 @@ export default function DashboardNav({
           <span style={{ fontSize: '14px', fontWeight: 400, color: '#858EA2', whiteSpace: 'nowrap' }}>Bill Category</span>
           <span style={{ fontSize: '14px', fontWeight: 400, color: '#858EA2' }}>|</span>
           <select
-            value={billCategory}
-            onChange={(e) => setBillCategory(e.target.value)}
+            value={appState.billCategory}
+            onChange={(e) => onBillCategoryChange(e.target.value)}
             style={{
               background: 'transparent',
               border: 'none',
@@ -374,10 +395,10 @@ export default function DashboardNav({
               paddingRight: '4px',
             }}
           >
-            <option value="">All</option>
-            <option value="PAID">Paid</option>
-            <option value="PENDING">Pending</option>
-            <option value="OVERDUE">Overdue</option>
+            <option value="all">All categories</option>
+            {BILL_CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
           </select>
         </div>
 
