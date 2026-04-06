@@ -452,7 +452,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
                   <div style={{ fontSize: '12px', color: item.color }}>{item.desc}</div>
                 </div>
                 {/* Right: Count */}
-                <div style={{ fontSize: '42px', fontWeight: 700, color: item.countColor, marginLeft: '16px', flexShrink: 0 }}>{item.count}</div>
+                <div style={{ fontSize: '36px', fontWeight: 700, color: item.countColor, marginLeft: '16px', flexShrink: 0 }}>{item.count}</div>
               </div>
             ))}
           </div>
