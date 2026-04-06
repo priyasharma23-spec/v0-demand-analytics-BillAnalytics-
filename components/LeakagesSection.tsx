@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '@/lib/chartSetup';
 import { Chart } from 'chart.js';
-import { getFilteredBills, inr, inrK } from '@/lib/calculations';
+import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getCABills, getBranchBills, getStateBills } from '@/lib/calculations';
 import { MetricCard } from './MetricCard';
 import { KpiCard } from './KpiCard';
 
@@ -20,6 +20,16 @@ interface LeakageKPI {
   value: string;
   desc: string;
 }
+
+type BreakdownRow = {
+  name: string;
+  contracted: number;
+  mdi: number;
+  over: number;
+  totalLeak: number;
+  util: number;
+  level: 'state' | 'branch' | 'ca';
+};
 
 export default function LeakagesSection() {
   const stackChartRef = useRef<HTMLCanvasElement>(null);
@@ -47,6 +57,8 @@ export default function LeakagesSection() {
     utilEff: 0,
     totalExcess: 0,
   });
+  const [breakdownRows, setBreakdownRows] = useState<BreakdownRow[]>([]);
+  const [breakdownCols, setBreakdownCols] = useState<string[]>([]);
 
   useEffect(() => {
     renderLeakages();
@@ -59,6 +71,11 @@ export default function LeakagesSection() {
       if (edExcessInstance.current) edExcessInstance.current.destroy();
     };
   }, []);
+
+  const handleDrillDown = (r: BreakdownRow) => {
+    // No-op for now - filter state would be passed as props from parent
+    // This is a placeholder for the drill down functionality
+  };
 
   const renderLeakages = () => {
     console.log('[v0] renderLeakages called');
@@ -102,6 +119,20 @@ export default function LeakagesSection() {
 
     // Store ED metrics in state
     setEdMetrics({ avgCont, avgMDI, peakMDI, overN, overPct, recommended, netSavings, utilEff, totalExcess });
+
+    // Build breakdown rows (default state level)
+    setBreakdownCols(['State', 'Contracted', 'Avg MDI', 'Excess periods', 'Total leakage', 'Status']);
+    setBreakdownRows(
+      STATES.map(st => {
+        const d = getStateBills(st, 'yearly');
+        const avgMDI = Math.round(d.reduce((a, r) => a + r.mdi, 0) / d.length);
+        const contracted = Math.round(d.reduce((a, r) => a + r.contracted, 0) / d.length);
+        const over = d.filter(r => r.mdi > r.contracted).length;
+        const totalLeak = d.reduce((a, r) => a + r.totalLeakage, 0);
+        const util = Math.round(avgMDI / contracted * 100);
+        return { name: st, contracted, mdi: avgMDI, over, totalLeak, util, level: 'state' as const };
+      })
+    );
 
     // Metric cards
     const newMetrics: LeakageMetric[] = [
@@ -618,6 +649,51 @@ export default function LeakagesSection() {
             </div>
           );
         })}
+      </div>
+
+      {/* State breakdown table */}
+      <div className="chart-card" id="lk-breakdownCard">
+        <div className="chart-title" id="lk-breakdownTitle">State breakdown — all states</div>
+        <div className="chart-sub" style={{ cursor: 'default' }}>Click a row to drill down</div>
+        <div style={{ overflowX: 'auto', marginTop: '10px' }}>
+          <table className="breakdown-table">
+            <thead>
+              <tr>
+                {breakdownCols.map(c => <th key={c}>{c}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {breakdownRows.map((r, i) => (
+                <tr
+                  key={i}
+                  className={r.level !== 'ca' ? 'drillable' : ''}
+                  onClick={() => r.level !== 'ca' ? handleDrillDown(r) : undefined}
+                >
+                  <td style={{ fontWeight: 500 }}>
+                    {r.level !== 'ca'
+                      ? <span style={{ color: '#185FA5' }}>{r.name}</span>
+                      : r.name}
+                  </td>
+                  <td>{r.contracted} kVA</td>
+                  <td style={{ color: r.mdi > r.contracted ? '#A32D2D' : '#3B6D11', fontWeight: 500 }}>{r.mdi} kVA</td>
+                  <td>{r.over}</td>
+                  <td>{inr(r.totalLeak)}</td>
+                  <td>
+                    <span className={`badge ${r.util > 110 ? 'over' : r.util > 100 ? 'warn' : 'ok'}`}>
+                      {r.util > 110 ? 'Over' : r.util > 100 ? 'Near limit' : 'OK'}
+                    </span>
+                    <div className="bar-bg">
+                      <div className="bar-f" style={{
+                        width: `${Math.min(r.util, 130)}%`,
+                        background: r.util > 110 ? '#E24B4A' : r.util > 100 ? '#EF9F27' : '#1D9E75'
+                      }} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
