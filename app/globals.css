@@ -3,80 +3,192 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   DESIGN SYSTEM TOKENS
+   Source: Analytics Figma (wo4i3tC63pLdKNUBVM7kqJ)
+   All values extracted directly from Figma dev mode.
+   ============================================================
+
+   COLOR REFERENCE
+   ──────────────────────────────────────────────────────────
+   #2500d7  primary blue   — active states, links, CTA, radio
+   #1c5af4  blue-light     — filter button values, stat values
+   #192744  dark           — headings, body values, table text
+   #858ea2  meta           — sublabels, axis text, state names
+   #f5f6fa  page-bg        — page background, KPI icon bg
+   #f3f4f6  border         — card borders, dividers
+   #ffffff  surface        — card/surface background
+   #36b37e  positive       — up delta, Total Paid Bills
+   #ec2127  negative       — down delta, error states
+   #f59e0b  amber          — chart series 3
+   #fce8e8  negative-bg    — negative delta badge bg
+   #e8f8f1  positive-bg    — positive delta badge bg
+
+   TYPOGRAPHY (Inter throughout)
+   ──────────────────────────────────────────────────────────
+   KPI value         20px / 600  / #192744
+   Card title        16px / 600  / #192744
+   KPI label         16px / 400  / #858ea2
+   Table label       16px / 400  / #192744
+   Radio active      14px / 600  / #2500d7
+   Radio inactive    14px / 400  / #192744
+   Table state name  12px / 400  / #858ea2
+   Table value       12px / 400  / #192744
+   Delta %           12px / 500  / #ec2127 or #36b37e
+   Delta suffix      11px / 400  / #858ea2
+   Filter active     12px / 400  / #2500d7
+   Filter inactive   12px / 400  / #858ea2
+   Stat value        20px / 600  / #1c5af4
+   Showing Results   16px / 400  / #2500d7
+
+   SPACING & RADIUS
+   ──────────────────────────────────────────────────────────
+   Card radius       4px
+   Button radius     4px
+   Card padding      20–24px
+   Primary btn h     32px
+   Filter btn h      36px
+   Delta badge h     22px
+   Chart bar radius  2px (top)
+   Divider           1px  #f3f4f6
+   State bar h       4px
+   ============================================================ */
+
 :root {
+  /* ── Backgrounds ── */
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* #ffffff — surface/card */
+  --foreground: oklch(0.168 0.035 254.6);
+  /* #192744 — dark text */
+
+  /* ── Card ── */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  /* #ffffff */
+  --card-foreground: oklch(0.168 0.035 254.6);
+  /* #192744 */
+
+  /* ── Popover ── */
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.168 0.035 254.6);
+
+  /* ── Primary — brand blue #2500d7 ── */
+  --primary: oklch(0.382 0.233 264.1);
+  /* #2500d7 */
+  --primary-foreground: oklch(1 0 0);
+  /* white on primary */
+
+  /* ── Secondary — light blue #1c5af4 ── */
+  --secondary: oklch(0.484 0.212 262.9);
+  /* #1c5af4 */
+  --secondary-foreground: oklch(1 0 0);
+
+  /* ── Muted — page background #f5f6fa ── */
+  --muted: oklch(0.971 0.005 264.1);
+  /* #f5f6fa */
+  --muted-foreground: oklch(0.575 0.033 256.8);
+  /* #858ea2 */
+
+  /* ── Accent — #f5f6fa ── */
+  --accent: oklch(0.971 0.005 264.1);
+  /* #f5f6fa */
+  --accent-foreground: oklch(0.168 0.035 254.6);
+  /* #192744 */
+
+  /* ── Destructive — negative red #ec2127 ── */
+  --destructive: oklch(0.534 0.217 25.6);
+  /* #ec2127 */
+  --destructive-foreground: oklch(0.534 0.217 25.6);
+
+  /* ── Border / Input — #f3f4f6 ── */
+  --border: oklch(0.958 0.003 264.5);
+  /* #f3f4f6 */
+  --input: oklch(0.958 0.003 264.5);
+  /* #f3f4f6 */
+  --ring: oklch(0.484 0.212 262.9);
+  /* #1c5af4 focus ring */
+
+  /* ── Chart colors (exact Figma series) ── */
+  --chart-1: oklch(0.484 0.212 262.9);
+  /* #1c5af4  — bill amount */
+  --chart-2: oklch(0.686 0.163 158.4);
+  /* #36b37e  — units/positive */
+  --chart-3: oklch(0.773 0.154 71.0);
+  /* #f59e0b  — amber */
+  --chart-4: oklch(0.534 0.217 25.6);
+  /* #ec2127  — negative/red */
+  --chart-5: oklch(0.558 0.194 292.7);
+  /* #8b5cf6  — purple */
+
+  /* ── Radius — 4px everywhere (from Figma) ── */
+  --radius: 0.25rem;
+  /* 4px */
+
+  /* ── Sidebar ── */
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.168 0.035 254.6);
+  --sidebar-primary: oklch(0.382 0.233 264.1);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.971 0.005 264.1);
+  --sidebar-accent-foreground: oklch(0.168 0.035 254.6);
+  --sidebar-border: oklch(0.958 0.003 264.5);
+  --sidebar-ring: oklch(0.484 0.212 262.9);
+
+  /* ── Raw hex tokens (use directly in components) ── */
+  --color-primary-blue: #2500d7;
+  --color-blue-light: #1c5af4;
+  --color-dark: #192744;
+  --color-meta: #858ea2;
+  --color-page-bg: #f5f6fa;
+  --color-surface: #ffffff;
+  --color-border-line: #f3f4f6;
+  --color-positive: #36b37e;
+  --color-negative: #ec2127;
+  --color-amber: #f59e0b;
+  --color-positive-bg: #e8f8f1;
+  --color-negative-bg: #fce8e8;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.168 0.035 254.6);
+  /* #192744 */
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
+  --card: oklch(0.2 0.03 254.6);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
+  --popover: oklch(0.2 0.03 254.6);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary: oklch(0.484 0.212 262.9);
+  /* #1c5af4 lighter in dark */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.269 0.02 264.1);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: oklch(0.269 0.02 264.1);
+  --muted-foreground: oklch(0.65 0.03 256.8);
+  --accent: oklch(0.269 0.02 264.1);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
+  --destructive: oklch(0.534 0.217 25.6);
+  --destructive-foreground: oklch(0.637 0.237 25.3);
+  --border: oklch(0.3 0.015 264.5);
+  --input: oklch(0.3 0.015 264.5);
+  --ring: oklch(0.484 0.212 262.9);
+  --chart-1: oklch(0.484 0.212 262.9);
+  --chart-2: oklch(0.686 0.163 158.4);
+  --chart-3: oklch(0.773 0.154 71.0);
+  --chart-4: oklch(0.534 0.217 25.6);
+  --chart-5: oklch(0.558 0.194 292.7);
+  --sidebar: oklch(0.2 0.03 254.6);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.484 0.212 262.9);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.269 0.02 264.1);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --sidebar-border: oklch(0.3 0.015 264.5);
+  --sidebar-ring: oklch(0.484 0.212 262.9);
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
+  --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -101,10 +213,17 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Radius scale — all derived from 4px base */
+  --radius-sm: 0.125rem;
+  /* 2px  */
+  --radius-md: 0.25rem;
+  /* 4px  — buttons, cards, badges */
+  --radius-lg: 0.5rem;
+  /* 8px  — filter dropdowns, metric cards */
+  --radius-xl: 0.75rem;
+  /* 12px — chart cards */
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -119,28 +238,35 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-muted text-foreground;
+    /* #f5f6fa page bg, #192744 text */
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
-/* Navigation bar styling */
+/* ============================================================
+   LAYOUT SHELLS
+   ============================================================ */
+
+/* Navigation bar */
 nav {
   background: #ffffff;
-  border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
 }
 
 /* Row 1: product selector */
 .product-bar {
   background: #ffffff;
-  border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
   padding: 11px 20px;
 }
 
 /* Row 2: filter bar */
 .filter-bar {
   background: #ffffff;
-  border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
   padding: 9px 20px;
   display: flex;
   gap: 8px;
@@ -148,23 +274,16 @@ nav {
   align-items: center;
 }
 
-/* filter selects */
-.filter-bar select {
-  background: #f5f5f4;
-  border: 0.5px solid rgba(0,0,0,0.30);
-  border-radius: 8px;
-  font-size: 12px;
-  padding: 5px 26px 5px 9px;
-  color: #1a1a18;
-}
-
+/* Filter selects */
+.filter-bar select,
 .product-bar select {
   background: #f5f5f4;
-  border: 0.5px solid rgba(0,0,0,0.30);
+  border: 0.5px solid rgba(0, 0, 0, 0.30);
   border-radius: 8px;
   font-size: 12px;
   padding: 5px 26px 5px 9px;
   color: #1a1a18;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 /* Row 3: section pills */
@@ -176,7 +295,6 @@ nav {
   flex-wrap: wrap;
 }
 
-/* default pill */
 .section-bar button {
   padding: 6px 14px;
   border-radius: 8px;
@@ -185,64 +303,243 @@ nav {
   border: none;
   color: #6b6b67;
   cursor: pointer;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background 0.15s, color 0.15s;
 }
 
-/* active pill */
 .section-bar button.active {
   background: #e6f1fb;
   color: #0C447C;
   font-weight: 500;
 }
 
-/* page background */
+/* Page wrapper */
 .page-wrapper {
-  background: #f0f5fa;
+  background: #f5f6fa;
+  /* exact Figma page bg */
   min-height: 100vh;
 }
 
-/* content area */
+/* Content area */
 .content {
   padding: 20px;
-  background: #f0f5fa;
+  background: #f5f6fa;
 }
 
-/* metric cards */
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+/* Metric / KPI card */
 .metric-card {
   background: #f5f5f4;
   border-radius: 8px;
   padding: 12px 14px;
 }
 
-/* chart cards */
+/* Chart card */
 .chart-card {
   background: #ffffff;
-  border: 0.5px solid rgba(0,0,0,0.15);
+  border: 0.5px solid rgba(0, 0, 0, 0.15);
   border-radius: 12px;
   padding: 1.25rem;
   margin-bottom: 1rem;
 }
 
-/* Breakdown table styling */
+/* Analytics card — exact Figma spec (4px radius, 1px border #f3f4f6) */
+.analytics-card {
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+/* Primary button — #2500d7, h=32px, radius=4px */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 16px;
+  background: #2500d7;
+  color: #ffffff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #2500d7;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: #1e00b3;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Filter / tertiary button — white bg, border #f3f4f6, text #2500d7, h=36px */
+.btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 16px;
+  background: #ffffff;
+  color: #2500d7;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  border: 1px solid #f3f4f6;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-filter:hover {
+  border-color: #2500d7;
+}
+
+/* Download text-link button */
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #2500d7;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ============================================================
+   DELTA BADGES
+   ============================================================ */
+
+/* Base delta badge — h=22px, radius=2px */
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 2px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.delta-up {
+  background: #e8f8f1;
+  color: #36b37e;
+}
+
+.delta-down {
+  background: #fce8e8;
+  color: #ec2127;
+}
+
+/* ============================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================ */
+
+.text-kpi-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #192744;
+}
+
+.text-kpi-label {
+  font-size: 16px;
+  font-weight: 400;
+  color: #858ea2;
+}
+
+.text-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #192744;
+}
+
+.text-table-label {
+  font-size: 16px;
+  font-weight: 400;
+  color: #192744;
+}
+
+.text-table-meta {
+  font-size: 12px;
+  font-weight: 400;
+  color: #858ea2;
+}
+
+.text-table-value {
+  font-size: 12px;
+  font-weight: 400;
+  color: #192744;
+}
+
+.text-delta-suffix {
+  font-size: 11px;
+  font-weight: 400;
+  color: #858ea2;
+}
+
+.text-stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1c5af4;
+}
+
+.text-filter-active {
+  font-size: 12px;
+  font-weight: 400;
+  color: #2500d7;
+}
+
+.text-meta {
+  font-size: 12px;
+  font-weight: 400;
+  color: #858ea2;
+}
+
+/* ============================================================
+   BREAKDOWN TABLE
+   ============================================================ */
+
 .breakdown-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .breakdown-table thead {
   background: #f5f5f4;
-  border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
 }
 
 .breakdown-table th {
   padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  color: #1a1a18;
+  color: #192744;
 }
 
 .breakdown-table tbody tr {
-  border-bottom: 0.5px solid rgba(0,0,0,0.10);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.10);
 }
 
 .breakdown-table tbody tr.drillable {
@@ -255,9 +552,10 @@ nav {
 
 .breakdown-table td {
   padding: 10px 12px;
-  color: #1a1a18;
+  color: #192744;
 }
 
+/* Status badges inside table */
 .breakdown-table .badge {
   display: inline-block;
   padding: 2px 6px;
@@ -282,6 +580,7 @@ nav {
   color: #791F1F;
 }
 
+/* Bar chart inside table */
 .breakdown-table .bar-bg {
   width: 60px;
   height: 4px;
@@ -294,4 +593,30 @@ nav {
 .breakdown-table .bar-f {
   height: 100%;
   transition: width 0.2s;
+}
+
+/* ============================================================
+   CHART AXIS / TOOLTIP OVERRIDES
+   (applied to recharts / chart.js rendered elements)
+   ============================================================ */
+
+.recharts-cartesian-axis-tick text {
+  fill: #858ea2 !important;
+  font-size: 11px !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  border-radius: 4px !important;
+  border: 1px solid #f3f4f6 !important;
+  font-size: 12px !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+.recharts-cartesian-grid-horizontal line {
+  stroke: #f3f4f6 !important;
+}
+
+.recharts-cartesian-grid-vertical line {
+  display: none !important;
 }
