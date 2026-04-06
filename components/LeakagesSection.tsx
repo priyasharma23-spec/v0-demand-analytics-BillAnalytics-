@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import '@/lib/chartSetup';
 import { Chart } from 'chart.js';
 import { getFilteredBills, inr, inrK } from '@/lib/calculations';
+import { MetricCard } from './MetricCard';
+import { KpiCard } from './KpiCard';
 
 interface LeakageMetric {
   label: string;
@@ -23,10 +25,14 @@ export default function LeakagesSection() {
   const stackChartRef = useRef<HTMLCanvasElement>(null);
   const pctChartRef = useRef<HTMLCanvasElement>(null);
   const donutChartRef = useRef<HTMLCanvasElement>(null);
+  const edMainRef = useRef<HTMLCanvasElement>(null);
+  const edExcessRef = useRef<HTMLCanvasElement>(null);
 
   const stackChartInstance = useRef<Chart | null>(null);
   const pctChartInstance = useRef<Chart | null>(null);
   const donutChartInstance = useRef<Chart | null>(null);
+  const edMainInstance = useRef<Chart | null>(null);
+  const edExcessInstance = useRef<Chart | null>(null);
 
   const [metrics, setMetrics] = useState<LeakageMetric[]>([]);
   const [kpis, setKpis] = useState<LeakageKPI[]>([]);
@@ -38,6 +44,8 @@ export default function LeakagesSection() {
       if (stackChartInstance.current) stackChartInstance.current.destroy();
       if (pctChartInstance.current) pctChartInstance.current.destroy();
       if (donutChartInstance.current) donutChartInstance.current.destroy();
+      if (edMainInstance.current) edMainInstance.current.destroy();
+      if (edExcessInstance.current) edExcessInstance.current.destroy();
     };
   }, []);
 
@@ -57,6 +65,29 @@ export default function LeakagesSection() {
 
     const leakPct = Math.round((totalLeak / totalBill) * 100);
     const periodsWithLeak = data.filter((d) => d.totalLeakage > 0).length;
+
+    // Excess demand calculations
+    const mdiArr = data.map(d => d.mdi);
+    const contArr = data.map(d => d.contracted);
+    const avgMDI = Math.round(mdiArr.reduce((a, b) => a + b, 0) / mdiArr.length);
+    const avgCont = Math.round(contArr.reduce((a, b) => a + b, 0) / contArr.length);
+    const peakMDI = Math.max(...mdiArr);
+    const overN = mdiArr.filter((v, i) => v > contArr[i]).length;
+    const overPct = Math.round(overN / data.length * 100);
+
+    // Recommended contracted demand = P90 of MDI + 10% buffer, rounded to nearest 10 kVA
+    const sortedMDI = [...mdiArr].sort((a, b) => a - b);
+    const p90MDI = sortedMDI[Math.floor(mdiArr.length * 0.9)];
+    const recommended = Math.round(p90MDI * 1.1 / 10) * 10;
+
+    // Net annual savings = excess charges eliminated − extra fixed charge at revised level
+    const avgDemandRate = data.reduce((a, d) => a + d.fixedCharge / d.contracted, 0) / data.length;
+    const annualExcess = totalExcess * 1; // yearly view
+    const extraFixed = (recommended - avgCont) * avgDemandRate * 12;
+    const netSavings = Math.round(annualExcess - extraFixed);
+
+    // Utilisation efficiency = avg MDI ÷ peak MDI
+    const utilEff = Math.round(avgMDI / peakMDI * 100);
 
     // Metric cards
     const newMetrics: LeakageMetric[] = [
@@ -237,6 +268,97 @@ export default function LeakagesSection() {
       }
     }
 
+    // Chart: Contracted vs MDI (line + bar overlay)
+    if (edMainRef.current) {
+      const ctx = edMainRef.current.getContext('2d');
+      if (ctx) {
+        if (edMainInstance.current) edMainInstance.current.destroy();
+        
+        const gridC = '#f0f0f0';
+        const lblC = '#666666';
+
+        edMainInstance.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                data: data.map(d => d.mdi),
+                backgroundColor: data.map(d => d.mdi > d.contracted ? 'rgba(239,159,39,0.15)' : 'transparent'),
+                borderWidth: 0,
+                barPercentage: 1,
+                categoryPercentage: 1,
+                order: 3
+              },
+              {
+                data: data.map(d => d.mdi),
+                type: 'line' as const,
+                borderColor: '#E24B4A',
+                backgroundColor: 'rgba(226,75,74,0.06)',
+                borderWidth: 2,
+                pointBackgroundColor: '#E24B4A',
+                pointRadius: 3,
+                tension: 0.35,
+                fill: false,
+                order: 1
+              },
+              {
+                data: data.map(d => d.contracted),
+                type: 'line' as const,
+                borderColor: '#185FA5',
+                borderWidth: 2,
+                borderDash: [5, 4],
+                pointRadius: 0,
+                fill: false,
+                order: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: gridC }, ticks: { color: lblC, font: { size: 11 }, autoSkip: false, maxRotation: 45 } },
+              y: { grid: { color: gridC }, ticks: { color: lblC, font: { size: 11 }, callback: (v: any) => v + ' kVA' } }
+            }
+          }
+        });
+      }
+    }
+
+    // Chart: Excess demand charges bar
+    if (edExcessRef.current) {
+      const ctx = edExcessRef.current.getContext('2d');
+      if (ctx) {
+        if (edExcessInstance.current) edExcessInstance.current.destroy();
+        
+        const gridC = '#f0f0f0';
+        const lblC = '#666666';
+
+        edExcessInstance.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              data: data.map(d => d.excessCharge),
+              backgroundColor: data.map(d => d.excessCharge > 15000 ? '#E24B4A' : '#F09595'),
+              borderRadius: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx: any) => ` ₹${ctx.parsed.y.toLocaleString('en-IN')}` } } },
+            scales: {
+              x: { grid: { color: gridC }, ticks: { color: lblC, font: { size: 11 }, autoSkip: false, maxRotation: 45 } },
+              y: { grid: { color: gridC }, ticks: { color: lblC, font: { size: 11 }, callback: (v: any) => '₹' + (v/1000).toFixed(0) + 'K' } }
+            }
+          }
+        });
+      }
+    }
+
     // KPI cards
     const worstType = (() => {
       const types = [
@@ -297,6 +419,75 @@ export default function LeakagesSection() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* ── Excess Demand subsection ── */}
+      <div className="sec-label" style={{ marginTop: '1.25rem' }}>Excess demand</div>
+
+      {/* 4 summary metrics */}
+      <div className="metrics flex flex-wrap gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
+        <MetricCard label="Avg contracted" value={`${avgCont} kVA`} sub="current level" subColor="#185FA5" />
+        <MetricCard label="Avg MDI" value={`${avgMDI} kVA`} sub={avgMDI > avgCont ? `+${Math.round((avgMDI/avgCont-1)*100)}% over` : 'within contract'} subColor={avgMDI > avgCont ? '#A32D2D' : '#3B6D11'} />
+        <MetricCard label="Peak MDI" value={`${peakMDI} kVA`} sub="highest recorded" subColor="#A32D2D" />
+        <MetricCard label="Total excess charges" value={inr(totalExcess)} sub={`${overPct}% periods exceeded`} subColor={overPct > 50 ? '#A32D2D' : '#633806'} />
+      </div>
+
+      {/* Chart 1 — Contracted vs MDI */}
+      <div className="chart-card px-6 py-6 mb-6">
+        <div className="chart-title text-lg font-semibold text-foreground" id="lk-ed-chartTitle">Contracted vs Max demand</div>
+        <div className="chart-sub text-sm text-foreground-secondary mt-1">kVA · contracted demand vs actual MDI per period</div>
+        <div className="legend flex flex-wrap gap-4 mt-4">
+          <span className="flex items-center gap-2 text-sm">
+            <span className="ld w-3 h-3 rounded" style={{ background: '#185FA5' }}></span>Contracted demand
+          </span>
+          <span className="flex items-center gap-2 text-sm">
+            <span className="ld w-3 h-3 rounded" style={{ background: '#E24B4A' }}></span>Max demand (MDI)
+          </span>
+          <span className="flex items-center gap-2 text-sm" style={{ opacity: 0.5 }}>
+            <span className="ld w-3 h-3 rounded" style={{ background: '#EF9F27' }}></span>Excess zone
+          </span>
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '260px', marginTop: '16px' }}>
+          <canvas ref={edMainRef}></canvas>
+        </div>
+      </div>
+
+      {/* Chart 2 — Excess demand charges bar */}
+      <div className="chart-card px-6 py-6 mb-6">
+        <div className="chart-title text-lg font-semibold text-foreground">Excess demand charges</div>
+        <div className="chart-sub text-sm text-foreground-secondary mt-1">₹ penalty billed when MDI exceeds contracted demand</div>
+        <div style={{ position: 'relative', width: '100%', height: '200px', marginTop: '16px' }}>
+          <canvas ref={edExcessRef}></canvas>
+        </div>
+      </div>
+
+      {/* 4 KPI insight cards for Excess Demand */}
+      <div className="sec-label">Insights</div>
+      <div className="kpi-grid grid grid-cols-4 gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
+        <KpiCard
+          variant={overPct === 100 ? 'danger' : overPct >= 75 ? 'warn' : overPct >= 50 ? 'warn' : 'good'}
+          label="Consistently over-contracted"
+          value={`${overPct}%`}
+          desc={overPct === 100 ? 'Every period exceeded — contract structurally under-sized' : `${overN} of ${data.length} periods exceeded contract`}
+        />
+        <KpiCard
+          variant={recommended > avgCont ? 'warn' : 'good'}
+          label="Recommended contract revision"
+          value={`${recommended} kVA`}
+          desc={recommended > avgCont ? `P90 MDI + 10% buffer (currently ${avgCont} kVA)` : 'Contract already above P90 MDI level'}
+        />
+        <KpiCard
+          variant={netSavings > 0 ? 'info' : 'warn'}
+          label="Estimated annual savings"
+          value={`${netSavings > 0 ? '' : '−'}₹${(Math.abs(netSavings)/100000).toFixed(1)}L`}
+          desc={netSavings > 0 ? 'Net benefit after revised contract tariff' : 'Higher tariff may offset excess savings'}
+        />
+        <KpiCard
+          variant={utilEff >= 85 ? 'good' : utilEff >= 70 ? 'warn' : 'danger'}
+          label="Utilisation efficiency"
+          value={`${utilEff}%`}
+          desc={utilEff >= 85 ? 'Consistent demand — revision is low risk' : utilEff >= 70 ? 'Moderate variability in demand' : 'High variability — review demand management'}
+        />
       </div>
 
       {/* Main Stack Chart */}
