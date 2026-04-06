@@ -83,13 +83,10 @@ export const CAS: Record<string, string[]> = {
 export const YEARLY_LABELS = ['FY22', 'FY23', 'FY24', 'FY25'];
 export const MONTHLY_LABELS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
-/* ── Initialize CA_PARAMS at module load ── */
+/* ── Per-CA base parameters (stable across renders) ── */
 const CA_PARAMS: Record<string, any> = {};
-Object.keys(CAS).forEach(branch => {
-  CAS[branch].forEach(ca => {
-    getCAParams(ca);
-  });
-});
+
+/* ── Seeded random helpers ── */
 function seed(s: number): number {
   const x = Math.sin(s + 1) * 10000;
   return x - Math.floor(x);
@@ -292,3 +289,10 @@ export const periodToView = {
   '1y': 'yearly' as const,
   'custom': 'monthly' as const
 };
+
+/* ── Initialize all CA_PARAMS at module load (run at top level) ── */
+Object.keys(CAS).forEach(branch => {
+  CAS[branch].forEach(ca => {
+    getCAParams(ca);
+  });
+});

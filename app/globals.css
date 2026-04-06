@@ -149,7 +149,15 @@ nav {
 }
 
 /* filter selects */
-.filter-bar select,
+.filter-bar select {
+  background: #f5f5f4;
+  border: 0.5px solid rgba(0,0,0,0.30);
+  border-radius: 8px;
+  font-size: 12px;
+  padding: 5px 26px 5px 9px;
+  color: #1a1a18;
+}
+
 .product-bar select {
   background: #f5f5f4;
   border: 0.5px solid rgba(0,0,0,0.30);
@@ -157,13 +165,6 @@ nav {
   font-size: 12px;
   padding: 5px 26px 5px 9px;
   color: #1a1a18;
-  cursor: pointer;
-  appearance: none;
-}
-
-.filter-bar select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Row 3: section pills */
@@ -184,7 +185,6 @@ nav {
   border: none;
   color: #6b6b67;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 /* active pill */
