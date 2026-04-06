@@ -296,3 +296,5 @@ Object.keys(CAS).forEach(branch => {
     getCAParams(ca);
   });
 });
+
+console.log('calculations loaded, CA count:', Object.values(CAS).flat().length);
