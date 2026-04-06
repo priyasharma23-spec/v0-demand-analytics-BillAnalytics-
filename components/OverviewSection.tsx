@@ -403,51 +403,58 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
 
       {/* Approval queue */}
       <div style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
-          Approval queue
+        {/* Header */}
+        <div style={{ marginBottom: '14px' }}>
+          <div style={{ fontSize: '16px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>Approval Queue</div>
+          <div style={{ fontSize: '13px', color: '#858ea2' }}>Config-driven · skip-approval corps not counted</div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '10px' }}>
-          {approvalQueueItems.map(item => (
-            <div
-              key={item.key}
-              onClick={() => onSectionChange('billers')}
-              style={{
-                background: '#fff',
-                border: `0.5px solid ${item.borderColor}`,
-                borderRadius: '12px',
-                padding: '14px 16px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '12px',
-                transition: 'border-color 0.12s',
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = '#2500D7'}
-              onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = item.borderColor}
-            >
-              {/* Icon dot */}
-              <div style={{
-                width: '36px', height: '36px', borderRadius: '8px',
-                background: item.iconBg, display: 'flex', alignItems: 'center',
-                justifyContent: 'center', flexShrink: 0,
-              }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  {item.iconPath}
-                </svg>
-              </div>
-              {/* Text */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>{item.title}</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: item.countColor, marginLeft: '8px', flexShrink: 0 }}>{item.count}</div>
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 500, color: item.tagColor, background: item.tagBg, borderRadius: '4px', padding: '2px 7px', display: 'inline-block', marginBottom: '4px' }}>
-                  {item.tag}
-                </div>
-                <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '2px' }}>{item.desc}</div>
-              </div>
+
+        {/* Summary metrics */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '12px', marginBottom: '16px', background: '#fff', borderRadius: '12px', padding: '24px 16px' }}>
+          {[
+            { label: 'Pending', count: 48, color: '#C47A00' },
+            { label: 'Approved', count: 312, color: '#1A7A45' },
+            { label: 'Rejected', count: 12, color: '#E24B4A' },
+          ].map(m => (
+            <div key={m.label} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', fontWeight: 700, color: m.color, lineHeight: 1, marginBottom: '6px' }}>{m.count}</div>
+              <div style={{ fontSize: '14px', color: '#192744', fontWeight: 500 }}>{m.label}</div>
             </div>
           ))}
+        </div>
+
+        {/* Action Required section */}
+        <div>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '10px' }}>Action Required</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {approvalQueueItems.map(item => (
+              <div
+                key={item.key}
+                onClick={() => onSectionChange('billers')}
+                style={{
+                  background: item.iconBg,
+                  border: `1px solid ${item.borderColor}`,
+                  borderRadius: '12px',
+                  padding: '16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  transition: 'opacity 0.12s',
+                }}
+                onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '0.85'}
+                onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.opacity = '1'}
+              >
+                {/* Left: Title and description */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: item.color, marginBottom: '2px' }}>{item.title}</div>
+                  <div style={{ fontSize: '12px', color: item.color }}>{item.desc}</div>
+                </div>
+                {/* Right: Count */}
+                <div style={{ fontSize: '42px', fontWeight: 700, color: item.countColor, marginLeft: '16px', flexShrink: 0 }}>{item.count}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
