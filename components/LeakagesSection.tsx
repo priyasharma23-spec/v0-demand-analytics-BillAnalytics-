@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import Chart from 'chart.js/auto';
+import '@/lib/chartSetup';
+import { Chart } from 'chart.js';
 import { getFilteredBills, inr, inrK } from '@/lib/calculations';
 
 interface LeakageMetric {
