@@ -25,6 +25,7 @@ export default function DashboardNav({
 
   const sections = [
     { id: 'overview', label: 'Overview' },
+    { id: 'excess-demand', label: 'Excess demand' },
     { id: 'consumption', label: 'Consumption' },
     { id: 'leakages', label: 'Leakages' },
     { id: 'savings', label: 'Savings' },
