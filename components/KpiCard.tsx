@@ -8,47 +8,85 @@ interface KpiCardProps {
 export function KpiCard({ variant, label, value, desc }: KpiCardProps) {
   const variantStyles = {
     danger: {
-      card: 'bg-[#FCEBEB]',
-      borderColor: '#F7C1C1',
-      label: 'text-[#791F1F]',
-      value: 'text-[#A32D2D]',
-      desc: 'text-[#791F1F]',
+      background: '#fce8e8',
+      borderColor: '#f5d0d0',
+      label: '#8b2323',
+      value: '#d63031',
+      desc: '#8b2323',
+      icon: '🔴',
     },
     warn: {
-      card: 'bg-[#FAEEDA]',
-      borderColor: '#FAC775',
-      label: 'text-[#633806]',
-      value: 'text-[#854F0B]',
-      desc: 'text-[#633806]',
+      background: '#fff4e6',
+      borderColor: '#ffe0b3',
+      label: '#b87400',
+      value: '#e8860e',
+      desc: '#b87400',
+      icon: '🟠',
     },
     good: {
-      card: 'bg-[#EAF3DE]',
-      borderColor: '#C0DD97',
-      label: 'text-[#27500A]',
-      value: 'text-[#3B6D11]',
-      desc: 'text-[#27500A]',
+      background: '#e8f8f1',
+      borderColor: '#c8e6d7',
+      label: '#22863a',
+      value: '#28a745',
+      desc: '#22863a',
+      icon: '🟢',
     },
     info: {
-      card: 'bg-[#E6F1FB]',
-      borderColor: '#B5D4F4',
-      label: 'text-[#0C447C]',
-      value: 'text-[#185FA5]',
-      desc: 'text-[#0C447C]',
+      background: '#e8f4fd',
+      borderColor: '#b5d4f4',
+      label: '#004c97',
+      value: '#2500d7',
+      desc: '#004c97',
+      icon: '🔵',
     },
   };
+
   const style = variantStyles[variant];
 
   return (
     <div
-      className={`kpi-card ${style.card} border rounded-lg p-3.5`}
       style={{
-        borderColor: style.borderColor,
-        borderWidth: '0.5px',
+        background: style.background,
+        border: `1px solid ${style.borderColor}`,
+        borderRadius: '4px',
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        fontFamily: '"Inter", sans-serif',
       }}
     >
-      <div className={`kpi-label text-xs font-medium uppercase tracking-wide ${style.label}`}>{label}</div>
-      <div className={`kpi-value text-2xl font-medium mt-1.5 ${style.value}`}>{value}</div>
-      <div className={`kpi-desc text-xs mt-1 ${style.desc}`}>{desc}</div>
+      <div
+        style={{
+          fontSize: '12px',
+          fontWeight: 600,
+          color: style.label,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: '28px',
+          fontWeight: 700,
+          color: style.value,
+          lineHeight: '1.2',
+        }}
+      >
+        {value}
+      </div>
+      <div
+        style={{
+          fontSize: '13px',
+          fontWeight: 500,
+          color: style.desc,
+          lineHeight: '1.4',
+        }}
+      >
+        {desc}
+      </div>
     </div>
   );
 }
