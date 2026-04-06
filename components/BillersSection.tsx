@@ -95,7 +95,7 @@ export default function BillersSection({ appState }: BillersSectionProps) {
         {/* Bar rows */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
           {[
-            { label: 'Total CA', pct: 100, count: 700, color: '#C47A00', loss: null },
+            { label: 'Total CA', pct: 87.5, count: 700, color: '#C47A00', loss: null, total: 800 },
             { label: 'Bills generated', pct: 75.7, count: 530, color: '#1755C8', loss: 170 },
             { label: 'Bills paid', pct: 60, count: 420, color: '#1A7A45', loss: 110 },
           ].map(row => (
