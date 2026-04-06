@@ -87,69 +87,55 @@ export default function DashboardNav({
   };
 
   const getSectionIcon = (sectionId: string) => {
-    const iconProps = {
-      width: '16px',
-      height: '16px',
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: 'currentColor',
-      strokeWidth: 2,
-      strokeLinecap: 'round' as const,
-      strokeLinejoin: 'round' as const,
-    };
-
     switch (sectionId) {
       case 'overview':
         return (
-          <svg {...iconProps}>
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+            <rect x="2" y="2" width="4" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+            <rect x="8" y="2" width="4" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+            <rect x="2" y="8" width="4" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+            <rect x="8" y="8" width="4" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
           </svg>
         );
       case 'excess-demand':
         return (
-          <svg {...iconProps}>
-            <line x1="12" y1="2" x2="12" y2="22" />
-            <path d="M17 5h4v6h-4z" />
-            <path d="M3 11h4v10H3z" />
-            <path d="M10 13h4v8h-4z" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M8.5 2L4 7.5h5L5 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         );
       case 'consumption':
         return (
-          <svg {...iconProps}>
-            <line x1="12" y1="2" x2="12" y2="22" />
-            <path d="M17 5h4v6h-4z" />
-            <path d="M3 11h4v10H3z" />
-            <path d="M10 13h4v8h-4z" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M2 10l3-3.5 2.5 2L11 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9.5 4H11v1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         );
       case 'leakages':
         return (
-          <svg {...iconProps}>
-            <path d="M12 2C12 2 6 8 6 13c0 3.31 2.69 6 6 6s6-2.69 6-6c0-5-6-11-6-11z" />
-            <path d="M12 13v2" />
-            <path d="M9 18h6" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M7 2.5L1.5 11.5h11L7 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M7 6v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <circle cx="7" cy="10" r="0.5" fill="currentColor"/>
           </svg>
         );
       case 'savings':
         return (
-          <svg {...iconProps}>
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            <circle cx="9" cy="10" r="1" />
-            <path d="M13 9h3" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+            <circle cx="7" cy="6" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M7 9.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M5 11.5l2 1 2-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M5.5 5.5C5.5 5.5 6 4.5 7 4.5s1.5.8 1.5 1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
           </svg>
         );
       case 'optimization':
         return (
-          <svg {...iconProps}>
-            <circle cx="12" cy="12" r="1" />
-            <path d="M12 1v6m0 6v6" />
-            <path d="M4.22 4.22l4.24 4.24m2.08 2.08l4.24 4.24" />
-            <path d="M1 12h6m6 0h6" />
-            <path d="M4.22 19.78l4.24-4.24m2.08-2.08l4.24-4.24" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M2 4h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M2 7h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M2 10h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <circle cx="5" cy="4" r="1.5" fill="var(--color-background-primary, white)" stroke="currentColor" strokeWidth="1.5"/>
+            <circle cx="9" cy="7" r="1.5" fill="var(--color-background-primary, white)" stroke="currentColor" strokeWidth="1.5"/>
+            <circle cx="5" cy="10" r="1.5" fill="var(--color-background-primary, white)" stroke="currentColor" strokeWidth="1.5"/>
           </svg>
         );
       default:
