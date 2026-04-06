@@ -45,6 +45,7 @@ export default function DashboardNav({
 
   const sections = [
     { id: 'overview', label: 'Overview' },
+    { id: 'billers', label: 'Billers' },
     { id: 'excess-demand', label: 'Excess demand' },
     { id: 'consumption', label: 'Consumption' },
     { id: 'leakages', label: 'Leakages' },
@@ -95,6 +96,15 @@ export default function DashboardNav({
             <rect x="8" y="2" width="4" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
             <rect x="2" y="8" width="4" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
             <rect x="8" y="8" width="4" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          </svg>
+        );
+      case 'billers':
+        return (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+            <rect x="2" y="2" width="10" height="10" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M2 5h10" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M5 8h7" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M5 11h7" stroke="currentColor" strokeWidth="1.5"/>
           </svg>
         );
       case 'excess-demand':

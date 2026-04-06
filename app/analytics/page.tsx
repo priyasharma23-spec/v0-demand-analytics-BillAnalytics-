@@ -5,12 +5,13 @@ import DashboardNav from '@/components/DashboardNav';
 import OverviewSection from '@/components/OverviewSection';
 import ExcessDemandSection from '@/components/ExcessDemandSection';
 import LeakagesSection from '@/components/LeakagesSection';
+import BillersSection from '@/components/BillersSection';
 import HeatmapDrilldownPage from '@/components/HeatmapDrilldownPage';
 import { BillCategory } from '@/lib/calculations';
 
 export default function AnalyticsPage() {
   const [activeProduct, setActiveProduct] = useState<'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst'>('bill-payment');
-  const [activeSection, setActiveSection] = useState<'overview' | 'excess-demand' | 'consumption' | 'leakages' | 'savings' | 'optimization'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'billers' | 'excess-demand' | 'consumption' | 'leakages' | 'savings' | 'optimization'>('overview');
 
   const [appState, setAppState] = useState({
     view: 'yearly' as 'yearly' | 'monthly',
@@ -108,6 +109,7 @@ export default function AnalyticsPage() {
                     }}
                   />
                 )}
+                {activeSection === 'billers' && <BillersSection appState={appState} />}
                 {activeSection === 'excess-demand' && <ExcessDemandSection />}
                 {activeSection === 'consumption' && (
                   <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
