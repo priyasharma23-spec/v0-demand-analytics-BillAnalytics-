@@ -363,27 +363,51 @@ export default function LeakagesSection() {
       <div className="kpi-grid grid grid-cols-4 gap-4 px-6 py-4">
         {kpis.map((kpi, i) => {
           const variantStyles = {
-            danger: { bg: '#FEE3E2', borderColor: '#E24B4A', textColor: '#A32D2D' },
-            warn: { bg: '#FEF5E8', borderColor: '#EF9F27', textColor: '#854F0B' },
-            good: { bg: '#E8F7F0', borderColor: '#1D9E75', textColor: '#0B5E3F' },
-            info: { bg: '#E6F1FB', borderColor: '#1a56fe', textColor: '#0C447C' },
+            danger: {
+              card: 'bg-[#FCEBEB]',
+              borderColor: '#F7C1C1',
+              label: 'text-[#791F1F]',
+              value: 'text-[#A32D2D]',
+              desc: 'text-[#791F1F]',
+            },
+            warn: {
+              card: 'bg-[#FAEEDA]',
+              borderColor: '#FAC775',
+              label: 'text-[#633806]',
+              value: 'text-[#854F0B]',
+              desc: 'text-[#633806]',
+            },
+            good: {
+              card: 'bg-[#EAF3DE]',
+              borderColor: '#C0DD97',
+              label: 'text-[#27500A]',
+              value: 'text-[#3B6D11]',
+              desc: 'text-[#27500A]',
+            },
+            info: {
+              card: 'bg-[#E6F1FB]',
+              borderColor: '#B5D4F4',
+              label: 'text-[#0C447C]',
+              value: 'text-[#185FA5]',
+              desc: 'text-[#0C447C]',
+            },
           };
           const style = variantStyles[kpi.variant];
 
           return (
             <div
               key={i}
-              className="kpi-card p-4 rounded-lg border"
+              className={`kpi-card ${style.card} border rounded-lg p-3.5`}
               style={{
-                backgroundColor: style.bg,
                 borderColor: style.borderColor,
+                borderWidth: '0.5px',
               }}
             >
-              <div className="text-xs font-medium text-foreground-secondary">{kpi.label}</div>
-              <div className="text-xl font-bold mt-2" style={{ color: style.textColor }}>
+              <div className={`kpi-label text-xs font-medium uppercase tracking-wide ${style.label}`}>{kpi.label}</div>
+              <div className={`kpi-value text-2xl font-medium mt-1.5 ${style.value}`}>
                 {kpi.value}
               </div>
-              <div className="text-xs mt-2 text-foreground-secondary">{kpi.desc}</div>
+              <div className={`kpi-desc text-xs mt-1 ${style.desc}`}>{kpi.desc}</div>
             </div>
           );
         })}
