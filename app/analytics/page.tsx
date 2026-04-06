@@ -73,7 +73,15 @@ export default function AnalyticsPage() {
       <div className="content">
         {activeProduct === 'bill-payment' ? (
           <>
-            {activeSection === 'overview' && <OverviewSection appState={appState} />}
+            {activeSection === 'overview' && (
+              <OverviewSection 
+                appState={appState}
+                onStateChange={handleStateChange}
+                onBranchChange={handleBranchChange}
+                onCAChange={handleCAChange}
+                onSectionChange={setActiveSection}
+              />
+            )}
             {activeSection === 'excess-demand' && <ExcessDemandSection />}
             {activeSection === 'consumption' && (
               <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
