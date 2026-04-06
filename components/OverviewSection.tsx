@@ -358,18 +358,6 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
         <button style={{ height: '36px', background: '#2500D7', border: 'none', borderRadius: '8px', paddingTop: '0', paddingBottom: '0', paddingLeft: '20px', paddingRight: '20px', fontSize: '13px', fontWeight: 600, color: '#fff', cursor: 'pointer', transition: 'opacity 0.2s' }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.9'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}>Apply</button>
       </div>
 
-      {/* Pinned + Recent */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '11px', color: '#9b9b96', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pinned</span>
-        {pinnedEntities.map(e => (
-          <PinChip key={e.name} name={e.name} type={e.type} dashed={false} onClick={() => handleSelectEntity(e.name, e.type)} />
-        ))}
-        <span style={{ fontSize: '11px', color: '#9b9b96', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', marginLeft: '8px' }}>Recent</span>
-        {recentEntities.map(e => (
-          <PinChip key={e.name} name={e.name} type={e.type} dashed={true} onClick={() => handleSelectEntity(e.name, e.type)} />
-        ))}
-      </div>
-
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
         {summaryCards.map((card, i) => (
