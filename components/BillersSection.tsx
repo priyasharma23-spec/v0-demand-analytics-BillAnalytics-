@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { KpiCard } from '@/components/ui'
+import { KpiCard } from './KpiCard'
 
 interface BillersSectionProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
