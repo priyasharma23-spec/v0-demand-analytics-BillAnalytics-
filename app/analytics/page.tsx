@@ -144,12 +144,14 @@ export default function AnalyticsPage() {
                 <div style={{ fontSize: '15px', fontWeight: 500, color: '#192744' }}>
                   {activeProduct === 'vendor-payment' && 'Vendor Payment'}
                   {activeProduct === 'rental-payment' && 'Rental Payment'}
-              {activeProduct === 'gst' && 'GST'}
-            </div>
-            <div style={{ fontSize: '13px', color: '#858ea2' }}>
-              Analytics for this product are coming soon
-            </div>
-          </div>
+                  {activeProduct === 'gst' && 'GST'}
+                </div>
+                <div style={{ fontSize: '13px', color: '#858ea2' }}>
+                  Analytics for this product are coming soon
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
