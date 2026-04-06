@@ -33,6 +33,8 @@ export default function TopFilter({
 }: TopFilterProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState('1Y');
+  const [customFromDate, setCustomFromDate] = useState('');
+  const [customToDate, setCustomToDate] = useState('');
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -155,6 +157,41 @@ export default function TopFilter({
             <option value="custom">Custom</option>
           </select>
         </div>
+
+        {/* Custom date inputs - shown when custom is selected */}
+        {dateRange === 'custom' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="date"
+              value={customFromDate}
+              onChange={e => setCustomFromDate(e.target.value)}
+              style={{
+                padding: '6px 10px',
+                border: '0.5px solid rgba(0,0,0,0.15)',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontFamily: 'inherit',
+                background: '#fff',
+                cursor: 'pointer',
+              }}
+            />
+            <span style={{ fontSize: '12px', color: '#858ea2' }}>to</span>
+            <input
+              type="date"
+              value={customToDate}
+              onChange={e => setCustomToDate(e.target.value)}
+              style={{
+                padding: '6px 10px',
+                border: '0.5px solid rgba(0,0,0,0.15)',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontFamily: 'inherit',
+                background: '#fff',
+                cursor: 'pointer',
+              }}
+            />
+          </div>
+        )}
 
         {/* Apply button */}
         <button
