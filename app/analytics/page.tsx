@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import DashboardNav from '@/components/DashboardNav';
+import LeakagesSection from '@/components/LeakagesSection';
 
 export default function AnalyticsPage() {
   const [activeSection, setActiveSection] = useState('overview');
@@ -13,11 +14,15 @@ export default function AnalyticsPage() {
         onSectionChange={setActiveSection}
       />
 
-      {/* Placeholder for section content */}
+      {/* Section content */}
       <div className="px-6 py-8">
-        <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
-          Active Section: <span className="font-semibold">{activeSection}</span>
-        </div>
+        {activeSection === 'leakages' ? (
+          <LeakagesSection />
+        ) : (
+          <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
+            Active Section: <span className="font-semibold">{activeSection}</span>
+          </div>
+        )}
       </div>
     </main>
   );
