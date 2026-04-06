@@ -355,7 +355,7 @@ export default function DashboardNav({
         </div>
 
         {/* Bill Category pill */}
-        <div style={{ display: 'flex', alignItems: 'center', height: '36px', background: '#ffffff', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: '1px solid #F3F4F6', borderRadius: '8px', paddingTop: '0', paddingBottom: '0', paddingLeft: '14px', paddingRight: '14px', gap: '8px', fontFamily: '"Inter", sans-serif' }}>
+        <div style={{ display: 'flex', alignItems: 'center', height: '36px', minWidth: '177px', background: '#ffffff', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: '1px solid #F3F4F6', borderRadius: '8px', paddingTop: '0', paddingBottom: '0', paddingLeft: '14px', paddingRight: '14px', gap: '8px', fontFamily: '"Inter", sans-serif', transition: 'border-color 0.2s' }} onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#E5E7EB'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#F3F4F6'; }}>
           <span style={{ fontSize: '14px', fontWeight: 400, color: '#858EA2', whiteSpace: 'nowrap' }}>Bill Category</span>
           <span style={{ fontSize: '14px', fontWeight: 400, color: '#858EA2' }}>|</span>
           <select
