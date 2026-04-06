@@ -5,6 +5,7 @@ import DashboardNav from '@/components/DashboardNav';
 import OverviewSection from '@/components/OverviewSection';
 import ExcessDemandSection from '@/components/ExcessDemandSection';
 import LeakagesSection from '@/components/LeakagesSection';
+import HeatmapDrilldownPage from '@/components/HeatmapDrilldownPage';
 import { BillCategory } from '@/lib/calculations';
 
 export default function AnalyticsPage() {
@@ -19,6 +20,8 @@ export default function AnalyticsPage() {
     billCategory: 'all' as BillCategory,
     section: 'overview',
   });
+
+  const [drilldown, setDrilldown] = useState<{ state: string; month: string; monthIndex: number } | null>(null);
 
   const handleProductChange = (product: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst') => {
     setActiveProduct(product);
@@ -71,53 +74,76 @@ export default function AnalyticsPage() {
 
       {/* Section content */}
       <div className="content">
-        {activeProduct === 'bill-payment' ? (
-          <>
-            {activeSection === 'overview' && (
-              <OverviewSection 
-                appState={appState}
-                onStateChange={handleStateChange}
-                onBranchChange={handleBranchChange}
-                onCAChange={handleCAChange}
-                onSectionChange={setActiveSection}
-              />
-            )}
-            {activeSection === 'excess-demand' && <ExcessDemandSection />}
-            {activeSection === 'consumption' && (
-              <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
-                Active Section: <span className="font-semibold">{activeSection}</span>
-              </div>
-            )}
-            {activeSection === 'leakages' && <LeakagesSection />}
-            {activeSection === 'savings' && (
-              <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
-                Active Section: <span className="font-semibold">{activeSection}</span>
-              </div>
-            )}
-            {activeSection === 'optimization' && (
-              <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
-                Active Section: <span className="font-semibold">{activeSection}</span>
-              </div>
-            )}
-          </>
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '320px',
-              background: '#ffffff',
-              borderRadius: '12px',
-              border: '0.5px solid rgba(0,0,0,0.15)',
-              margin: '20px',
-              gap: '8px',
+        {drilldown ? (
+          <HeatmapDrilldownPage
+            state={drilldown.state}
+            month={drilldown.month}
+            monthIndex={drilldown.monthIndex}
+            onBack={() => setDrilldown(null)}
+            onViewAllSections={() => {
+              setDrilldown(null);
+              handleStateChange(drilldown.state);
+              setActiveSection('leakages');
             }}
-          >
-            <div style={{ fontSize: '15px', fontWeight: 500, color: '#192744' }}>
-              {activeProduct === 'vendor-payment' && 'Vendor Payment'}
-              {activeProduct === 'rental-payment' && 'Rental Payment'}
+            onBranchClick={(branch) => {
+              setDrilldown(null);
+              handleBranchChange(branch);
+              setActiveSection('leakages');
+            }}
+            appState={appState}
+          />
+        ) : (
+          <>
+            {activeProduct === 'bill-payment' ? (
+              <>
+                {activeSection === 'overview' && (
+                  <OverviewSection 
+                    appState={appState}
+                    onStateChange={handleStateChange}
+                    onBranchChange={handleBranchChange}
+                    onCAChange={handleCAChange}
+                    onSectionChange={setActiveSection}
+                    onHeatmapCellClick={(state, month, monthIndex) => {
+                      setDrilldown({ state, month, monthIndex });
+                    }}
+                  />
+                )}
+                {activeSection === 'excess-demand' && <ExcessDemandSection />}
+                {activeSection === 'consumption' && (
+                  <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
+                    Active Section: <span className="font-semibold">{activeSection}</span>
+                  </div>
+                )}
+                {activeSection === 'leakages' && <LeakagesSection />}
+                {activeSection === 'savings' && (
+                  <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
+                    Active Section: <span className="font-semibold">{activeSection}</span>
+                  </div>
+                )}
+                {activeSection === 'optimization' && (
+                  <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
+                    Active Section: <span className="font-semibold">{activeSection}</span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '320px',
+                  background: '#ffffff',
+                  borderRadius: '12px',
+                  border: '0.5px solid rgba(0,0,0,0.15)',
+                  margin: '20px',
+                  gap: '8px',
+                }}
+              >
+                <div style={{ fontSize: '15px', fontWeight: 500, color: '#192744' }}>
+                  {activeProduct === 'vendor-payment' && 'Vendor Payment'}
+                  {activeProduct === 'rental-payment' && 'Rental Payment'}
               {activeProduct === 'gst' && 'GST'}
             </div>
             <div style={{ fontSize: '13px', color: '#858ea2' }}>

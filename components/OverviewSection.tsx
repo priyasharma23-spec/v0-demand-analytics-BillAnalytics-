@@ -18,6 +18,7 @@ interface OverviewSectionProps {
   onBranchChange: (branch: string) => void;
   onCAChange: (ca: string) => void;
   onSectionChange: (section: string) => void;
+  onHeatmapCellClick?: (state: string, month: string, monthIndex: number) => void;
 }
 
 const SearchIcon = () => (
@@ -85,7 +86,7 @@ const AnomalyCard = ({ color, title, desc, tags, amount, amountLabel, cta, secti
   );
 };
 
-export default function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange }: OverviewSectionProps) {
+export default function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange, onHeatmapCellClick }: OverviewSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSort, setActiveSort] = useState<'impact' | 'frequency' | 'state'>('impact');
@@ -243,9 +244,13 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
     onSectionChange(section);
   };
 
-  const handleHeatmapCell = (stateName: string) => {
-    onStateChange(stateName);
-    onSectionChange('leakages');
+  const handleHeatmapCell = (stateName: string, month: string, monthIndex: number) => {
+    if (onHeatmapCellClick) {
+      onHeatmapCellClick(stateName, month, monthIndex);
+    } else {
+      onStateChange(stateName);
+      onSectionChange('leakages');
+    }
   };
 
   return (
@@ -364,7 +369,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
                 return (
                   <div
                     key={`${si}-${mi}`}
-                    onClick={() => handleHeatmapCell(state)}
+                    onClick={() => handleHeatmapCell(state, heatmapMonths[mi], mi)}
                     title={`${state} · ${heatmapMonths[mi]}\n${value}% leakage — ${severityLabel(value)}`}
                     style={{
                       height: '36px',
