@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import DashboardNav from '@/components/DashboardNav';
+import OverviewSection from '@/components/OverviewSection';
 import ExcessDemandSection from '@/components/ExcessDemandSection';
 import LeakagesSection from '@/components/LeakagesSection';
 import { BillCategory } from '@/lib/calculations';
@@ -72,11 +73,7 @@ export default function AnalyticsPage() {
       <div className="content">
         {activeProduct === 'bill-payment' ? (
           <>
-            {activeSection === 'overview' && (
-              <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
-                Active Section: <span className="font-semibold">{activeSection}</span>
-              </div>
-            )}
+            {activeSection === 'overview' && <OverviewSection appState={appState} />}
             {activeSection === 'excess-demand' && <ExcessDemandSection />}
             {activeSection === 'consumption' && (
               <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
