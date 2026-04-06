@@ -97,6 +97,7 @@ function sr(s: number, min: number, max: number): number {
 const CA_PARAMS: Record<string, any> = {};
 
 function getCAParams(ca: string) {
+  if (!ca || ca.length === 0) return null;
   if (CA_PARAMS[ca]) return CA_PARAMS[ca];
   
   let h = 0;
@@ -119,6 +120,7 @@ function getCAParams(ca: string) {
 /* ── Generate one bill record for a CA in period slot i ── */
 export function genBill(ca: string, i: number, periodType: 'yearly' | 'monthly') {
   const p = getCAParams(ca);
+  if (!p) return null;
   const s = p.base * 100 + i;
 
   /* Demand */
@@ -194,8 +196,13 @@ export function genBill(ca: string, i: number, periodType: 'yearly' | 'monthly')
 }
 
 export function getCABills(ca: string, view: 'yearly' | 'monthly') {
+  const params = getCAParams(ca);
+  if (!params) return [];
   const labels = view === 'yearly' ? YEARLY_LABELS : MONTHLY_LABELS;
-  return labels.map((lbl, i) => ({ label: lbl, ...genBill(ca, i, view) }));
+  return labels.map((lbl, i) => {
+    const bill = genBill(ca, i, view);
+    return bill ? { label: lbl, ...bill } : null;
+  }).filter(Boolean) as any[];
 }
 
 /* ── Aggregate bill records across multiple CAs ──
