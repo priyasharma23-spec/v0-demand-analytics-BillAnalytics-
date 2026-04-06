@@ -166,8 +166,8 @@ export default function BillersSection({ appState }: BillersSectionProps) {
             <thead>
               <tr>
                 {(statusView === 'state'
-                  ? ['State','Billers','Generated','Received','Processed','Paid','Conversion','Drop-off']
-                  : ['Biller','State','Generated','Received','Processed','Paid','Conversion','Drop-off']
+                  ? ['State','Billers','Active CAs','Bill available','Pending','Paid','Conversion']
+                  : ['Biller','State','Active CAs','Bill available','Pending','Paid','Conversion']
                 ).map(h => (
                   <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
                 ))}
@@ -177,11 +177,6 @@ export default function BillersSection({ appState }: BillersSectionProps) {
               {(statusView === 'state' ? stateData : billerData).map((r: any) => {
                 const convPct = Math.round(r.paid / r.total * 100)
                 const barColor = convPct >= 85 ? '#1D9E75' : convPct >= 80 ? '#EF9F27' : '#E24B4A'
-                const badge = r.dropPct >= 15
-                  ? { bg: '#FCEBEB', color: '#A32D2D', label: 'High drop-off' }
-                  : r.dropPct >= 13
-                  ? { bg: '#FAEEDA', color: '#633806', label: 'Mid drop-off' }
-                  : { bg: '#EAF3DE', color: '#27500A', label: 'On track' }
                 return (
                   <tr key={statusView === 'state' ? r.state : r.biller}
                     onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
@@ -208,9 +203,6 @@ export default function BillersSection({ appState }: BillersSectionProps) {
                           <div style={{ width: `${convPct}%`, height: '100%', borderRadius: '3px', background: barColor }} />
                         </div>
                       </div>
-                    </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: badge.bg, color: badge.color }}>{badge.label}</span>
                     </td>
                   </tr>
                 )
