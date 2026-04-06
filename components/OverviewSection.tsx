@@ -166,12 +166,19 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
     [13, 12, 15, 19, 17, 14, 13, 12],
   ];
 
-  const cellStyle = (v: number) => {
-    if (v >= 28) return { bg: '#FCEBEB', color: '#A32D2D' };
-    if (v >= 20) return { bg: '#FAEEDA', color: '#633806' };
-    if (v >= 13) return { bg: '#FFF3CD', color: '#854F0B' };
-    return { bg: '#EAF3DE', color: '#3B6D11' };
+  const getCellStyle = (v: number): { bg: string; textColor: string } => {
+    if (v >= 30) return { bg: '#A32D2D', textColor: '#ffffff' };
+    if (v >= 23) return { bg: '#E24B4A', textColor: '#ffffff' };
+    if (v >= 16) return { bg: '#FF9E95', textColor: '#791F1F' };
+    if (v >= 10) return { bg: '#FFCEC8', textColor: '#791F1F' };
+    return { bg: '#FFF0EE', textColor: '#A32D2D' };
   };
+
+  const severityLabel = (v: number) =>
+    v >= 30 ? 'Critical' :
+    v >= 23 ? 'High' :
+    v >= 16 ? 'Elevated' :
+    v >= 10 ? 'Moderate' : 'In range';
 
   const q = searchQuery.toLowerCase();
   const filteredStates = useMemo(() => {
@@ -326,6 +333,23 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
       {/* Heatmap */}
       <div style={{ background: '#fff', borderRadius: '12px', padding: '16px' }}>
         <div style={{ fontSize: '13px', fontWeight: 500, color: '#192744', marginBottom: '16px' }}>Leakage heat map — state × month (%)</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '11px', color: '#858ea2' }}>Low</span>
+          {[
+            { bg: '#FFF0EE', label: '<10%' },
+            { bg: '#FFCEC8', label: '10–15%' },
+            { bg: '#FF9E95', label: '16–22%' },
+            { bg: '#E24B4A', label: '23–29%' },
+            { bg: '#A32D2D', label: '≥30%' },
+          ].map(item => (
+            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '20px', height: '12px', borderRadius: '2px', background: item.bg }} />
+              <span style={{ fontSize: '10px', color: '#858ea2' }}>{item.label}</span>
+            </div>
+          ))}
+          <span style={{ fontSize: '11px', color: '#858ea2' }}>High</span>
+          <span style={{ fontSize: '11px', color: '#9b9b96', marginLeft: '12px' }}>· hover a cell to see exact %</span>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '100px repeat(8, minmax(0, 1fr))', gap: '3px' }}>
           <div></div>
           {heatmapMonths.map((m, i) => (
@@ -335,10 +359,46 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
             <React.Fragment key={state}>
               <div style={{ fontSize: '11px', color: '#858ea2', textAlign: 'right', paddingRight: '8px' }}>{state}</div>
               {heatmapData[si].map((value, mi) => {
-                const style = cellStyle(value);
+                const { bg, textColor } = getCellStyle(value);
+                const isInRange = value < 10;
                 return (
-                  <div key={`${si}-${mi}`} onClick={() => handleHeatmapCell(state)} style={{ height: '28px', borderRadius: '4px', fontSize: '10px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: style.bg, color: style.color, transition: 'all 0.2s' }} onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '0.8'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '1'; }}>
-                    {value}
+                  <div
+                    key={`${si}-${mi}`}
+                    onClick={() => handleHeatmapCell(state)}
+                    title={`${state} · ${heatmapMonths[mi]}\n${value}% leakage — ${severityLabel(value)}`}
+                    style={{
+                      height: '36px',
+                      borderRadius: '4px',
+                      background: bg,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      transition: 'opacity 0.1s',
+                      gap: '1px',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.opacity = '0.8'}
+                    onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.opacity = '1'}
+                  >
+                    <span style={{ fontSize: '10px', fontWeight: 500, color: textColor, lineHeight: 1 }}>
+                      {value}%
+                    </span>
+                    {isInRange && (
+                      <span style={{
+                        fontSize: '8px',
+                        fontWeight: 500,
+                        color: '#3B6D11',
+                        background: '#EAF3DE',
+                        borderRadius: '3px',
+                        padding: '0px 3px',
+                        lineHeight: '12px',
+                        letterSpacing: '0.02em',
+                      }}>
+                        in range
+                      </span>
+                    )}
                   </div>
                 );
               })}
