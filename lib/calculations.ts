@@ -5,79 +5,124 @@
 
 /* ── Data structure ── */
 export const STATES = [
-  'Andhra Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Delhi', 'Goa', 
-  'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 
-  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 
-  'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 
-  'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 
-  'West Bengal'
+  'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Gujarat', 
+  'Delhi', 'Rajasthan', 'Uttar Pradesh', 'West Bengal'
 ];
 
 export const BRANCHES: Record<string, string[]> = {
-  'Andhra Pradesh': ['AP-VISAKHAPATNAM', 'AP-HYDERABAD'],
-  'Assam': ['AS-GUWAHATI'],
-  'Bihar': ['BR-PATNA'],
-  'Chhattisgarh': ['CG-RAIPUR'],
-  'Delhi': ['DL-DELHI'],
-  'Goa': ['GA-PANAJI'],
-  'Gujarat': ['GJ-AHMEDABAD', 'GJ-SURAT'],
-  'Haryana': ['HR-GURUGRAM'],
-  'Himachal Pradesh': ['HP-SHIMLA'],
-  'Jharkhand': ['JH-RANCHI'],
-  'Karnataka': ['KA-BANGALORE', 'KA-MYSORE'],
-  'Kerala': ['KL-KOCHI'],
-  'Madhya Pradesh': ['MP-INDORE'],
-  'Maharashtra': ['MH-MUMBAI', 'MH-PUNE'],
-  'Manipur': ['MN-IMPHAL'],
-  'Meghalaya': ['ML-SHILLONG'],
-  'Mizoram': ['MZ-AIZAWL'],
-  'Nagaland': ['NL-KOHIMA'],
-  'Odisha': ['OD-BHUBANESWAR'],
-  'Punjab': ['PB-PUNJAB'],
-  'Rajasthan': ['RJ-JAIPUR'],
-  'Sikkim': ['SK-GANGTOK'],
-  'Tamil Nadu': ['TN-CHENNAI'],
-  'Telangana': ['TG-HYDERABAD'],
-  'Tripura': ['TR-AGARTALA'],
-  'Uttar Pradesh': ['UP-LUCKNOW', 'UP-KANPUR'],
-  'Uttarakhand': ['UT-DEHRADUN'],
-  'West Bengal': ['WB-KOLKATA']
+  'Maharashtra': [
+    'Mumbai North', 'Mumbai South', 'Mumbai Central',
+    'Pune East', 'Pune West', 'Nagpur', 'Nashik', 'Aurangabad'
+  ],
+  'Karnataka': [
+    'Bangalore East', 'Bangalore West', 'Bangalore Central',
+    'Mysore', 'Hubli', 'Mangalore', 'Belgaum', 'Davangere'
+  ],
+  'Tamil Nadu': [
+    'Chennai Central', 'Chennai South', 'Chennai North',
+    'Coimbatore', 'Madurai', 'Salem', 'Trichy', 'Tirunelveli'
+  ],
+  'Gujarat': [
+    'Ahmedabad East', 'Ahmedabad West',
+    'Surat North', 'Surat South',
+    'Vadodara', 'Rajkot', 'Gandhinagar', 'Bhavnagar'
+  ],
+  'Delhi': [
+    'Delhi North', 'Delhi South', 'Delhi East',
+    'Delhi West', 'Delhi Central', 'Dwarka', 'Rohini', 'Noida Extension'
+  ],
+  'Rajasthan': [
+    'Jaipur North', 'Jaipur South',
+    'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Bikaner'
+  ],
+  'Uttar Pradesh': [
+    'Lucknow East', 'Lucknow West',
+    'Kanpur', 'Agra', 'Varanasi', 'Allahabad', 'Meerut', 'Ghaziabad'
+  ],
+  'West Bengal': [
+    'Kolkata North', 'Kolkata South', 'Kolkata East',
+    'Howrah', 'Durgapur', 'Siliguri', 'Asansol'
+  ],
 };
 
 export const CAS: Record<string, string[]> = {
-  'AP-VISAKHAPATNAM': ['AP-VIZ-CA001', 'AP-VIZ-CA002', 'AP-VIZ-CA003'],
-  'AP-HYDERABAD': ['AP-HYD-CA001', 'AP-HYD-CA002'],
-  'AS-GUWAHATI': ['AS-GUW-CA001'],
-  'BR-PATNA': ['BR-PAT-CA001'],
-  'CG-RAIPUR': ['CG-RAI-CA001'],
-  'DL-DELHI': ['DL-DEL-CA001', 'DL-DEL-CA002'],
-  'GA-PANAJI': ['GA-PAN-CA001'],
-  'GJ-AHMEDABAD': ['GJ-AHM-CA001', 'GJ-AHM-CA002'],
-  'GJ-SURAT': ['GJ-SUR-CA001'],
-  'HR-GURUGRAM': ['HR-GUR-CA001'],
-  'HP-SHIMLA': ['HP-SHM-CA001'],
-  'JH-RANCHI': ['JH-RAN-CA001'],
-  'KA-BANGALORE': ['KA-BLR-CA001', 'KA-BLR-CA002'],
-  'KA-MYSORE': ['KA-MYS-CA001'],
-  'KL-KOCHI': ['KL-KOC-CA001'],
-  'MP-INDORE': ['MP-IND-CA001'],
-  'MH-MUMBAI': ['MH-MUM-CA001', 'MH-MUM-CA002', 'MH-MUM-CA003'],
-  'MH-PUNE': ['MH-PUN-CA001'],
-  'MN-IMPHAL': ['MN-IMP-CA001'],
-  'ML-SHILLONG': ['ML-SHL-CA001'],
-  'MZ-AIZAWL': ['MZ-AIZ-CA001'],
-  'NL-KOHIMA': ['NL-KOH-CA001'],
-  'OD-BHUBANESWAR': ['OD-BHU-CA001'],
-  'PB-PUNJAB': ['PB-PUN-CA001'],
-  'RJ-JAIPUR': ['RJ-JAI-CA001', 'RJ-JAI-CA002'],
-  'SK-GANGTOK': ['SK-GAN-CA001'],
-  'TN-CHENNAI': ['TN-CHN-CA001', 'TN-CHN-CA002'],
-  'TG-HYDERABAD': ['TG-HYD-CA001'],
-  'TR-AGARTALA': ['TR-AGA-CA001'],
-  'UP-LUCKNOW': ['UP-LKN-CA001'],
-  'UP-KANPUR': ['UP-KNP-CA001'],
-  'UT-DEHRADUN': ['UT-DEH-CA001'],
-  'WB-KOLKATA': ['WB-KOL-CA001', 'WB-KOL-CA002']
+  // Maharashtra
+  'Mumbai North':    ['MH-MN-0101', 'MH-MN-0102', 'MH-MN-0103', 'MH-MN-0104'],
+  'Mumbai South':    ['MH-MS-0201', 'MH-MS-0202', 'MH-MS-0203'],
+  'Mumbai Central':  ['MH-MC-0301', 'MH-MC-0302', 'MH-MC-0303', 'MH-MC-0304'],
+  'Pune East':       ['MH-PE-0401', 'MH-PE-0402', 'MH-PE-0403'],
+  'Pune West':       ['MH-PW-0501', 'MH-PW-0502'],
+  'Nagpur':          ['MH-NG-0601', 'MH-NG-0602', 'MH-NG-0603'],
+  'Nashik':          ['MH-NK-0701', 'MH-NK-0702'],
+  'Aurangabad':      ['MH-AB-0801', 'MH-AB-0802', 'MH-AB-0803'],
+
+  // Karnataka
+  'Bangalore East':  ['KA-BE-1101', 'KA-BE-1102', 'KA-BE-1103', 'KA-BE-1104'],
+  'Bangalore West':  ['KA-BW-1201', 'KA-BW-1202', 'KA-BW-1203'],
+  'Bangalore Central': ['KA-BC-1301', 'KA-BC-1302', 'KA-BC-1303'],
+  'Mysore':          ['KA-MY-1401', 'KA-MY-1402'],
+  'Hubli':           ['KA-HB-1501', 'KA-HB-1502', 'KA-HB-1503'],
+  'Mangalore':       ['KA-MG-1601', 'KA-MG-1602'],
+  'Belgaum':         ['KA-BG-1701', 'KA-BG-1702'],
+  'Davangere':       ['KA-DV-1801', 'KA-DV-1802'],
+
+  // Tamil Nadu
+  'Chennai Central': ['TN-CC-2101', 'TN-CC-2102', 'TN-CC-2103', 'TN-CC-2104'],
+  'Chennai South':   ['TN-CS-2201', 'TN-CS-2202', 'TN-CS-2203'],
+  'Chennai North':   ['TN-CN-2301', 'TN-CN-2302'],
+  'Coimbatore':      ['TN-CB-2401', 'TN-CB-2402', 'TN-CB-2403'],
+  'Madurai':         ['TN-MD-2501', 'TN-MD-2502'],
+  'Salem':           ['TN-SL-2601', 'TN-SL-2602'],
+  'Trichy':          ['TN-TR-2701', 'TN-TR-2702', 'TN-TR-2703'],
+  'Tirunelveli':     ['TN-TV-2801', 'TN-TV-2802'],
+
+  // Gujarat
+  'Ahmedabad East':  ['GJ-AE-3101', 'GJ-AE-3102', 'GJ-AE-3103'],
+  'Ahmedabad West':  ['GJ-AW-3201', 'GJ-AW-3202', 'GJ-AW-3203'],
+  'Surat North':     ['GJ-SN-3301', 'GJ-SN-3302'],
+  'Surat South':     ['GJ-SS-3401', 'GJ-SS-3402', 'GJ-SS-3403'],
+  'Vadodara':        ['GJ-VD-3501', 'GJ-VD-3502'],
+  'Rajkot':          ['GJ-RJ-3601', 'GJ-RJ-3602', 'GJ-RJ-3603'],
+  'Gandhinagar':     ['GJ-GN-3701', 'GJ-GN-3702'],
+  'Bhavnagar':       ['GJ-BV-3801', 'GJ-BV-3802'],
+
+  // Delhi
+  'Delhi North':     ['DL-DN-4101', 'DL-DN-4102', 'DL-DN-4103'],
+  'Delhi South':     ['DL-DS-4201', 'DL-DS-4202', 'DL-DS-4203', 'DL-DS-4204'],
+  'Delhi East':      ['DL-DE-4301', 'DL-DE-4302'],
+  'Delhi West':      ['DL-DW-4401', 'DL-DW-4402', 'DL-DW-4403'],
+  'Delhi Central':   ['DL-DC-4501', 'DL-DC-4502'],
+  'Dwarka':          ['DL-DK-4601', 'DL-DK-4602'],
+  'Rohini':          ['DL-RH-4701', 'DL-RH-4702', 'DL-RH-4703'],
+  'Noida Extension': ['DL-NE-4801', 'DL-NE-4802'],
+
+  // Rajasthan
+  'Jaipur North':    ['RJ-JN-5101', 'RJ-JN-5102', 'RJ-JN-5103'],
+  'Jaipur South':    ['RJ-JS-5201', 'RJ-JS-5202'],
+  'Jodhpur':         ['RJ-JD-5301', 'RJ-JD-5302', 'RJ-JD-5303'],
+  'Udaipur':         ['RJ-UD-5401', 'RJ-UD-5402'],
+  'Kota':            ['RJ-KT-5501', 'RJ-KT-5502'],
+  'Ajmer':           ['RJ-AJ-5601', 'RJ-AJ-5602'],
+  'Bikaner':         ['RJ-BK-5701', 'RJ-BK-5702'],
+
+  // Uttar Pradesh
+  'Lucknow East':    ['UP-LE-6101', 'UP-LE-6102', 'UP-LE-6103'],
+  'Lucknow West':    ['UP-LW-6201', 'UP-LW-6202'],
+  'Kanpur':          ['UP-KN-6301', 'UP-KN-6302', 'UP-KN-6303'],
+  'Agra':            ['UP-AG-6401', 'UP-AG-6402'],
+  'Varanasi':        ['UP-VR-6501', 'UP-VR-6502', 'UP-VR-6503'],
+  'Allahabad':       ['UP-AL-6601', 'UP-AL-6602'],
+  'Meerut':          ['UP-ME-6701', 'UP-ME-6702'],
+  'Ghaziabad':       ['UP-GZ-6801', 'UP-GZ-6802', 'UP-GZ-6803'],
+
+  // West Bengal
+  'Kolkata North':   ['WB-KN-7101', 'WB-KN-7102', 'WB-KN-7103'],
+  'Kolkata South':   ['WB-KS-7201', 'WB-KS-7202', 'WB-KS-7203'],
+  'Kolkata East':    ['WB-KE-7301', 'WB-KE-7302'],
+  'Howrah':          ['WB-HW-7401', 'WB-HW-7402', 'WB-HW-7403'],
+  'Durgapur':        ['WB-DP-7501', 'WB-DP-7502'],
+  'Siliguri':        ['WB-SL-7601', 'WB-SL-7602'],
+  'Asansol':         ['WB-AS-7701', 'WB-AS-7702'],
 };
 
 export const BILL_CATEGORIES = [
