@@ -321,43 +321,6 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
 
   return (
     <div style={{ padding: '20px', background: '#f5f6fa', minHeight: '100vh' }}>
-      {/* Topbar */}
-      <div style={{ background: '#fff', border: '0.5px solid #F3F4F6', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ flex: 1, position: 'relative', maxWidth: '480px' }}>
-          <SearchIcon />
-          <input
-            placeholder="Search state, branch, or CA number…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setSearchOpen(true)}
-            onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
-            style={{ width: '100%', height: '38px', border: '0.5px solid rgba(0,0,0,0.30)', borderRadius: '8px', padding: '0 12px 0 36px', fontSize: '13px', background: '#f5f5f4', outline: 'none' }}
-          />
-          {searchOpen && (
-            <div style={{ position: 'absolute', top: '44px', left: 0, right: 0, background: '#fff', border: '0.5px solid rgba(0,0,0,0.15)', borderRadius: '12px', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 500, color: '#9b9b96', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 12px 4px' }}>States</div>
-              {filteredStates.map(s => (
-                <SearchResult key={s.name} icon={s.initials} iconBg="#EBEAFF" iconColor="#2500D7" name={s.name} meta={`${s.branches} branches · ${s.cas} CAs`} badge={s.badge} badgeType={s.badgeType} onClick={() => handleSelectEntity(s.name, 'state')} />
-              ))}
-              <div style={{ fontSize: '10px', fontWeight: 500, color: '#9b9b96', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 12px 4px' }}>Branches</div>
-              {filteredBranches.map(b => (
-                <SearchResult key={b.name} icon={b.initials} iconBg="#E6F1FB" iconColor="#0C447C" name={b.name} meta={`${b.state} · ${b.cas} CAs`} badge={b.badge} badgeType={b.badgeType} onClick={() => handleSelectEntity(b.name, 'branch')} />
-              ))}
-              <div style={{ fontSize: '10px', fontWeight: 500, color: '#9b9b96', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 12px 4px' }}>CA numbers</div>
-              {filteredCAs.map(c => (
-                <SearchResult key={c.id} icon="CA" iconBg="#EAF3DE" iconColor="#27500A" name={c.id} meta={`${c.branch} · ${c.category}`} badge={c.badge} badgeType={c.badgeType} onClick={() => handleSelectEntity(c.id, 'ca')} />
-              ))}
-            </div>
-          )}
-        </div>
-        <div style={{ height: '36px', background: '#fff', border: '1px solid #F3F4F6', borderRadius: '8px', paddingTop: '0', paddingBottom: '0', paddingLeft: '14px', paddingRight: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-          <span style={{ color: '#192744' }}>Apr 2024 – Mar 2025</span>
-          <span style={{ width: '1px', height: '16px', background: '#F3F4F6' }}></span>
-          <span style={{ color: '#2500D7', fontWeight: 500, cursor: 'pointer' }}>1Y ▾</span>
-        </div>
-        <button style={{ height: '36px', background: '#2500D7', border: 'none', borderRadius: '8px', paddingTop: '0', paddingBottom: '0', paddingLeft: '20px', paddingRight: '20px', fontSize: '13px', fontWeight: 600, color: '#fff', cursor: 'pointer', transition: 'opacity 0.2s' }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.9'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}>Apply</button>
-      </div>
-
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
         {summaryCards.map((card, i) => (
