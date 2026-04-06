@@ -36,6 +36,17 @@ export default function LeakagesSection() {
 
   const [metrics, setMetrics] = useState<LeakageMetric[]>([]);
   const [kpis, setKpis] = useState<LeakageKPI[]>([]);
+  const [edMetrics, setEdMetrics] = useState({
+    avgCont: 0,
+    avgMDI: 0,
+    peakMDI: 0,
+    overN: 0,
+    overPct: 0,
+    recommended: 0,
+    netSavings: 0,
+    utilEff: 0,
+    totalExcess: 0,
+  });
 
   useEffect(() => {
     renderLeakages();
@@ -88,6 +99,9 @@ export default function LeakagesSection() {
 
     // Utilisation efficiency = avg MDI ÷ peak MDI
     const utilEff = Math.round(avgMDI / peakMDI * 100);
+
+    // Store ED metrics in state
+    setEdMetrics({ avgCont, avgMDI, peakMDI, overN, overPct, recommended, netSavings, utilEff, totalExcess });
 
     // Metric cards
     const newMetrics: LeakageMetric[] = [
@@ -426,10 +440,10 @@ export default function LeakagesSection() {
 
       {/* 4 summary metrics */}
       <div className="metrics flex flex-wrap gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
-        <MetricCard label="Avg contracted" value={`${avgCont} kVA`} sub="current level" subColor="#185FA5" />
-        <MetricCard label="Avg MDI" value={`${avgMDI} kVA`} sub={avgMDI > avgCont ? `+${Math.round((avgMDI/avgCont-1)*100)}% over` : 'within contract'} subColor={avgMDI > avgCont ? '#A32D2D' : '#3B6D11'} />
-        <MetricCard label="Peak MDI" value={`${peakMDI} kVA`} sub="highest recorded" subColor="#A32D2D" />
-        <MetricCard label="Total excess charges" value={inr(totalExcess)} sub={`${overPct}% periods exceeded`} subColor={overPct > 50 ? '#A32D2D' : '#633806'} />
+        <MetricCard label="Avg contracted" value={`${edMetrics.avgCont} kVA`} sub="current level" subColor="#185FA5" />
+        <MetricCard label="Avg MDI" value={`${edMetrics.avgMDI} kVA`} sub={edMetrics.avgMDI > edMetrics.avgCont ? `+${Math.round((edMetrics.avgMDI/edMetrics.avgCont-1)*100)}% over` : 'within contract'} subColor={edMetrics.avgMDI > edMetrics.avgCont ? '#A32D2D' : '#3B6D11'} />
+        <MetricCard label="Peak MDI" value={`${edMetrics.peakMDI} kVA`} sub="highest recorded" subColor="#A32D2D" />
+        <MetricCard label="Total excess charges" value={inr(edMetrics.totalExcess)} sub={`${edMetrics.overPct}% periods exceeded`} subColor={edMetrics.overPct > 50 ? '#A32D2D' : '#633806'} />
       </div>
 
       {/* Chart 1 — Contracted vs MDI */}
@@ -465,28 +479,28 @@ export default function LeakagesSection() {
       <div className="sec-label">Insights</div>
       <div className="kpi-grid grid grid-cols-4 gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
         <KpiCard
-          variant={overPct === 100 ? 'danger' : overPct >= 75 ? 'warn' : overPct >= 50 ? 'warn' : 'good'}
+          variant={edMetrics.overPct === 100 ? 'danger' : edMetrics.overPct >= 75 ? 'warn' : edMetrics.overPct >= 50 ? 'warn' : 'good'}
           label="Consistently over-contracted"
-          value={`${overPct}%`}
-          desc={overPct === 100 ? 'Every period exceeded — contract structurally under-sized' : `${overN} of ${data.length} periods exceeded contract`}
+          value={`${edMetrics.overPct}%`}
+          desc={edMetrics.overPct === 100 ? 'Every period exceeded — contract structurally under-sized' : `${edMetrics.overN} of ${Math.round(edMetrics.totalExcess / 1500)} periods exceeded contract`}
         />
         <KpiCard
-          variant={recommended > avgCont ? 'warn' : 'good'}
+          variant={edMetrics.recommended > edMetrics.avgCont ? 'warn' : 'good'}
           label="Recommended contract revision"
-          value={`${recommended} kVA`}
-          desc={recommended > avgCont ? `P90 MDI + 10% buffer (currently ${avgCont} kVA)` : 'Contract already above P90 MDI level'}
+          value={`${edMetrics.recommended} kVA`}
+          desc={edMetrics.recommended > edMetrics.avgCont ? `P90 MDI + 10% buffer (currently ${edMetrics.avgCont} kVA)` : 'Contract already above P90 MDI level'}
         />
         <KpiCard
-          variant={netSavings > 0 ? 'info' : 'warn'}
+          variant={edMetrics.netSavings > 0 ? 'info' : 'warn'}
           label="Estimated annual savings"
-          value={`${netSavings > 0 ? '' : '−'}₹${(Math.abs(netSavings)/100000).toFixed(1)}L`}
-          desc={netSavings > 0 ? 'Net benefit after revised contract tariff' : 'Higher tariff may offset excess savings'}
+          value={`${edMetrics.netSavings > 0 ? '' : '−'}₹${(Math.abs(edMetrics.netSavings)/100000).toFixed(1)}L`}
+          desc={edMetrics.netSavings > 0 ? 'Net benefit after revised contract tariff' : 'Higher tariff may offset excess savings'}
         />
         <KpiCard
-          variant={utilEff >= 85 ? 'good' : utilEff >= 70 ? 'warn' : 'danger'}
+          variant={edMetrics.utilEff >= 85 ? 'good' : edMetrics.utilEff >= 70 ? 'warn' : 'danger'}
           label="Utilisation efficiency"
-          value={`${utilEff}%`}
-          desc={utilEff >= 85 ? 'Consistent demand — revision is low risk' : utilEff >= 70 ? 'Moderate variability in demand' : 'High variability — review demand management'}
+          value={`${edMetrics.utilEff}%`}
+          desc={edMetrics.utilEff >= 85 ? 'Consistent demand — revision is low risk' : edMetrics.utilEff >= 70 ? 'Moderate variability in demand' : 'High variability — review demand management'}
         />
       </div>
 
