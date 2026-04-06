@@ -217,6 +217,7 @@ export default function DashboardNav({
           justifyContent: 'space-between'
         }}>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {sections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => onSectionChange(section.id)}
