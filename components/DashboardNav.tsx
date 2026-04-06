@@ -228,7 +228,7 @@ export default function DashboardNav({
               fontFamily: '"Inter", sans-serif',
             }}
             onMouseEnter={(e) => {
-              if (state) {
+              if (appState.stateF !== 'all') {
                 (e.target as HTMLSelectElement).style.borderBottomColor = '#E5E7EB';
               }
             }}
@@ -293,7 +293,7 @@ export default function DashboardNav({
               fontFamily: '"Inter", sans-serif',
             }}
             onMouseEnter={(e) => {
-              if (branch) {
+              if (appState.branchF !== 'all') {
                 (e.target as HTMLSelectElement).style.borderBottomColor = '#E5E7EB';
               }
             }}
