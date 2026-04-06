@@ -101,9 +101,9 @@ export default function BillersSection({ appState }: BillersSectionProps) {
           ].map(row => (
             <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500, width: '100px', flexShrink: 0 }}>{row.label}</div>
-              <div style={{ flex: 1, height: '28px', background: '#e8e8e8', borderRadius: '14px', overflow: 'hidden', position: 'relative' }}>
-                <div style={{ width: `${row.pct}%`, height: '100%', background: row.color, borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '6px' }}>
-                  <div style={{ height: '22px', padding: '0 8px', borderRadius: '11px', fontSize: '11px', fontWeight: 600, color: '#fff', background: row.color, display: 'flex', alignItems: 'center' }}>
+              <div style={{ flex: 1, height: '25px', background: '#e8e8e8', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ width: `${row.pct}%`, height: '100%', background: row.color, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '6px' }}>
+                  <div style={{ height: '19px', padding: '0 8px', borderRadius: '9px', fontSize: '11px', fontWeight: 600, color: '#fff', background: row.color, display: 'flex', alignItems: 'center' }}>
                     {row.count}
                   </div>
                 </div>
