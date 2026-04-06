@@ -42,7 +42,9 @@ export default function LeakagesSection() {
   }, []);
 
   const renderLeakages = () => {
-    const data = getFilteredBills();
+    console.log('[v0] renderLeakages called');
+    const data = getFilteredBills('yearly', 'all', 'all', 'all');
+    console.log('[v0] filtered bills:', data.length, data.slice(0, 2));
     const labels = data.map((d) => d.label);
 
     const totalExcess = data.reduce((a, d) => a + d.excessCharge, 0);
