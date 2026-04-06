@@ -370,6 +370,37 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
         ))}
       </div>
 
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
+        {summaryCards.map((card, i) => (
+          <div key={i} style={{ background: '#fff', borderTop: '1px solid #f3f4f6', borderRight: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', borderLeft: '4px solid #2500d7', borderRadius: '8px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+            <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{card.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 500, color: '#192744', marginBottom: '4px' }}>{card.value}</div>
+            <div style={{ fontSize: '11px', color: card.subColor }}>{card.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Anomalies */}
+      <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>Surfaced anomalies</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>Ranked by avoidable cost · click any card to drill in</div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <SortPill label="By impact" active={activeSort === 'impact'} onClick={() => setActiveSort('impact')} />
+            <SortPill label="By frequency" active={activeSort === 'frequency'} onClick={() => setActiveSort('frequency')} />
+            <SortPill label="By state" active={activeSort === 'state'} onClick={() => setActiveSort('state')} />
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {anomalies.map((a, i) => (
+            <AnomalyCard key={i} {...a} onCTA={handleAnomalyCTA} />
+          ))}
+        </div>
+      </div>
+
       {/* Approval queue */}
       <div style={{ marginBottom: '16px' }}>
         <div style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
@@ -416,37 +447,6 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
                 <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '2px' }}>{item.desc}</div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
-        {summaryCards.map((card, i) => (
-          <div key={i} style={{ background: '#fff', borderTop: '1px solid #f3f4f6', borderRight: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', borderLeft: '4px solid #2500d7', borderRadius: '8px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-            <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{card.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 500, color: '#192744', marginBottom: '4px' }}>{card.value}</div>
-            <div style={{ fontSize: '11px', color: card.subColor }}>{card.sub}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Anomalies */}
-      <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div>
-            <div style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>Surfaced anomalies</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>Ranked by avoidable cost · click any card to drill in</div>
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <SortPill label="By impact" active={activeSort === 'impact'} onClick={() => setActiveSort('impact')} />
-            <SortPill label="By frequency" active={activeSort === 'frequency'} onClick={() => setActiveSort('frequency')} />
-            <SortPill label="By state" active={activeSort === 'state'} onClick={() => setActiveSort('state')} />
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {anomalies.map((a, i) => (
-            <AnomalyCard key={i} {...a} onCTA={handleAnomalyCTA} />
           ))}
         </div>
       </div>
