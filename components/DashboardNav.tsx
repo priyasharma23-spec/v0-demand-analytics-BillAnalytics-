@@ -4,15 +4,18 @@ import React, { useState } from 'react';
 import { STATES, BRANCHES, CAS } from '@/lib/calculations';
 
 interface DashboardNavProps {
+  activeProduct: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst';
+  onProductChange: (product: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst') => void;
   activeSection: string;
   onSectionChange: (section: string) => void;
 }
 
 export default function DashboardNav({
+  activeProduct,
+  onProductChange,
   activeSection,
   onSectionChange,
 }: DashboardNavProps) {
-  const [product, setProduct] = useState<'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst'>('bill-payment');
   const [state, setState] = useState('');
   const [branch, setBranch] = useState('');
   const [ca, setCA] = useState('');
@@ -35,7 +38,7 @@ export default function DashboardNav({
     { value: 'gst', label: 'GST' },
   ];
 
-  const showSectionPills = product === 'bill-payment';
+  const showSectionPills = activeProduct === 'bill-payment';
 
   const periodLabels = {
     '1M': 'Last Month',
@@ -87,15 +90,15 @@ export default function DashboardNav({
         {products.map((p) => (
           <button
             key={p.value}
-            onClick={() => setProduct(p.value)}
+            onClick={() => onProductChange(p.value as any)}
             style={{
-              color: product === p.value ? '#192744' : '#858ea2',
-              fontWeight: product === p.value ? 600 : 400,
+              color: activeProduct === p.value ? '#192744' : '#858ea2',
+              fontWeight: activeProduct === p.value ? 600 : 400,
               fontSize: '14px',
               borderTop: 'none',
               borderLeft: 'none',
               borderRight: 'none',
-              borderBottom: product === p.value ? '2px solid #1a56fe' : '2px solid transparent',
+              borderBottom: activeProduct === p.value ? '2px solid #1a56fe' : '2px solid transparent',
               paddingBottom: '12px',
               background: 'transparent',
               cursor: 'pointer',
