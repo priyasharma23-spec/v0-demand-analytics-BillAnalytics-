@@ -7,7 +7,7 @@ export default function AnalyticsPage() {
   const [activeSection, setActiveSection] = useState('overview');
 
   return (
-    <main className="min-h-screen bg-background">
+    <main style={{ minHeight: '100vh', backgroundColor: '#f0f5fa' }}>
       <DashboardNav
         activeSection={activeSection}
         onSectionChange={setActiveSection}

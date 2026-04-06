@@ -13,12 +13,15 @@ export default function DashboardNav({
   activeSection,
   onSectionChange,
 }: DashboardNavProps) {
-  const [product, setProduct] = useState('PRODUCT_A');
+  const [product, setProduct] = useState('bill-payments');
   const [state, setState] = useState('');
   const [branch, setBranch] = useState('');
   const [ca, setCA] = useState('');
   const [billCategory, setBillCategory] = useState('');
-  const [period, setPeriod] = useState('1M');
+  const [period, setPeriod] = useState('1Y');
+  const [showCustomDate, setShowCustomDate] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
 
   const sections = [
     { id: 'overview', label: 'Overview' },
@@ -56,21 +59,22 @@ export default function DashboardNav({
   };
 
   return (
-    <div className="w-full bg-background border-b border-border">
+    <div className="w-full" style={{ backgroundColor: '#ffffff' }}>
       {/* Row 1: Product Selector */}
-      <div className="px-6 py-4 border-b border-border">
+      <div className="px-6 py-4" style={{ backgroundColor: '#ffffff', borderBottom: '0.5px solid rgba(0,0,0,0.15)' }}>
         <select
           value={product}
           onChange={(e) => setProduct(e.target.value)}
           className="px-3 py-2 bg-background-secondary border border-border rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary-action"
         >
-          <option value="PRODUCT_A">PRODUCT_A</option>
-          <option value="PRODUCT_B">PRODUCT_B</option>
+          <option value="bill-payments">Bill payments</option>
+          <option value="invoice-payments">Invoice payments</option>
+          <option value="gst">GST</option>
         </select>
       </div>
 
       {/* Row 2: Filters */}
-      <div className="px-6 py-4 border-b border-border">
+      <div className="px-6 py-4" style={{ backgroundColor: '#ffffff', borderBottom: '0.5px solid rgba(0,0,0,0.15)' }}>
         <div className="flex gap-3 flex-wrap items-center">
           <select
             value={state}
@@ -131,31 +135,74 @@ export default function DashboardNav({
             <option value="OVERDUE">Overdue</option>
           </select>
 
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="px-3 py-2 bg-background-secondary border border-border rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary-action"
-          >
+          {/* Period Picker */}
+          <div className="flex gap-2 items-center" style={{ backgroundColor: '#f5f5f5', padding: '4px 8px', borderRadius: '6px' }}>
             {periods.map((p) => (
-              <option key={p} value={p}>
+              <button
+                key={p}
+                onClick={() => {
+                  setPeriod(p);
+                  if (p !== 'Custom') {
+                    setShowCustomDate(false);
+                  } else {
+                    setShowCustomDate(true);
+                  }
+                }}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  fontSize: '13px',
+                  fontWeight: period === p ? 500 : 400,
+                  backgroundColor: period === p ? '#ffffff' : 'transparent',
+                  color: period === p ? '#0C447C' : '#666666',
+                  border: period === p ? '1px solid #e0e0e0' : 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
                 {p}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
+
+          {/* Custom Date Inputs */}
+          {showCustomDate && (
+            <div className="flex gap-2 items-center">
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="px-3 py-2 bg-background-secondary border border-border rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary-action"
+              />
+              <span className="text-foreground text-sm">to</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="px-3 py-2 bg-background-secondary border border-border rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary-action"
+              />
+            </div>
+          )}
         </div>
       </div>
 
       {/* Row 3: Section Pills */}
-      <div className="px-6 py-4 flex gap-2 flex-wrap">
+      <div className="px-6 py-4 flex gap-2 flex-wrap" style={{ backgroundColor: '#ffffff' }}>
         {sections.map((section) => (
           <button
             key={section.id}
             onClick={() => onSectionChange(section.id)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeSection === section.id
-                ? 'bg-primary-action text-white'
-                : 'bg-background-secondary text-foreground border border-border hover:border-primary-action'
-            }`}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: activeSection === section.id ? 500 : 400,
+              backgroundColor: activeSection === section.id ? '#e6f1fb' : 'transparent',
+              color: activeSection === section.id ? '#0C447C' : '#666666',
+              border: activeSection === section.id ? 'none' : '1px solid #e0e0e0',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
           >
             {section.label}
           </button>
@@ -163,4 +210,6 @@ export default function DashboardNav({
       </div>
     </div>
   );
+  
+  return null;
 }
