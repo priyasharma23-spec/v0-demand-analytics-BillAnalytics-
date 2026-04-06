@@ -310,7 +310,7 @@ export default function DashboardNav({
         </div>
 
         {/* Date range pill with period dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', height: '36px', background: '#ffffff', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: '1px solid #F3F4F6', borderRadius: '8px', padding: '0 14px', fontFamily: '"Inter", sans-serif' }}>
+        <div style={{ display: 'flex', alignItems: 'center', height: '36px', background: '#ffffff', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: '1px solid #F3F4F6', borderRadius: '8px', paddingTop: '0', paddingBottom: '0', paddingLeft: '14px', paddingRight: '14px', fontFamily: '"Inter", sans-serif' }}>
           <span style={{ fontSize: '14px', color: '#192744', fontWeight: 400, paddingRight: '12px', whiteSpace: 'nowrap' }}>Jan 2023 - Dec 2023</span>
           <div style={{ width: '1px', height: '18px', background: '#F3F4F6', margin: '0 12px' }}></div>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
@@ -355,7 +355,7 @@ export default function DashboardNav({
         </div>
 
         {/* Bill Category pill */}
-        <div style={{ display: 'flex', alignItems: 'center', height: '36px', background: '#ffffff', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: '1px solid #F3F4F6', borderRadius: '8px', padding: '0 14px', gap: '8px', fontFamily: '"Inter", sans-serif' }}>
+        <div style={{ display: 'flex', alignItems: 'center', height: '36px', background: '#ffffff', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: '1px solid #F3F4F6', borderRadius: '8px', paddingTop: '0', paddingBottom: '0', paddingLeft: '14px', paddingRight: '14px', gap: '8px', fontFamily: '"Inter", sans-serif' }}>
           <span style={{ fontSize: '14px', fontWeight: 400, color: '#858EA2', whiteSpace: 'nowrap' }}>Bill Category</span>
           <span style={{ fontSize: '14px', fontWeight: 400, color: '#858EA2' }}>|</span>
           <select
