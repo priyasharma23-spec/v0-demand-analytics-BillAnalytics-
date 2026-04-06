@@ -40,14 +40,6 @@ export default function DashboardNav({
 
   const showSectionPills = activeProduct === 'bill-payment';
 
-  const periodLabels = {
-    '1M': 'Last Month',
-    '3M': 'Last 3 Months',
-    '6M': 'Last 6 Months',
-    '1Y': 'Last Year',
-    'Custom': 'Custom Range',
-  };
-
   const getStateOptions = () => {
     return Object.entries(STATES).map(([key, name]) => ({
       value: key,
@@ -73,36 +65,45 @@ export default function DashboardNav({
     }));
   };
 
-  const getBillCategoryLabel = () => {
-    if (!billCategory) return 'All';
-    return billCategory === 'PAID' ? 'Paid' : billCategory === 'PENDING' ? 'Pending' : 'Overdue';
-  };
-
   const handleApplyFilter = () => {
-    // Trigger filter application logic - filters are already applied via state
     console.log('[v0] Apply Filter clicked', { state, branch, ca, billCategory, period });
   };
 
   return (
     <nav style={{ backgroundColor: '#ffffff' }}>
-      {/* Row 1: Product Tabs */}
-      <div style={{ display: 'flex', gap: '32px', padding: '0 20px', borderBottom: '1px solid #efeff1', backgroundColor: '#ffffff' }}>
+      {/* Row 1: Product Tab Strip */}
+      <div style={{ display: 'flex', gap: '0', padding: '0 20px', backgroundColor: '#ffffff', borderBottom: '1px solid #F3F4F6' }}>
         {products.map((p) => (
           <button
             key={p.value}
             onClick={() => onProductChange(p.value as any)}
             style={{
-              color: activeProduct === p.value ? '#192744' : '#858ea2',
-              fontWeight: activeProduct === p.value ? 600 : 400,
+              height: '48px',
+              padding: '0 20px',
+              fontFamily: '"Inter", sans-serif',
               fontSize: '14px',
+              fontWeight: activeProduct === p.value ? 600 : 400,
+              color: activeProduct === p.value ? '#192744' : '#858EA2',
+              background: 'transparent',
               borderTop: 'none',
               borderLeft: 'none',
               borderRight: 'none',
-              borderBottom: activeProduct === p.value ? '2px solid #1a56fe' : '2px solid transparent',
-              paddingBottom: '12px',
-              background: 'transparent',
+              borderBottom: activeProduct === p.value ? '2px solid #2500D7' : '2px solid transparent',
               cursor: 'pointer',
               transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => {
+              if (activeProduct !== p.value) {
+                (e.target as HTMLButtonElement).style.color = '#192744';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeProduct !== p.value) {
+                (e.target as HTMLButtonElement).style.color = '#858EA2';
+              }
             }}
           >
             {p.label}
@@ -110,10 +111,10 @@ export default function DashboardNav({
         ))}
       </div>
 
-      {/* Row 2: Filters */}
-      <div style={{ display: 'flex', gap: '12px', padding: '12px 20px', backgroundColor: '#ffffff', alignItems: 'center', flexWrap: 'wrap' }}>
-        {/* State dropdown pill */}
-        <div style={{ position: 'relative' }}>
+      {/* Row 2: Filter Bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#ffffff', borderBottom: '1px solid #F3F4F6', flexWrap: 'wrap' }}>
+        {/* State filter pill */}
+        <div style={{ position: 'relative', display: 'inline-block' }}>
           <select
             value={state}
             onChange={(e) => {
@@ -122,19 +123,28 @@ export default function DashboardNav({
               setCA('');
             }}
             style={{
+              height: '36px',
               background: '#ffffff',
               borderTop: 'none',
               borderLeft: 'none',
               borderRight: 'none',
-              borderBottom: '1px solid #efeff1',
+              borderBottom: '1px solid #F3F4F6',
               borderRadius: '8px',
-              padding: '8px 14px',
+              padding: '0 14px',
+              paddingRight: '28px',
               fontSize: '14px',
-              color: '#1a56fe',
-              fontWeight: 500,
+              color: '#858EA2',
+              fontWeight: 400,
               appearance: 'none',
               cursor: 'pointer',
-              paddingRight: '28px',
+              transition: 'border-color 0.2s',
+              fontFamily: '"Inter", sans-serif',
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLSelectElement).style.borderBottomColor = '#E5E7EB';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLSelectElement).style.borderBottomColor = '#F3F4F6';
             }}
           >
             <option value="">All States</option>
@@ -145,7 +155,17 @@ export default function DashboardNav({
             ))}
           </select>
           <svg
-            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', width: '16px', height: '16px', color: '#1a56fe' }}
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              width: '12px',
+              height: '12px',
+              color: '#858EA2',
+              flexShrink: 0,
+            }}
             fill='none'
             stroke='currentColor'
             viewBox='0 0 24 24'
@@ -154,8 +174,8 @@ export default function DashboardNav({
           </svg>
         </div>
 
-        {/* Branch dropdown pill */}
-        <div style={{ position: 'relative' }}>
+        {/* Branch filter pill */}
+        <div style={{ position: 'relative', display: 'inline-block' }}>
           <select
             value={branch}
             onChange={(e) => {
@@ -164,20 +184,31 @@ export default function DashboardNav({
             }}
             disabled={!state}
             style={{
+              height: '36px',
               background: '#ffffff',
               borderTop: 'none',
               borderLeft: 'none',
               borderRight: 'none',
-              borderBottom: '1px solid #efeff1',
+              borderBottom: '1px solid #F3F4F6',
               borderRadius: '8px',
-              padding: '8px 14px',
+              padding: '0 14px',
+              paddingRight: '28px',
               fontSize: '14px',
-              color: '#1a56fe',
-              fontWeight: 500,
+              color: '#858EA2',
+              fontWeight: 400,
               appearance: 'none',
               cursor: state ? 'pointer' : 'not-allowed',
-              paddingRight: '28px',
               opacity: state ? 1 : 0.5,
+              transition: 'border-color 0.2s',
+              fontFamily: '"Inter", sans-serif',
+            }}
+            onMouseEnter={(e) => {
+              if (state) {
+                (e.target as HTMLSelectElement).style.borderBottomColor = '#E5E7EB';
+              }
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLSelectElement).style.borderBottomColor = '#F3F4F6';
             }}
           >
             <option value="">All Branches</option>
@@ -188,7 +219,17 @@ export default function DashboardNav({
             ))}
           </select>
           <svg
-            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', width: '16px', height: '16px', color: '#1a56fe' }}
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              width: '12px',
+              height: '12px',
+              color: '#858EA2',
+              flexShrink: 0,
+            }}
             fill='none'
             stroke='currentColor'
             viewBox='0 0 24 24'
@@ -197,27 +238,38 @@ export default function DashboardNav({
           </svg>
         </div>
 
-        {/* CA dropdown pill */}
-        <div style={{ position: 'relative' }}>
+        {/* CA filter pill */}
+        <div style={{ position: 'relative', display: 'inline-block' }}>
           <select
             value={ca}
             onChange={(e) => setCA(e.target.value)}
             disabled={!branch}
             style={{
+              height: '36px',
               background: '#ffffff',
               borderTop: 'none',
               borderLeft: 'none',
               borderRight: 'none',
-              borderBottom: '1px solid #efeff1',
+              borderBottom: '1px solid #F3F4F6',
               borderRadius: '8px',
-              padding: '8px 14px',
+              padding: '0 14px',
+              paddingRight: '28px',
               fontSize: '14px',
-              color: '#1a56fe',
-              fontWeight: 500,
+              color: '#858EA2',
+              fontWeight: 400,
               appearance: 'none',
               cursor: branch ? 'pointer' : 'not-allowed',
-              paddingRight: '28px',
               opacity: branch ? 1 : 0.5,
+              transition: 'border-color 0.2s',
+              fontFamily: '"Inter", sans-serif',
+            }}
+            onMouseEnter={(e) => {
+              if (branch) {
+                (e.target as HTMLSelectElement).style.borderBottomColor = '#E5E7EB';
+              }
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLSelectElement).style.borderBottomColor = '#F3F4F6';
             }}
           >
             <option value="">All CAs</option>
@@ -228,7 +280,17 @@ export default function DashboardNav({
             ))}
           </select>
           <svg
-            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', width: '16px', height: '16px', color: '#1a56fe' }}
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              width: '12px',
+              height: '12px',
+              color: '#858EA2',
+              flexShrink: 0,
+            }}
             fill='none'
             stroke='currentColor'
             viewBox='0 0 24 24'
@@ -238,54 +300,66 @@ export default function DashboardNav({
         </div>
 
         {/* Date range pill with period dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', background: '#ffffff', border: '1px solid #efeff1', borderRadius: '8px', padding: '8px 14px' }}>
-          <span style={{ color: '#192744', fontSize: '14px', fontWeight: 400 }}>Jan 2023 - Dec 2023</span>
-          <div style={{ width: '1px', height: '20px', background: '#efeff1', margin: '0 12px' }}></div>
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#1a56fe',
-              fontSize: '14px',
-              fontWeight: 500,
-              appearance: 'none',
-              cursor: 'pointer',
-              paddingRight: '20px',
-            }}
-          >
-            <option value="1M">Last Month</option>
-            <option value="3M">Last 3 Months</option>
-            <option value="6M">Last 6 Months</option>
-            <option value="1Y">Last Year</option>
-            <option value="Custom">Custom Range</option>
-          </select>
-          <svg
-            style={{ position: 'absolute', right: '18px', width: '16px', height: '16px', color: '#1a56fe', pointerEvents: 'none' }}
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-          >
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 14l-7 7m0 0l-7-7m7 7V3' />
-          </svg>
+        <div style={{ display: 'flex', alignItems: 'center', height: '36px', background: '#ffffff', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: '1px solid #F3F4F6', borderRadius: '8px', padding: '0 14px', fontFamily: '"Inter", sans-serif' }}>
+          <span style={{ fontSize: '14px', color: '#192744', fontWeight: 400, paddingRight: '12px', whiteSpace: 'nowrap' }}>Jan 2023 - Dec 2023</span>
+          <div style={{ width: '1px', height: '18px', background: '#F3F4F6', margin: '0 12px' }}></div>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#2500D7',
+                fontSize: '14px',
+                fontWeight: 500,
+                appearance: 'none',
+                cursor: 'pointer',
+                paddingRight: '18px',
+                fontFamily: '"Inter", sans-serif',
+              }}
+            >
+              <option value="1M">Last Month</option>
+              <option value="3M">Last 3 Months</option>
+              <option value="6M">Last 6 Months</option>
+              <option value="1Y">Last Year</option>
+              <option value="Custom">Custom Range</option>
+            </select>
+            <svg
+              style={{
+                position: 'absolute',
+                right: '0',
+                width: '12px',
+                height: '12px',
+                color: '#2500D7',
+                pointerEvents: 'none',
+                flexShrink: 0,
+              }}
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 14l-7 7m0 0l-7-7m7 7V3' />
+            </svg>
+          </div>
         </div>
 
         {/* Bill Category pill */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', border: '1px solid #efeff1', borderRadius: '8px', padding: '8px 14px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 400, color: '#192744' }}>Bill Category</span>
-          <span style={{ fontSize: '14px', fontWeight: 500, color: '#1a56fe' }}>|</span>
+        <div style={{ display: 'flex', alignItems: 'center', height: '36px', background: '#ffffff', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderBottom: '1px solid #F3F4F6', borderRadius: '8px', padding: '0 14px', gap: '8px', fontFamily: '"Inter", sans-serif' }}>
+          <span style={{ fontSize: '14px', fontWeight: 400, color: '#858EA2', whiteSpace: 'nowrap' }}>Bill Category</span>
+          <span style={{ fontSize: '14px', fontWeight: 400, color: '#858EA2' }}>|</span>
           <select
             value={billCategory}
             onChange={(e) => setBillCategory(e.target.value)}
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#1a56fe',
+              color: '#858EA2',
               fontSize: '14px',
-              fontWeight: 500,
+              fontWeight: 400,
               appearance: 'none',
               cursor: 'pointer',
+              fontFamily: '"Inter", sans-serif',
               paddingRight: '4px',
             }}
           >
@@ -296,28 +370,32 @@ export default function DashboardNav({
           </select>
         </div>
 
-        {/* Apply Filter button */}
+        {/* Apply Filter Button */}
         <button
           onClick={handleApplyFilter}
           style={{
-            background: '#1a56fe',
+            height: '36px',
+            background: '#2500D7',
             color: '#ffffff',
-            height: '40px',
             borderRadius: '8px',
-            fontFamily: 'Inter, sans-serif',
+            fontFamily: '"Inter", sans-serif',
             fontSize: '14px',
             fontWeight: 600,
-            padding: '0 24px',
+            padding: '0 20px',
             border: 'none',
             cursor: 'pointer',
             transition: 'background 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            whiteSpace: 'nowrap',
             marginLeft: 'auto',
           }}
           onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.background = '#1b5af4';
+            (e.target as HTMLButtonElement).style.background = '#1f00b8';
           }}
           onMouseLeave={(e) => {
-            (e.target as HTMLButtonElement).style.background = '#1a56fe';
+            (e.target as HTMLButtonElement).style.background = '#2500D7';
           }}
         >
           Apply Filter
@@ -326,21 +404,38 @@ export default function DashboardNav({
 
       {/* Row 3: Section Pills - only visible for Bill Payment */}
       {showSectionPills && (
-        <div style={{ background: '#ffffff', padding: '10px 20px', borderBottom: '1px solid #efeff1', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '4px', padding: '10px 20px', backgroundColor: '#ffffff', borderBottom: '1px solid #F3F4F6' }}>
           {sections.map((section) => (
             <button
               key={section.id}
               onClick={() => onSectionChange(section.id)}
               style={{
-                background: activeSection === section.id ? '#e6f1fb' : 'transparent',
-                color: activeSection === section.id ? '#0C447C' : '#858ea2',
-                fontWeight: activeSection === section.id ? 500 : 400,
+                height: '34px',
+                padding: '0 14px',
                 borderRadius: '8px',
-                padding: '6px 14px',
+                fontFamily: '"Inter", sans-serif',
                 fontSize: '13px',
+                fontWeight: activeSection === section.id ? 500 : 400,
+                color: activeSection === section.id ? '#0C447C' : '#858EA2',
+                background: activeSection === section.id ? '#e6f1fb' : 'transparent',
                 border: 'none',
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
                 transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (activeSection !== section.id) {
+                  (e.target as HTMLButtonElement).style.background = '#f5f5f4';
+                  (e.target as HTMLButtonElement).style.color = '#192744';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeSection !== section.id) {
+                  (e.target as HTMLButtonElement).style.background = 'transparent';
+                  (e.target as HTMLButtonElement).style.color = '#858EA2';
+                }
               }}
             >
               {section.label}
