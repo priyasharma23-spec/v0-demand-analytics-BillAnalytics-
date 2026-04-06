@@ -166,8 +166,8 @@ export default function BillersSection({ appState }: BillersSectionProps) {
             <thead>
               <tr>
                 {(statusView === 'state'
-                  ? ['State','Billers','Active CAs','Bill available','Pending','Paid','Conversion']
-                  : ['Biller','State','Active CAs','Bill available','Pending','Paid','Conversion']
+                  ? ['State','Billers','Active CAs','Bill available','Paid','Unpaid','Conversion']
+                  : ['Biller','State','Active CAs','Bill available','Paid','Unpaid','Conversion']
                 ).map(h => (
                   <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
                 ))}
@@ -192,10 +192,10 @@ export default function BillersSection({ appState }: BillersSectionProps) {
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
                       {r.received} <span style={{ fontSize: '11px', color: '#858ea2' }}>({Math.round(r.received/r.total*100)}%)</span>
                     </td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.paid}</td>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
                       {r.processed} <span style={{ fontSize: '11px', color: '#858ea2' }}>({Math.round(r.processed/r.total*100)}%)</span>
                     </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.paid}</td>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{convPct}%</span>
