@@ -90,10 +90,12 @@ export default function DashboardNav({
               color: product === p.value ? '#192744' : '#858ea2',
               fontWeight: product === p.value ? 600 : 400,
               fontSize: '14px',
+              borderTop: 'none',
+              borderLeft: 'none',
+              borderRight: 'none',
               borderBottom: product === p.value ? '2px solid #1a56fe' : '2px solid transparent',
               paddingBottom: '12px',
               background: 'transparent',
-              border: 'none',
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
@@ -116,7 +118,10 @@ export default function DashboardNav({
             }}
             style={{
               background: '#ffffff',
-              border: '1px solid #efeff1',
+              borderTop: 'none',
+              borderLeft: 'none',
+              borderRight: 'none',
+              borderBottom: '1px solid #efeff1',
               borderRadius: '8px',
               padding: '8px 14px',
               fontSize: '14px',
@@ -155,7 +160,10 @@ export default function DashboardNav({
             disabled={!state}
             style={{
               background: '#ffffff',
-              border: '1px solid #efeff1',
+              borderTop: 'none',
+              borderLeft: 'none',
+              borderRight: 'none',
+              borderBottom: '1px solid #efeff1',
               borderRadius: '8px',
               padding: '8px 14px',
               fontSize: '14px',
@@ -192,7 +200,10 @@ export default function DashboardNav({
             disabled={!branch}
             style={{
               background: '#ffffff',
-              border: '1px solid #efeff1',
+              borderTop: 'none',
+              borderLeft: 'none',
+              borderRight: 'none',
+              borderBottom: '1px solid #efeff1',
               borderRadius: '8px',
               padding: '8px 14px',
               fontSize: '14px',
