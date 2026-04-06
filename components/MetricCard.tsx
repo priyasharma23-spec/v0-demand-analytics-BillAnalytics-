@@ -10,12 +10,16 @@ export function MetricCard({ label, value, sub, subColor }: MetricCardProps) {
     <div
       style={{
         background: '#ffffff',
-        border: '1px solid #f3f4f6',
-        borderRadius: '4px',
+        borderTop: '1px solid #f3f4f6',
+        borderRight: '1px solid #f3f4f6',
+        borderBottom: '1px solid #f3f4f6',
+        borderLeft: '4px solid #2500d7',
+        borderRadius: '8px',
         padding: '20px',
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
       }}
     >
       <div

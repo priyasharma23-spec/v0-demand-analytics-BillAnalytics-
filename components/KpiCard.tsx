@@ -47,13 +47,17 @@ export function KpiCard({ variant, label, value, desc }: KpiCardProps) {
     <div
       style={{
         background: style.background,
-        border: `1px solid ${style.borderColor}`,
-        borderRadius: '4px',
+        borderTop: `1px solid ${style.borderColor}`,
+        borderRight: `1px solid ${style.borderColor}`,
+        borderBottom: `1px solid ${style.borderColor}`,
+        borderLeft: `4px solid ${style.borderColor}`,
+        borderRadius: '8px',
         padding: '20px',
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
         fontFamily: '"Inter", sans-serif',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
       }}
     >
       <div
