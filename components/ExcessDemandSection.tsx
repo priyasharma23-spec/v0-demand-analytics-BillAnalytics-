@@ -79,10 +79,10 @@ export default function ExcessDemandSection() {
     setEdMetrics({ avgCont, avgMDI, peakMDI, overN, overPct, recommended, netSavings, utilEff, totalExcess });
     
     setKpis([
-      { variant: overPct === 100 ? 'danger' : overPct >= 75 ? 'warn' : overPct >= 50 ? 'warn' : 'good', label: 'Consistently over-contracted', value: `${overPct}%`, desc: overPct === 100 ? 'Every period exceeded' : `${overN} of ${data.length} periods exceeded` },
-      { variant: recommended > avgCont ? 'warn' : 'good', label: 'Recommended contract', value: `${recommended} kVA`, desc: recommended > avgCont ? `P90 MDI + 10% (currently ${avgCont})` : 'Contract above P90' },
-      { variant: netSavings > 0 ? 'info' : 'warn', label: 'Est. annual savings', value: `${netSavings > 0 ? '' : '−'}₹${(Math.abs(netSavings)/100000).toFixed(1)}L`, desc: netSavings > 0 ? 'Net benefit after revision' : 'Tariff may offset savings' },
-      { variant: utilEff >= 85 ? 'good' : utilEff >= 70 ? 'warn' : 'danger', label: 'Utilisation efficiency', value: `${utilEff}%`, desc: utilEff >= 85 ? 'Low risk revision' : 'Check demand variability' },
+      { variant: overPct === 100 ? 'danger' : overPct >= 75 ? 'warn' : overPct >= 50 ? 'warn' : 'good', label: 'Consistently over-contracted', value: `${overPct}%`, desc: overPct === 100 ? 'Every single month in FY2024-25 exceeded the contracted level — the contract is structurally under-sized.' : `${overN} of ${data.length} periods exceeded` },
+      { variant: recommended > avgCont ? 'warn' : 'good', label: 'Recommended contract revision', value: `${recommended} kVA`, desc: 'Revise to P90 of MDI readings (+15% buffer). Eliminates excess charges and covers most peak months.' },
+      { variant: netSavings > 0 ? 'info' : 'warn', label: 'Estimated annual savings', value: `${netSavings > 0 ? '' : '−'}₹${(Math.abs(netSavings)/100000).toFixed(1)}L`, desc: 'Net benefit after accounting for higher contracted demand tariff at revised level.' },
+      { variant: utilEff >= 85 ? 'good' : utilEff >= 70 ? 'warn' : 'danger', label: 'Utilisation efficiency', value: `${utilEff}%`, desc: 'Avg MDI / Peak MDI — demand profile is consistent; contract revision is low-risk.' },
     ]);
 
     setBreakdownCols(['State', 'Contracted', 'Avg MDI', 'Excess periods', 'Total leakage', 'Status']);
@@ -178,15 +178,15 @@ export default function ExcessDemandSection() {
     <div>
       {/* Excess Demand Metrics */}
       <div className="metrics flex flex-wrap gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
-        <MetricCard label="Avg contracted" value={`${edMetrics.avgCont} kVA`} sub="current level" subColor="#185FA5" />
-        <MetricCard label="Avg MDI" value={`${edMetrics.avgMDI} kVA`} sub={edMetrics.avgMDI > edMetrics.avgCont ? `+${Math.round((edMetrics.avgMDI/edMetrics.avgCont-1)*100)}% over` : 'within contract'} subColor={edMetrics.avgMDI > edMetrics.avgCont ? '#A32D2D' : '#3B6D11'} />
-        <MetricCard label="Peak MDI" value={`${edMetrics.peakMDI} kVA`} sub="highest recorded" subColor="#A32D2D" />
-        <MetricCard label="Total excess charges" value={inr(edMetrics.totalExcess)} sub={`${edMetrics.overPct}% periods exceeded`} subColor={edMetrics.overPct > 50 ? '#A32D2D' : '#633806'} />
+        <MetricCard label="Contracted demand" value={`${edMetrics.avgCont} kVA`} sub="Current level" subColor="#185FA5" />
+        <MetricCard label="Avg max demand (MDI)" value={`${edMetrics.avgMDI} kVA`} sub={edMetrics.avgMDI > edMetrics.avgCont ? 'Over contract' : 'within contract'} subColor={edMetrics.avgMDI > edMetrics.avgCont ? '#A32D2D' : '#3B6D11'} />
+        <MetricCard label="Peak recorded" value={`${edMetrics.peakMDI} kVA`} sub="Aug 2024" subColor="#A32D2D" />
+        <MetricCard label="Excess charges (YTD)" value={inr(edMetrics.totalExcess)} sub="12 of 12 months billed" subColor={edMetrics.overPct > 50 ? '#A32D2D' : '#633806'} />
       </div>
 
       <div className="chart-card px-6 py-6 mb-6">
-        <div className="chart-title text-lg font-semibold text-foreground">Contracted vs Max demand</div>
-        <div className="chart-sub text-sm text-foreground-secondary mt-1">kVA · contracted demand vs actual MDI per period</div>
+        <div className="chart-title text-lg font-semibold text-foreground">Contracted demand vs Max demand (MDI) — Monthly</div>
+        <div className="chart-sub text-sm text-foreground-secondary mt-1">kVA · Apr 2024 – Mar 2025</div>
         <div style={{ position: 'relative', width: '100%', height: '260px', marginTop: '16px' }}>
           <canvas ref={edMainRef}></canvas>
         </div>
