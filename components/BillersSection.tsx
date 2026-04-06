@@ -70,47 +70,67 @@ export default function BillersSection({ appState }: BillersSectionProps) {
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
 
         {/* Header */}
-        <div style={{ marginBottom: '12px' }}>
+        <div style={{ marginBottom: '14px' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill generation flow</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Active CAs → Generated → Paid progression</div>
         </div>
 
-        {/* Horizontal flow with KPI cards */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+        {/* Stage cards - horizontal */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
           {[
             { stage: 'Active CAs', count: 700, drop: null, color: '#C47A00', bg: '#FFF9E6' },
             { stage: 'Generated', count: 530, drop: '−170', color: '#1755C8', bg: '#EAF2FF' },
             { stage: 'Paid', count: 420, drop: '−110', color: '#1A7A45', bg: '#E6F9EF' },
-          ].map((item, idx) => (
-            <div key={item.stage} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              {/* KPI Card */}
-              <div style={{ background: item.bg, border: `1px solid ${item.color}30`, borderRadius: '10px', padding: '10px 12px', minWidth: '130px', flexShrink: 0 }}>
-                <div style={{ fontSize: '11px', color: item.color, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{item.stage}</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, color: item.color, marginTop: '4px', lineHeight: 1 }}>{item.count}</div>
-                {item.drop && (
-                  <div style={{ fontSize: '10px', color: '#E24B4A', fontWeight: 600, marginTop: '3px' }}>{item.drop}</div>
-                )}
-              </div>
-              {/* Arrow separator (not on last item) */}
-              {idx < 2 && (
-                <div style={{ fontSize: '14px', color: '#d0d0d0', margin: '0 2px', flexShrink: 0 }}>›</div>
+          ].map(item => (
+            <div key={item.stage} style={{ background: item.bg, border: `1px solid ${item.color}20`, borderRadius: '10px', padding: '14px 16px', flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', color: item.color, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{item.stage}</div>
+              <div style={{ fontSize: '36px', fontWeight: 700, color: item.color, lineHeight: 1 }}>{item.count}</div>
+              {item.drop && (
+                <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 600, marginTop: '4px' }}>{item.drop}</div>
               )}
             </div>
           ))}
         </div>
 
-        {/* Exception summary badges */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {/* Bar rows */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
           {[
-            { label: 'Not generated', val: 170, color: '#E24B4A', bg: '#FEF0F0' },
-            { label: 'Unpaid', val: 110, color: '#C47A00', bg: '#FFF8ED' },
-            { label: 'Pending', val: 20, color: '#854F0B', bg: '#FAEEDA' },
-          ].map(e => (
-            <div key={e.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', background: e.bg, borderRadius: '8px', fontSize: '12px' }}>
-              <span style={{ fontWeight: 600, color: e.color }}>{e.val}</span>
-              <span style={{ color: e.color, fontWeight: 500 }}>{e.label}</span>
+            { label: 'Active CAs', pct: 100, count: 700, color: '#1755C8', loss: null },
+            { label: 'Bills generated', pct: 75.7, count: 530, color: '#1755C8', loss: 170 },
+            { label: 'Bills paid', pct: 60, count: 420, color: '#1A7A45', loss: 110 },
+          ].map(row => (
+            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500, width: '100px', flexShrink: 0 }}>{row.label}</div>
+              <div style={{ flex: 1, height: '28px', background: '#e8e8e8', borderRadius: '14px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ width: `${row.pct}%`, height: '100%', background: row.color, borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '6px' }}>
+                  <div style={{ height: '22px', padding: '0 8px', borderRadius: '11px', fontSize: '11px', fontWeight: 600, color: '#fff', background: row.color, display: 'flex', alignItems: 'center' }}>
+                    {row.count}
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontSize: '12px', color: '#192744', fontWeight: 600, minWidth: '28px', textAlign: 'right' }}>{row.pct}%</div>
+              {row.loss && (
+                <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 600, minWidth: '42px', textAlign: 'right' }}>−{row.loss}</div>
+              )}
             </div>
           ))}
+        </div>
+
+        {/* Exception pills */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[
+              { label: 'Not generated', val: 170, color: '#E24B4A', bg: '#FEF0F0' },
+              { label: 'Unpaid', val: 110, color: '#C47A00', bg: '#FFF8ED' },
+              { label: 'Approval hold', val: 48, color: '#C47A00', bg: '#FFF8ED' },
+            ].map(e => (
+              <div key={e.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: e.bg, borderRadius: '20px', fontSize: '12px' }}>
+                <span style={{ fontWeight: 600, color: e.color }}>{e.val}</span>
+                <span style={{ color: e.color, fontWeight: 500 }}>{e.label}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: '#1A7A45' }}>60% conversion</div>
         </div>
 
       </div>
