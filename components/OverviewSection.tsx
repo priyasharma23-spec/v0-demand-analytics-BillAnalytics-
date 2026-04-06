@@ -410,10 +410,11 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
         </div>
 
         {/* Summary metrics */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '12px', marginBottom: '16px', background: '#fff', borderRadius: '12px', padding: '24px 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px', background: '#fff', borderRadius: '12px', padding: '24px 16px' }}>
           {[
             { label: 'Pending', count: 48, color: '#C47A00' },
             { label: 'Approved', count: 312, color: '#1A7A45' },
+            { label: 'On Hold', count: 28, color: '#185FA5' },
             { label: 'Rejected', count: 12, color: '#E24B4A' },
           ].map(m => (
             <div key={m.label} style={{ textAlign: 'center' }}>
