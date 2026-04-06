@@ -418,7 +418,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
             { label: 'Rejected', count: 12, color: '#E24B4A' },
           ].map(m => (
             <div key={m.label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', fontWeight: 700, color: m.color, lineHeight: 1, marginBottom: '6px' }}>{m.count}</div>
+              <div style={{ fontSize: '36px', fontWeight: 700, color: m.color, lineHeight: 1, marginBottom: '6px' }}>{m.count}</div>
               <div style={{ fontSize: '14px', color: '#192744', fontWeight: 500 }}>{m.label}</div>
             </div>
           ))}
