@@ -84,7 +84,7 @@ export default function BillersSection({ appState }: BillersSectionProps) {
           ].map(item => (
             <div key={item.stage} style={{ background: item.bg, border: `1px solid ${item.color}20`, borderRadius: '10px', padding: '14px 16px', flex: 1, textAlign: 'center' }}>
               <div style={{ fontSize: '10px', color: item.color, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{item.stage}</div>
-              <div style={{ fontSize: '36px', fontWeight: 700, color: item.color, lineHeight: 1 }}>{item.count}</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: item.color, lineHeight: 1 }}>{item.count}</div>
               {item.drop && (
                 <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 600, marginTop: '4px' }}>{item.drop}</div>
               )}
