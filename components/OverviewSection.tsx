@@ -85,7 +85,7 @@ const AnomalyCard = ({ color, title, desc, tags, amount, amountLabel, cta, secti
   );
 };
 
-export function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange }: OverviewSectionProps) {
+export default function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange }: OverviewSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSort, setActiveSort] = useState<'impact' | 'frequency' | 'state'>('impact');
