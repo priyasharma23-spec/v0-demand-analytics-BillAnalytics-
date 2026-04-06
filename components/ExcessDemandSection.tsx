@@ -177,7 +177,7 @@ export default function ExcessDemandSection() {
   return (
     <div>
       {/* Excess Demand Metrics */}
-      <div className="metrics flex flex-wrap gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
+      <div className="metrics grid grid-cols-4 gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
         <MetricCard label="Contracted demand" value={`${edMetrics.avgCont} kVA`} sub="Current level" subColor="#185FA5" />
         <MetricCard label="Avg max demand (MDI)" value={`${edMetrics.avgMDI} kVA`} sub={edMetrics.avgMDI > edMetrics.avgCont ? 'Over contract' : 'within contract'} subColor={edMetrics.avgMDI > edMetrics.avgCont ? '#A32D2D' : '#3B6D11'} />
         <MetricCard label="Peak recorded" value={`${edMetrics.peakMDI} kVA`} sub="Aug 2024" subColor="#A32D2D" />
