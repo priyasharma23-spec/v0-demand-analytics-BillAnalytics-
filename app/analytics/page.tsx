@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import DashboardNav from '@/components/DashboardNav';
+import TopFilter from '@/components/TopFilter';
 import OverviewSection from '@/components/OverviewSection';
 import ExcessDemandSection from '@/components/ExcessDemandSection';
 import LeakagesSection from '@/components/LeakagesSection';
@@ -71,6 +72,12 @@ export default function AnalyticsPage() {
         onCAChange={handleCAChange}
         onBillCategoryChange={handleBillCategoryChange}
         onPeriodChange={handlePeriodChange}
+      />
+
+      <TopFilter
+        onSearch={(query) => console.log('Search:', query)}
+        onDateRangeChange={(range) => console.log('Date range:', range)}
+        onApply={() => console.log('Apply filters')}
       />
 
       {/* Section content */}
