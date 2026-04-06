@@ -88,31 +88,37 @@ export default function DashboardNav({
 
 
   return (
-    <nav style={{ backgroundColor: '#ffffff' }}>
-      {/* Row 1: Product Tab Strip */}
-      <div style={{ display: 'flex', gap: '0', padding: '0 20px', backgroundColor: '#ffffff', borderBottom: '1px solid #F3F4F6' }}>
+    <nav style={{ backgroundColor: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+      {/* Product Navigation - Primary */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '24px', 
+        padding: '12px 24px', 
+        backgroundColor: '#ffffff',
+        borderBottom: '1px solid #F3F4F6',
+        alignItems: 'center'
+      }}>
         {products.map((p) => (
           <button
             key={p.value}
             onClick={() => onProductChange(p.value as any)}
             style={{
-              height: '48px',
-              padding: '0 20px',
+              padding: '8px 0',
               fontFamily: '"Inter", sans-serif',
               fontSize: '14px',
-              fontWeight: activeProduct === p.value ? 600 : 400,
-              color: activeProduct === p.value ? '#192744' : '#858EA2',
-              background: activeProduct === p.value ? '#EBEAFF' : 'transparent',
+              fontWeight: activeProduct === p.value ? 600 : 500,
+              color: activeProduct === p.value ? '#2500D7' : '#858EA2',
+              background: 'transparent',
               borderTop: 'none',
               borderLeft: 'none',
               borderRight: 'none',
               borderBottom: activeProduct === p.value ? '2px solid #2500D7' : '2px solid transparent',
-              borderRadius: activeProduct === p.value ? '8px 8px 0 0' : '0',
               cursor: 'pointer',
-              transition: 'all 0.2s',
+              transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
               whiteSpace: 'nowrap',
+              position: 'relative',
             }}
             onMouseEnter={(e) => {
               if (activeProduct !== p.value) {
@@ -130,39 +136,52 @@ export default function DashboardNav({
         ))}
       </div>
 
-      {/* Row 3: Section Pills - only visible for Bill Payment */}
+      {/* Section Navigation - Secondary (only for Bill Payment) */}
       {showSectionPills && (
-        <div style={{ display: 'flex', gap: '4px', padding: '10px 20px', backgroundColor: '#ffffff', borderBottom: '1px solid #F3F4F6' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          padding: '10px 24px', 
+          backgroundColor: '#f5f6fa',
+          alignItems: 'center'
+        }}>
           {sections.map((section) => (
             <button
               key={section.id}
               onClick={() => onSectionChange(section.id)}
               style={{
-                height: '34px',
-                padding: '0 14px',
-                borderRadius: '8px',
+                height: '32px',
+                padding: '6px 12px',
+                borderRadius: '4px',
                 fontFamily: '"Inter", sans-serif',
                 fontSize: '13px',
-                fontWeight: activeSection === section.id ? 500 : 400,
-                color: activeSection === section.id ? '#0C447C' : '#858EA2',
-                background: activeSection === section.id ? '#e6f1fb' : 'transparent',
-                border: 'none',
+                fontWeight: activeSection === section.id ? 600 : 500,
+                color: activeSection === section.id ? '#192744' : '#858EA2',
+                background: activeSection === section.id ? '#ffffff' : 'transparent',
+                borderTop: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                borderRight: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                borderBottom: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                borderLeft: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
                 cursor: 'pointer',
+                transition: 'all 0.2s ease',
                 whiteSpace: 'nowrap',
-                display: 'flex',
-                alignItems: 'center',
-                transition: 'all 0.2s',
               }}
               onMouseEnter={(e) => {
                 if (activeSection !== section.id) {
-                  (e.target as HTMLButtonElement).style.background = '#f5f5f4';
-                  (e.target as HTMLButtonElement).style.color = '#192744';
+                  (e.currentTarget as HTMLButtonElement).style.background = '#ffffff';
+                  (e.currentTarget as HTMLButtonElement).style.borderTop = '1px solid #F3F4F6';
+                  (e.currentTarget as HTMLButtonElement).style.borderRight = '1px solid #F3F4F6';
+                  (e.currentTarget as HTMLButtonElement).style.borderBottom = '1px solid #F3F4F6';
+                  (e.currentTarget as HTMLButtonElement).style.borderLeft = '1px solid #F3F4F6';
                 }
               }}
               onMouseLeave={(e) => {
                 if (activeSection !== section.id) {
-                  (e.target as HTMLButtonElement).style.background = 'transparent';
-                  (e.target as HTMLButtonElement).style.color = '#858EA2';
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLButtonElement).style.borderTop = 'none';
+                  (e.currentTarget as HTMLButtonElement).style.borderRight = 'none';
+                  (e.currentTarget as HTMLButtonElement).style.borderBottom = 'none';
+                  (e.currentTarget as HTMLButtonElement).style.borderLeft = 'none';
                 }
               }}
             >
