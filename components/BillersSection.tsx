@@ -67,18 +67,18 @@ export default function BillersSection({ appState }: BillersSectionProps) {
       </div>
 
       {/* Section 2 — Bill generation funnel card */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '22px 24px', marginBottom: '12px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
 
         {/* Header row */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744' }}>Bill generation funnel</div>
-            <div style={{ fontSize: '13px', color: '#858ea2', marginTop: '4px' }}>Active CAs → Generated → Paid · this month</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill generation funnel</div>
+            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Active CAs → Generated → Paid · this month</div>
           </div>
           <div style={{ display: 'flex', background: '#f5f5f4', borderRadius: '10px', padding: '3px', gap: '2px' }}>
             {(['all','state','biller'] as const).map(v => (
               <button key={v} onClick={() => setFunnelView(v)} style={{
-                padding: '6px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 500,
+                padding: '5px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
                 border: 'none', cursor: 'pointer', textTransform: 'capitalize',
                 background: funnelView === v ? '#fff' : 'transparent',
                 color: funnelView === v ? '#192744' : '#858ea2',
@@ -87,59 +87,61 @@ export default function BillersSection({ appState }: BillersSectionProps) {
           </div>
         </div>
 
-        {/* Three stage cards */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '28px' }}>
+        {/* Three stage cards - Compact */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '14px', gap: '8px' }}>
           {[
             { num: '700', label: 'Active CAs', bg: '#FFF9E6', color: '#C47A00' },
             { num: '530', label: 'Generated',  bg: '#EAF2FF', color: '#1755C8' },
             { num: '420', label: 'Paid',       bg: '#E6F9EF', color: '#1A7A45' },
           ].map((s, i) => (
             <div key={s.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-              <div style={{ flex: 1, background: s.bg, borderRadius: '14px', padding: '20px 16px', textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.num}</div>
-                <div style={{ fontSize: '14px', fontWeight: 500, color: s.color, marginTop: '6px' }}>{s.label}</div>
+              <div style={{ flex: 1, background: s.bg, borderRadius: '10px', padding: '12px 10px', textAlign: 'center' }}>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.num}</div>
+                <div style={{ fontSize: '12px', fontWeight: 500, color: s.color, marginTop: '3px' }}>{s.label}</div>
               </div>
-              {i < 2 && <div style={{ fontSize: '22px', color: '#c4c4c4', padding: '0 10px', flexShrink: 0 }}>›</div>}
+              {i < 2 && <div style={{ fontSize: '16px', color: '#d0d0d0', padding: '0 6px', flexShrink: 0 }}>›</div>}
             </div>
           ))}
         </div>
 
-        {/* Three bar rows */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+        {/* Three bar rows - Compact */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
           {[
             { label: 'Active CAs',      count: 700, pct: 100,  chipColor: '#1A7A45', drop: null },
             { label: 'Bills generated', count: 530, pct: 75.7, chipColor: '#1755C8', drop: { val: 170, pct: '75.7%' } },
             { label: 'Bills paid',      count: 420, pct: 60,   chipColor: '#1A7A45', drop: { val: 110, pct: '60%' } },
           ].map(row => (
-            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ fontSize: '14px', color: '#6b6b67', width: '130px', flexShrink: 0 }}>{row.label}</div>
-              <div style={{ flex: 1, height: '36px', background: '#e8e8e8', borderRadius: '20px', overflow: 'hidden' }}>
-                <div style={{ width: `${row.pct}%`, height: '100%', background: '#1755C8', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
-                  <div style={{ height: '26px', padding: '0 12px', borderRadius: '13px', fontSize: '13px', fontWeight: 600, color: '#fff', background: row.chipColor, display: 'flex', alignItems: 'center' }}>
-                    {row.count}
-                  </div>
+            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ fontSize: '12px', color: '#858ea2', width: '110px', flexShrink: 0 }}>{row.label}</div>
+              <div style={{ flex: 1, height: '28px', background: '#e8e8e8', borderRadius: '14px', overflow: 'hidden' }}>
+                <div style={{ width: `${row.pct}%`, height: '100%', background: '#1755C8', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '3px' }}>
+                  {row.pct > 30 && (
+                    <div style={{ height: '20px', padding: '0 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 600, color: '#fff', background: row.chipColor, display: 'flex', alignItems: 'center' }}>
+                      {row.count}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div style={{ textAlign: 'right', minWidth: '56px' }}>
+              <div style={{ textAlign: 'right', minWidth: '50px' }}>
                 {row.drop
-                  ? <><div style={{ fontSize: '13px', fontWeight: 600, color: '#E24B4A' }}>−{row.drop.val}</div><div style={{ fontSize: '13px', color: '#6b6b67' }}>{row.drop.pct}</div></>
-                  : <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>100%</div>
+                  ? <><div style={{ fontSize: '11px', fontWeight: 600, color: '#E24B4A' }}>−{row.drop.val}</div><div style={{ fontSize: '11px', color: '#858ea2' }}>{row.drop.pct}</div></>
+                  : <div style={{ fontSize: '11px', fontWeight: 600, color: '#192744' }}>100%</div>
                 }
               </div>
             </div>
           ))}
         </div>
 
-        {/* Three exception cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '12px' }}>
+        {/* Three exception cards - Compact */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '8px' }}>
           {[
             { num: 170, label: 'Not generated', bg: '#FEF0F0', color: '#E24B4A' },
             { num: 110, label: 'Unpaid',        bg: '#FFF8ED', color: '#C47A00' },
             { num: 48,  label: 'Approval hold', bg: '#FFF8ED', color: '#C47A00' },
           ].map(c => (
-            <div key={c.label} style={{ background: c.bg, borderRadius: '12px', padding: '18px 16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: 700, color: c.color }}>{c.num}</div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: c.color, marginTop: '5px' }}>{c.label}</div>
+            <div key={c.label} style={{ background: c.bg, borderRadius: '10px', padding: '12px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: c.color }}>{c.num}</div>
+              <div style={{ fontSize: '11px', fontWeight: 500, color: c.color, marginTop: '3px' }}>{c.label}</div>
             </div>
           ))}
         </div>
