@@ -12,7 +12,7 @@ export default function DashboardNav({
   activeSection,
   onSectionChange,
 }: DashboardNavProps) {
-  const [product, setProduct] = useState('bill-payments');
+  const [product, setProduct] = useState<'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst'>('bill-payment');
   const [state, setState] = useState('');
   const [branch, setBranch] = useState('');
   const [ca, setCA] = useState('');
@@ -29,11 +29,13 @@ export default function DashboardNav({
   ];
 
   const products = [
-    { value: 'summary', label: 'Summary' },
+    { value: 'bill-payment', label: 'Bill Payment' },
     { value: 'vendor-payment', label: 'Vendor Payment' },
-    { value: 'bill-payments', label: 'Bill Payment' },
-    { value: 'gst', label: 'GST Payment' },
+    { value: 'rental-payment', label: 'Rental Payment' },
+    { value: 'gst', label: 'GST' },
   ];
+
+  const showSectionPills = product === 'bill-payment';
 
   const periodLabels = {
     '1M': 'Last Month',
@@ -319,28 +321,30 @@ export default function DashboardNav({
         </button>
       </div>
 
-      {/* Row 3: Section Pills */}
-      <div style={{ background: '#ffffff', padding: '10px 20px', borderBottom: '1px solid #efeff1', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            onClick={() => onSectionChange(section.id)}
-            style={{
-              background: activeSection === section.id ? '#e6f1fb' : 'transparent',
-              color: activeSection === section.id ? '#0C447C' : '#858ea2',
-              fontWeight: activeSection === section.id ? 500 : 400,
-              borderRadius: '8px',
-              padding: '6px 14px',
-              fontSize: '13px',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-          >
-            {section.label}
-          </button>
-        ))}
-      </div>
+      {/* Row 3: Section Pills - only visible for Bill Payment */}
+      {showSectionPills && (
+        <div style={{ background: '#ffffff', padding: '10px 20px', borderBottom: '1px solid #efeff1', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              onClick={() => onSectionChange(section.id)}
+              style={{
+                background: activeSection === section.id ? '#e6f1fb' : 'transparent',
+                color: activeSection === section.id ? '#0C447C' : '#858ea2',
+                fontWeight: activeSection === section.id ? 500 : 400,
+                borderRadius: '8px',
+                padding: '6px 14px',
+                fontSize: '13px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {section.label}
+            </button>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }
