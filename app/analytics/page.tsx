@@ -8,14 +8,14 @@ export default function AnalyticsPage() {
   const [activeSection, setActiveSection] = useState('overview');
 
   return (
-    <main style={{ minHeight: '100vh', backgroundColor: '#f0f5fa' }}>
+    <div className="page-wrapper">
       <DashboardNav
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       />
 
       {/* Section content */}
-      <div className="px-6 py-8">
+      <div className="content">
         {activeSection === 'leakages' ? (
           <LeakagesSection />
         ) : (
@@ -24,6 +24,6 @@ export default function AnalyticsPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

@@ -83,7 +83,13 @@ export const CAS: Record<string, string[]> = {
 export const YEARLY_LABELS = ['FY22', 'FY23', 'FY24', 'FY25'];
 export const MONTHLY_LABELS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
-/* ── Seeded random helpers ── */
+/* ── Initialize CA_PARAMS at module load ── */
+const CA_PARAMS: Record<string, any> = {};
+Object.keys(CAS).forEach(branch => {
+  CAS[branch].forEach(ca => {
+    getCAParams(ca);
+  });
+});
 function seed(s: number): number {
   const x = Math.sin(s + 1) * 10000;
   return x - Math.floor(x);
@@ -92,9 +98,6 @@ function seed(s: number): number {
 function sr(s: number, min: number, max: number): number {
   return min + seed(s) * (max - min);
 }
-
-/* ── Per-CA base parameters (stable across renders) ── */
-const CA_PARAMS: Record<string, any> = {};
 
 function getCAParams(ca: string) {
   if (!ca || ca.length === 0) return null;
