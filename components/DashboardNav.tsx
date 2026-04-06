@@ -143,51 +143,120 @@ export default function DashboardNav({
           gap: '8px', 
           padding: '10px 24px', 
           backgroundColor: '#f5f6fa',
-          alignItems: 'center'
+          alignItems: 'center',
+          justifyContent: 'space-between'
         }}>
-          {sections.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => onSectionChange(section.id)}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => onSectionChange(section.id)}
+                style={{
+                  height: '32px',
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  fontFamily: '"Inter", sans-serif',
+                  fontSize: '13px',
+                  fontWeight: activeSection === section.id ? 600 : 500,
+                  color: activeSection === section.id ? '#192744' : '#858EA2',
+                  background: activeSection === section.id ? '#ffffff' : 'transparent',
+                  borderTop: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                  borderRight: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                  borderBottom: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                  borderLeft: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={(e) => {
+                  if (activeSection !== section.id) {
+                    (e.currentTarget as HTMLButtonElement).style.background = '#ffffff';
+                    (e.currentTarget as HTMLButtonElement).style.borderTop = '1px solid #F3F4F6';
+                    (e.currentTarget as HTMLButtonElement).style.borderRight = '1px solid #F3F4F6';
+                    (e.currentTarget as HTMLButtonElement).style.borderBottom = '1px solid #F3F4F6';
+                    (e.currentTarget as HTMLButtonElement).style.borderLeft = '1px solid #F3F4F6';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeSection !== section.id) {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                    (e.currentTarget as HTMLButtonElement).style.borderTop = 'none';
+                    (e.currentTarget as HTMLButtonElement).style.borderRight = 'none';
+                    (e.currentTarget as HTMLButtonElement).style.borderBottom = 'none';
+                    (e.currentTarget as HTMLButtonElement).style.borderLeft = 'none';
+                  }
+                }}
+              >
+                {section.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Bill Category Filter - Right side */}
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <select
+              value={appState.billCategory}
+              onChange={(e) => onBillCategoryChange(e.target.value)}
               style={{
                 height: '32px',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                fontFamily: '"Inter", sans-serif',
+                background: '#ffffff',
+                borderTopLeftRadius: '4px',
+                borderTopRightRadius: '4px',
+                borderBottomLeftRadius: '4px',
+                borderBottomRightRadius: '4px',
+                paddingTop: '6px',
+                paddingBottom: '6px',
+                paddingLeft: '10px',
+                paddingRight: '28px',
                 fontSize: '13px',
-                fontWeight: activeSection === section.id ? 600 : 500,
-                color: activeSection === section.id ? '#192744' : '#858EA2',
-                background: activeSection === section.id ? '#ffffff' : 'transparent',
-                borderTop: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
-                borderRight: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
-                borderBottom: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
-                borderLeft: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                color: '#858EA2',
+                fontWeight: 500,
+                appearance: 'none',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap',
+                transition: 'all 0.2s',
+                fontFamily: '"Inter", sans-serif',
+                borderTop: '1px solid #E5E7EB',
+                borderRight: '1px solid #E5E7EB',
+                borderBottom: '1px solid #E5E7EB',
+                borderLeft: '1px solid #E5E7EB',
               }}
               onMouseEnter={(e) => {
-                if (activeSection !== section.id) {
-                  (e.currentTarget as HTMLButtonElement).style.background = '#ffffff';
-                  (e.currentTarget as HTMLButtonElement).style.borderTop = '1px solid #F3F4F6';
-                  (e.currentTarget as HTMLButtonElement).style.borderRight = '1px solid #F3F4F6';
-                  (e.currentTarget as HTMLButtonElement).style.borderBottom = '1px solid #F3F4F6';
-                  (e.currentTarget as HTMLButtonElement).style.borderLeft = '1px solid #F3F4F6';
-                }
+                (e.currentTarget as HTMLSelectElement).style.borderTopColor = '#D0D3DB';
+                (e.currentTarget as HTMLSelectElement).style.borderRightColor = '#D0D3DB';
+                (e.currentTarget as HTMLSelectElement).style.borderBottomColor = '#D0D3DB';
+                (e.currentTarget as HTMLSelectElement).style.borderLeftColor = '#D0D3DB';
               }}
               onMouseLeave={(e) => {
-                if (activeSection !== section.id) {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLButtonElement).style.borderTop = 'none';
-                  (e.currentTarget as HTMLButtonElement).style.borderRight = 'none';
-                  (e.currentTarget as HTMLButtonElement).style.borderBottom = 'none';
-                  (e.currentTarget as HTMLButtonElement).style.borderLeft = 'none';
-                }
+                (e.currentTarget as HTMLSelectElement).style.borderTopColor = '#E5E7EB';
+                (e.currentTarget as HTMLSelectElement).style.borderRightColor = '#E5E7EB';
+                (e.currentTarget as HTMLSelectElement).style.borderBottomColor = '#E5E7EB';
+                (e.currentTarget as HTMLSelectElement).style.borderLeftColor = '#E5E7EB';
               }}
             >
-              {section.label}
-            </button>
-          ))}
+              <option value="all">All categories</option>
+              {BILL_CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <svg
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none',
+                width: '12px',
+                height: '12px',
+                color: '#858EA2',
+                flexShrink: 0,
+              }}
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 14l-7 7m0 0l-7-7m7 7V3' />
+            </svg>
+          </div>
         </div>
       )}
     </nav>
