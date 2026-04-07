@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { STATES, CAS, getCABills, MONTHLY_LABELS } from '@/lib/calculations'
+import {
+  STATES, CAS, getCABills, MONTHLY_LABELS,
+  getConsumptionDistribution, getStateConsumptionSummary, getConsumptionVsBill,
+  DISTRIBUTION_BUCKETS, inr as inrCalculations
+} from '@/lib/calculations'
 import { SummaryCard } from './SummaryCard'
 import { KpiCard } from './KpiCard'
 import '@/lib/chartSetup'
@@ -110,63 +114,36 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly'>('monthly')
   
   // Distribution chart state
-  const [distData, setDistData] = useState<{
-    monthRangeCounts: number[][]
-    totalFaulty: number
-    faultyPerMonth: number[]
-  } | null>(null)
+  const [distribution, setDistribution] = useState<any[]>([])
+  const [stateConsumption, setStateConsumption] = useState<any[]>([])
+  const [consBillData, setConsBillData] = useState<any[]>([])
   const distChartRef = useRef<HTMLCanvasElement>(null)
   const distChartInstance = useRef<Chart | null>(null)
 
-  // New chart refs and state
-  const [stateConsumption, setStateConsumption] = useState<Array<{
-    state: string; totalKwh: number; totalBill: number; avgRate: number
-  }>>([])
+  // New chart refs
   const consumptionVsBillRef = useRef<HTMLCanvasElement>(null)
   const consumptionVsBillInstance = useRef<Chart | null>(null)
   const topStatesRef = useRef<HTMLCanvasElement>(null)
   const topStatesInstance = useRef<Chart | null>(null)
 
-  // Compute distribution data from bill records
+  // Compute data from functions
   useEffect(() => {
-    const allCAs = Object.values(CAS).flat()
+    const distData    = getConsumptionDistribution()
+    const stateData   = getStateConsumptionSummary()
+    const consBill    = getConsumptionVsBill(
+      appState?.stateF ?? 'all',
+      appState?.branchF ?? 'all',
+      appState?.caF ?? 'all'
+    )
 
-    // monthRangeCounts[monthIndex][rangeIndex] = count of bills
-    const monthRangeCounts: number[][] = MONTHLY_LABELS.map((_, mi) => {
-      return CONSUMPTION_RANGES.map(range => {
-        return allCAs.filter(ca => {
-          const bills = getCABills(ca, 'monthly')
-          const bill = bills[mi]
-          if (!bill) return false
-          const kwh = bill.kwh ?? 0
-          if (range.max === 0) return kwh === 0   // exact zero = faulty meter
-          return kwh > range.min && kwh <= range.max
-        }).length
-      })
-    })
-
-    // Compute faulty meter count (kwh === 0) per month
-    const faultyPerMonth = monthRangeCounts.map(m => m[0])
-    const totalFaulty = faultyPerMonth.reduce((a, b) => a + b, 0)
-
-    setDistData({ monthRangeCounts, totalFaulty, faultyPerMonth })
-
-    // Compute state consumption
-    const stateData = STATES.map(state => {
-      const allCAsinState = Object.keys(CAS).filter(br => br.startsWith(state.substring(0, 2))).flatMap(br => CAS[br] || [])
-      const allBills = allCAsinState.flatMap(ca => getCABills(ca, 'monthly'))
-      const totalKwh = allBills.reduce((s, r) => s + (r.kwh ?? 0), 0)
-      const totalBill = allBills.reduce((s, r) => s + (r.totalBill ?? 0), 0)
-      const avgRate = totalKwh > 0 ? Math.round(totalBill / totalKwh * 100) / 100 : 0
-      return { state, totalKwh, totalBill, avgRate }
-    }).sort((a, b) => b.totalKwh - a.totalKwh)
-
+    setDistribution(distData)
     setStateConsumption(stateData)
-  }, [])
+    setConsBillData(consBill)
+  }, [appState.stateF, appState.branchF, appState.caF])
 
   // Render consumption vs bill chart
   useEffect(() => {
-    if (!consumptionVsBillRef.current) return
+    if (!consumptionVsBillRef.current || consBillData.length === 0) return
     const ctx = consumptionVsBillRef.current.getContext('2d')
     if (!ctx) return
     if (consumptionVsBillInstance.current) consumptionVsBillInstance.current.destroy()
@@ -174,11 +151,11 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
     consumptionVsBillInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: billComponentData.map(d => d.period_label),
+        labels: consBillData.map(d => d.month),
         datasets: [
           {
             label: 'Unit consumption (kWh)',
-            data: trendData.map(d => d.total_kwh),
+            data: consBillData.map(d => d.totalKwh),
             type: 'line',
             borderColor: '#1D9E75',
             backgroundColor: 'rgba(29,158,117,0.08)',
@@ -191,7 +168,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
           },
           {
             label: 'Total bill amount (₹)',
-            data: billComponentData.map(d => d.total_bill),
+            data: consBillData.map(d => d.totalBill),
             type: 'line',
             borderColor: '#2500D7',
             backgroundColor: 'rgba(37,0,215,0.05)',
@@ -232,7 +209,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
     })
 
     return () => { if (consumptionVsBillInstance.current) consumptionVsBillInstance.current.destroy() }
-  }, [])
+  }, [consBillData])
 
   // Render top states chart
   useEffect(() => {
@@ -278,23 +255,21 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
     return () => { if (topStatesInstance.current) topStatesInstance.current.destroy() }
   }, [stateConsumption])
   useEffect(() => {
-    if (!distData || !distChartRef.current) return
+    if (!distribution || distribution.length === 0 || !distChartRef.current) return
     const ctx = distChartRef.current.getContext('2d')
     if (!ctx) return
     if (distChartInstance.current) distChartInstance.current.destroy()
-
-    const { monthRangeCounts } = distData
 
     distChartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: MONTHLY_LABELS,
-        datasets: CONSUMPTION_RANGES.map((range, ri) => ({
-          label: range.label,
-          data: monthRangeCounts.map(m => m[ri]),
-          backgroundColor: range.color,
-          borderRadius: ri === CONSUMPTION_RANGES.length - 1 ? 4 : 0,
-          borderSkipped: false,
+        datasets: DISTRIBUTION_BUCKETS.map((bucket, bi) => ({
+          label:           bucket.rangeLabel,
+          data:            distribution.map(m => m.buckets[bi]),
+          backgroundColor: bucket.color,
+          borderRadius:    bi === DISTRIBUTION_BUCKETS.length - 1 ? 4 : 0,
+          borderSkipped:   false,
         }))
       },
       options: {
@@ -304,7 +279,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
           legend: { display: false },
           tooltip: {
             callbacks: {
-              title: items => `${items[0].label} — ${CONSUMPTION_RANGES[items[0].datasetIndex].label}`,
+              title: items => `${items[0].label} — ${DISTRIBUTION_BUCKETS[items[0].datasetIndex].rangeLabel}`,
               label: item => ` ${item.raw} bills`,
             }
           }
@@ -335,7 +310,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
     })
 
     return () => { if (distChartInstance.current) distChartInstance.current.destroy() }
-  }, [distData])
+  }, [distribution])
 
   return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>

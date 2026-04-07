@@ -362,3 +362,119 @@ Object.keys(CAS).forEach(branch => {
 });
 
 console.log('calculations loaded, CA count:', Object.values(CAS).flat().length);
+
+/* ── Meter reading distribution ──
+   Returns for each month: count of bills falling into each kWh consumption range
+   Range: 0 = faulty/same reading, then 100 kWh buckets up to max
+   Used by: ConsumptionSection bill reading distribution chart */
+
+export interface DistributionBucket {
+  rangeLabel:  string   // e.g. "0", "1–100", "101–200"
+  min:         number
+  max:         number
+  color:       string
+}
+
+export interface MonthlyDistribution {
+  month:   string      // e.g. "Apr"
+  buckets: number[]    // count per bucket, index matches DISTRIBUTION_BUCKETS
+}
+
+export const DISTRIBUTION_BUCKETS: DistributionBucket[] = [
+  { rangeLabel: '0 (Faulty)',   min: 0,      max: 0,      color: '#F09595' },
+  { rangeLabel: '1–1K',        min: 1,      max: 1000,   color: '#B5D4F4' },
+  { rangeLabel: '1K–5K',       min: 1000,   max: 5000,   color: '#EF9F27' },
+  { rangeLabel: '5K–20K',      min: 5000,   max: 20000,  color: '#1D9E75' },
+  { rangeLabel: '20K–50K',     min: 20000,  max: 50000,  color: '#378ADD' },
+  { rangeLabel: '50K+',        min: 50000,  max: Infinity, color: '#E24B4A' },
+];
+
+// Cache so we don't recompute on every render
+let _distCache: MonthlyDistribution[] | null = null;
+
+export function getConsumptionDistribution(): MonthlyDistribution[] {
+  if (_distCache) return _distCache;
+
+  const allCAs = Object.values(CAS).flat();
+
+  _distCache = MONTHLY_LABELS.map((month, mi) => {
+    // Collect all CA readings for this month
+    const readings: number[] = allCAs.map(ca => {
+      const bills = getCABills(ca, 'monthly');
+      const bill = bills[mi];
+      if (!bill) return -1;
+      // Round to nearest 100 kWh
+      return Math.round((bill.kwh ?? 0) / 100) * 100;
+    }).filter(v => v >= 0);
+
+    // Count bills per bucket
+    const buckets = DISTRIBUTION_BUCKETS.map(bucket => {
+      if (bucket.max === 0) {
+        // Exact zero = faulty/same reading
+        return readings.filter(v => v === 0).length;
+      }
+      return readings.filter(v => v > bucket.min && v <= bucket.max).length;
+    });
+
+    return { month, buckets };
+  });
+
+  return _distCache;
+}
+
+/* ── State consumption summary ──
+   Returns total kWh and total bill per state for ranking chart
+   Used by: ConsumptionSection top consuming states chart */
+
+export interface StateConsumptionSummary {
+  state:     string
+  totalKwh:  number
+  totalBill: number
+  avgRate:   number   // ₹ per kWh
+}
+
+let _stateConsCache: StateConsumptionSummary[] | null = null;
+
+export function getStateConsumptionSummary(): StateConsumptionSummary[] {
+  if (_stateConsCache) return _stateConsCache;
+
+  _stateConsCache = STATES.map(state => {
+    const d = getStateBills(state, 'monthly');
+    const totalKwh  = d.reduce((s, r) => s + r.kwh, 0);
+    const totalBill = d.reduce((s, r) => s + r.totalBill, 0);
+    const avgRate   = totalKwh > 0
+      ? Math.round((totalBill / totalKwh) * 100) / 100
+      : 0;
+    return { state, totalKwh, totalBill, avgRate };
+  }).sort((a, b) => b.totalKwh - a.totalKwh);
+
+  return _stateConsCache;
+}
+
+/* ── Unit consumption vs bill amount trend ──
+   Returns monthly kWh and bill amount for dual-axis chart
+   Used by: ConsumptionSection unit consumption vs bill amount chart */
+
+export interface ConsumptionVsBillPoint {
+  month:     string
+  totalKwh:  number
+  totalBill: number
+  ratePerUnit: number
+}
+
+let _consBillCache: ConsumptionVsBillPoint[] | null = null;
+
+export function getConsumptionVsBill(
+  stateF: string,
+  branchF: string,
+  caF: string
+): ConsumptionVsBillPoint[] {
+  // This one is filter-aware so do not cache globally
+  const data = getFilteredBills('monthly', stateF, branchF, caF);
+  return data.map(d => ({
+    month:       d.label,
+    totalKwh:    d.kwh,
+    totalBill:   d.totalBill,
+    ratePerUnit: d.kwh > 0 ? Math.round(d.totalBill / d.kwh * 100) / 100 : 0,
+  }));
+}
