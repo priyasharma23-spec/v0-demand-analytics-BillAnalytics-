@@ -154,7 +154,7 @@ export default function DashboardNav({
   };
 
   return (
-    <nav style={{ backgroundColor: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+    <nav style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderBottom: '1px solid #F3F4F6' }}>
       {/* Product Navigation - Primary */}
       <div style={{ 
         display: 'flex', 

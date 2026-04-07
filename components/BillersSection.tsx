@@ -136,10 +136,10 @@ export default function BillersSection({ appState }: BillersSectionProps) {
       </div>
 
       {/* Section 3 — Bill status table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 200px)', overflow: 'hidden' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px' }}>
 
-        {/* Header + toggle - sticky */}
-        <div style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 10, paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
+        {/* Header + toggle */}
+        <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: '14px', fontWeight: 500, color: '#192744' }}>
@@ -162,8 +162,8 @@ export default function BillersSection({ appState }: BillersSectionProps) {
           </div>
         </div>
 
-        {/* Table wrapper - scrollable */}
-        <div style={{ flex: 1, overflowX: 'auto', overflowY: 'auto' }}>
+        {/* Table wrapper - horizontal scroll only */}
+        <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
               <tr>
