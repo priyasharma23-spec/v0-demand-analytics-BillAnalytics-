@@ -115,25 +115,25 @@ const summaryMetrics = [
     label:    'Active billers',
     value:    `${totalBillers}`,
     sub:      `across ${STATES.length} states`,
-    subColor: '#858ea2',
+    subColor: '#185FA5',
   },
   {
     label:    'Avg conversion rate',
     value:    `${FUNNEL.conversionPct}%`,
     sub:      'bills generated → paid',
-    subColor: '#3B6D11',
+    subColor: '#185FA5',
   },
   {
     label:    'Nearing due',
     value:    `${nearingDue}`,
     sub:      'next 3 days',
-    subColor: '#854F0B',
+    subColor: '#185FA5',
   },
   {
     label:    'Overdue',
     value:    `${overdue}`,
     sub:      'not yet paid',
-    subColor: '#A32D2D',
+    subColor: '#185FA5',
   },
 ]
 
