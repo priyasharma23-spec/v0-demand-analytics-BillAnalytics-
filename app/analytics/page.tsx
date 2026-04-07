@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
                   />
                 )}
                 {activeSection === 'billers' && <BillersSection appState={appState} />}
-                {activeSection === 'excess-demand' && <ExcessDemandSection />}
+                {activeSection === 'excess-demand' && <ExcessDemandSection appState={appState} />}
                 {activeSection === 'consumption' && <ConsumptionSection appState={appState} />}
                 {activeSection === 'leakages' && <LeakagesSection />}
                 {activeSection === 'savings' && <SavingsSection appState={appState} />}
