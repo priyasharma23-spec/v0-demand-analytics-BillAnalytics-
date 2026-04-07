@@ -156,19 +156,14 @@ export default function BillersSection({ appState }: BillersSectionProps) {
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
       {/* Section 1 — Summary metric cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        {summaryMetrics.map((m, i) => (
+        {summaryMetrics.map((m) => (
           <SummaryCard
             key={m.label}
             label={m.label}
             value={m.value}
             sub={m.sub}
             subColor={m.subColor}
-            borderColor={
-              i === 0 ? '#2500D7' :
-              i === 1 ? '#1A7A45' :
-              i === 2 ? '#EF9F27' :
-                       '#E24B4A'
-            }
+            borderColor="#2500D7"
           />
         ))}
       </div>
