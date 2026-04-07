@@ -351,8 +351,8 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {anomalies.map((a) => (
-            <AnomalyCard key={a.key} {...a} anomalyKey={a.key} onCTA={handleAnomalyCTA} onAnomalyClick={onAnomalyClick} />
+          {anomalies.map(({ key: anomalyKey, ...props }) => (
+            <AnomalyCard key={anomalyKey} {...props} anomalyKey={anomalyKey} onCTA={handleAnomalyCTA} onAnomalyClick={onAnomalyClick} />
           ))}
         </div>
       </div>
