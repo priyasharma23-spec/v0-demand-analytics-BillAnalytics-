@@ -182,6 +182,79 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
     initExcessCharts(labels, data);
   };
 
+  const initExcessCharts = (labels: string[], data: any) => {
+    // Contracted vs MDI chart
+    if (edMainRef.current) {
+      const ctx = edMainRef.current.getContext('2d');
+      if (ctx) {
+        if (edMainInstance.current) edMainInstance.current.destroy();
+        edMainInstance.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                data: data.map((d: any) => d.mdi),
+                backgroundColor: data.map((d: any) => d.mdi > d.contracted ? 'rgba(239,159,39,0.15)' : 'transparent'),
+                borderWidth: 0,
+              },
+              {
+                data: data.map((d: any) => d.mdi),
+                type: 'line',
+                borderColor: '#E24B4A',
+                backgroundColor: 'rgba(226,75,74,0.06)',
+                borderWidth: 2,
+                pointBackgroundColor: '#E24B4A',
+                pointRadius: 3,
+                tension: 0.35,
+                fill: false,
+              },
+              {
+                data: data.map((d: any) => d.contracted),
+                type: 'line',
+                borderColor: '#185FA5',
+                borderWidth: 2,
+                borderDash: [5, 4],
+                pointRadius: 0,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { grid: { color: '#f0f0f0' } }, y: { grid: { color: '#f0f0f0' } } },
+          },
+        }) as any;
+      }
+    }
+
+    // Excess demand charges chart
+    if (edExcessRef.current) {
+      const ctx = edExcessRef.current.getContext('2d');
+      if (ctx) {
+        if (edExcessInstance.current) edExcessInstance.current.destroy();
+        edExcessInstance.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              data: data.map((d: any) => d.excessCharge),
+              backgroundColor: data.map((d: any) => d.excessCharge > 15000 ? '#E24B4A' : '#F09595'),
+              borderRadius: 3,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { grid: { color: '#f0f0f0' } }, y: { grid: { color: '#f0f0f0' } } },
+          },
+        });
+      }
+    }
+  };
+
   return (
     <div>
       {/* Excess Demand Metrics */}
@@ -262,28 +335,8 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
         </div>
       </div>
     </div>
-
-  return (
-    <div>
-      {/* Excess Demand Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '20px', paddingLeft: '24px', paddingRight: '24px', paddingTop: '16px', paddingBottom: '16px' }}>
-        <SummaryCard label="Contracted demand" value={`${edMetrics.avgCont} kVA`} sub="Current level" subColor="#185FA5" borderColor="#2500D7" />
-        <SummaryCard label="Avg max demand (MDI)" value={`${edMetrics.avgMDI} kVA`} sub={edMetrics.avgMDI > edMetrics.avgCont ? 'Over contract' : 'within contract'} subColor={edMetrics.avgMDI > edMetrics.avgCont ? '#A32D2D' : '#3B6D11'} borderColor="#2500D7" />
-        <SummaryCard label="Peak recorded" value={`${edMetrics.peakMDI} kVA`} sub="Aug 2024" subColor="#A32D2D" borderColor="#2500D7" />
-        <SummaryCard label="Excess charges (YTD)" value={inr(edMetrics.totalExcess)} sub="12 of 12 months billed" subColor={edMetrics.overPct > 50 ? '#A32D2D' : '#633806'} borderColor="#2500D7" />
-      </div>
-
-      <div className="chart-card px-6 py-6 mb-6">
-        <div className="chart-title text-lg font-semibold text-foreground">Contracted demand vs Max demand (MDI) — Monthly</div>
-        <div className="chart-sub text-sm text-foreground-secondary mt-1">kVA · Apr 2024 – Mar 2025</div>
-        <div style={{ position: 'relative', width: '100%', height: '260px', marginTop: '16px' }}>
-          <canvas ref={edMainRef}></canvas>
-        </div>
-      </div>
-
-      <div className="chart-card px-6 py-6 mb-6">
-        <div className="chart-title text-lg font-semibold text-foreground">Excess demand charges</div>
-        <div className="chart-sub text-sm text-foreground-secondary mt-1">₹ penalty billed when MDI exceeds contracted demand</div>
+  );
+}
         <div style={{ position: 'relative', width: '100%', height: '200px', marginTop: '16px' }}>
           <canvas ref={edExcessRef}></canvas>
         </div>
