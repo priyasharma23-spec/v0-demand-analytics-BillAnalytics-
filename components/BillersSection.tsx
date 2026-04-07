@@ -57,10 +57,6 @@ const stateData = STATES.map(state => {
   const processed = Math.round(total * 0.63)
   const paid      = Math.round(total * 0.60)
   const dropPct   = Math.round((total - paid) / total * 100)
-  const unpaid    = generated - paid
-  const overdue   = Math.round(unpaid * 0.30)
-  const nearingDue = Math.round(unpaid * 0.25)
-  const safeDue   = unpaid - overdue - nearingDue
   return {
     state,
     billers: (STATE_BILLERS_LIST[state] ?? []).length,
@@ -70,10 +66,6 @@ const stateData = STATES.map(state => {
     processed,
     paid,
     dropPct,
-    unpaid,
-    overdue,
-    nearingDue,
-    safeDue,
   }
 })
 
@@ -91,11 +83,7 @@ const billerData = STATES.flatMap(state => {
     const processed  = Math.round(total * 0.63)
     const paid       = Math.round(total * 0.60)
     const dropPct    = Math.round((total - paid) / total * 100)
-    const unpaid     = generated - paid
-    const overdue    = Math.round(unpaid * 0.30)
-    const nearingDue = Math.round(unpaid * 0.25)
-    const safeDue    = unpaid - overdue - nearingDue
-    return { biller, state, total, generated, received, processed, paid, dropPct, unpaid, overdue, nearingDue, safeDue }
+    return { biller, state, total, generated, received, processed, paid, dropPct }
   })
 })
 
@@ -254,60 +242,14 @@ export default function BillersSection({ appState }: BillersSectionProps) {
           </div>
         </div>
 
-        {/* Due date summary bar */}
-        <div style={{
-          display:'flex', alignItems:'center', gap:'16px',
-          padding:'10px 14px', background:'#f9f9f9',
-          borderRadius:'8px', marginBottom:'12px',
-          fontSize:'12px', flexWrap:'wrap',
-        }}>
-          <span style={{ color:'#858ea2', fontWeight:500 }}>Portfolio due date health:</span>
-
-          <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-            <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#E24B4A' }} />
-            <span style={{ color:'#A32D2D', fontWeight:600 }}>
-              {(statusView === 'state' ? stateData : billerData)
-                .reduce((s, r: any) => s + r.overdue, 0)}
-            </span>
-            <span style={{ color:'#858ea2' }}>overdue</span>
-          </div>
-
-          <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-            <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#EF9F27' }} />
-            <span style={{ color:'#854F0B', fontWeight:600 }}>
-              {(statusView === 'state' ? stateData : billerData)
-                .reduce((s, r: any) => s + r.nearingDue, 0)}
-            </span>
-            <span style={{ color:'#858ea2' }}>due within 3 days</span>
-          </div>
-
-          <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-            <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#1D9E75' }} />
-            <span style={{ color:'#3B6D11', fontWeight:600 }}>
-              {(statusView === 'state' ? stateData : billerData)
-                .reduce((s, r: any) => s + r.safeDue, 0)}
-            </span>
-            <span style={{ color:'#858ea2' }}>due later</span>
-          </div>
-
-          <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:'5px' }}>
-            <span style={{ color:'#858ea2' }}>Total unpaid:</span>
-            <span style={{ fontWeight:600, color:'#192744' }}>
-              {(statusView === 'state' ? stateData : billerData)
-                .reduce((s, r: any) => s + r.overdue + r.nearingDue + r.safeDue, 0)}
-            </span>
-            <span style={{ color:'#858ea2' }}>bills</span>
-          </div>
-        </div>
-
         {/* Table wrapper - horizontal scroll only */}
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
               <tr>
                 {(statusView === 'state'
-                  ? ['State','Billers','Active CAs','Bill available','Paid','Overdue','Nearing due','Conversion']
-                  : ['Biller','State','Active CAs','Bill available','Paid','Overdue','Nearing due','Conversion']
+                  ? ['State','Billers','Active CAs','Bill available','Paid','Unpaid','Conversion']
+                  : ['Biller','State','Active CAs','Bill available','Paid','Unpaid','Conversion']
                 ).map(h => (
                   <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
                 ))}
@@ -315,84 +257,36 @@ export default function BillersSection({ appState }: BillersSectionProps) {
             </thead>
             <tbody>
               {(statusView === 'state' ? stateData : billerData).map((r: any) => {
-                const unpaid    = r.generated - r.paid
-                const convPct   = Math.round(r.paid / r.total * 100)
-                const barColor  = convPct >= 85 ? '#1D9E75' : convPct >= 75 ? '#EF9F27' : '#E24B4A'
+                const convPct = Math.round(r.paid / r.total * 100)
+                const barColor = convPct >= 85 ? '#1D9E75' : convPct >= 75 ? '#EF9F27' : '#E24B4A'
                 return (
                   <tr key={statusView === 'state' ? r.state : r.biller}
                     onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
                     onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
                   >
-                    {/* Col 1: State or Biller name */}
-                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', fontWeight:500, color:'#2500D7' }}>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#2500D7' }}>
                       {statusView === 'state' ? r.state : r.biller}
                     </td>
-
-                    {/* Col 2: Billers (state view) or State name (biller view) */}
-                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', color:'#858ea2' }}>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>
                       {statusView === 'state' ? r.billers : r.state}
                     </td>
-
-                    {/* Col 3: Active CAs — total CAs in this entity */}
-                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', color:'#192744', fontWeight:500 }}>
-                      {r.total}
-                    </td>
-
-                    {/* Col 4: Bill available — bills generated in the system */}
-                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', color:'#192744' }}>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.total}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
                       {r.generated}
-                      <span style={{
-                        fontSize:'11px',
-                        color: r.overdue > 0 ? '#854F0B' : '#858ea2',
-                        marginLeft:'4px'
-                      }}>
-                        ({Math.round(r.generated / r.total * 100)}%)
-                      </span>
+                      <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '4px' }}>({Math.round(r.generated/r.total*100)}%)</span>
                     </td>
-
-                    {/* Col 5: Paid */}
-                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', fontWeight:500, color:'#3B6D11' }}>
-                      {r.paid}
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.paid}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
+                      {r.generated - r.paid}
                     </td>
-
-                    {/* Col 6: Overdue — past due date, not paid */}
-                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)' }}>
-                      {r.overdue > 0 ? (
-                        <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-                          <div style={{
-                            width:'6px', height:'6px', borderRadius:'50%',
-                            background:'#E24B4A', flexShrink:0,
-                          }} />
-                          <span style={{ fontWeight:500, color:'#A32D2D', fontSize:'13px' }}>{r.overdue}</span>
-                          <span style={{ fontSize:'11px', color:'#858ea2' }}>bills</span>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{convPct}%</span>
+                        <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#f0f0f0', overflow: 'hidden', minWidth: '60px' }}>
+                          <div style={{ width: `${convPct}%`, height: '100%', borderRadius: '3px', background: barColor }} />
                         </div>
-                      ) : (
-                        <span style={{ fontSize:'12px', color:'#3B6D11' }}>—</span>
-                      )}
+                      </div>
                     </td>
-
-                    {/* Col 7: Nearing due — due within 3 days */}
-                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)' }}>
-                      {r.nearingDue > 0 ? (
-                        <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-                          <div style={{
-                            width:'6px', height:'6px', borderRadius:'50%',
-                            background:'#EF9F27', flexShrink:0,
-                          }} />
-                          <span style={{ fontWeight:500, color:'#854F0B', fontSize:'13px' }}>{r.nearingDue}</span>
-                          <span style={{ fontSize:'11px', color:'#858ea2' }}>bills</span>
-                        </div>
-                      ) : (
-                        <span style={{ fontSize:'12px', color:'#3B6D11' }}>—</span>
-                      )}
-                    </td>
-
-                    {/* Col 8: Conversion = paid / total */}
-                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                        <span style={{ fontSize:'12px', fontWeight:500, color:barColor }}>{convPct}%</span>
-                        <div style={{ flex:1, height:'6px', borderRadius:'3px', background:'#f0f0f0', overflow:'hidden', minWidth:'60px' }}>
-                          <div style={{ width:`${convPct}%`, height:'100%', borderRadius:'3px', background:barColor }} />
                         </div>
                       </div>
                     </td>
