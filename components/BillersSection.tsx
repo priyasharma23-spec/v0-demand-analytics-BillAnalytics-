@@ -136,32 +136,34 @@ export default function BillersSection({ appState }: BillersSectionProps) {
       </div>
 
       {/* Section 3 — Bill status table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 200px)', overflow: 'hidden' }}>
 
-        {/* Header + toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 500, color: '#192744' }}>
-              {statusView === 'state' ? 'Bill status — by state' : 'Bill status — by biller'}
+        {/* Header + toggle - sticky */}
+        <div style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 10, paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 500, color: '#192744' }}>
+                {statusView === 'state' ? 'Bill status — by state' : 'Bill status — by biller'}
+              </div>
+              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>
+                {statusView === 'state' ? 'Active CA states only · click to expand billers' : 'All registered billers'}
+              </div>
             </div>
-            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>
-              {statusView === 'state' ? 'Active CA states only · click to expand billers' : 'All registered billers'}
+            <div style={{ display: 'flex', background: '#f5f5f4', borderRadius: '10px', padding: '3px', gap: '2px' }}>
+              {(['state','biller'] as const).map(v => (
+                <button key={v} onClick={() => setStatusView(v)} style={{
+                  padding: '5px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
+                  border: 'none', cursor: 'pointer', textTransform: 'capitalize',
+                  background: statusView === v ? '#fff' : 'transparent',
+                  color: statusView === v ? '#192744' : '#858ea2',
+                }}>By {v}</button>
+              ))}
             </div>
-          </div>
-          <div style={{ display: 'flex', background: '#f5f5f4', borderRadius: '10px', padding: '3px', gap: '2px' }}>
-            {(['state','biller'] as const).map(v => (
-              <button key={v} onClick={() => setStatusView(v)} style={{
-                padding: '5px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
-                border: 'none', cursor: 'pointer', textTransform: 'capitalize',
-                background: statusView === v ? '#fff' : 'transparent',
-                color: statusView === v ? '#192744' : '#858ea2',
-              }}>By {v}</button>
-            ))}
           </div>
         </div>
 
-        {/* Table wrapper */}
-        <div style={{ overflowX: 'auto' }}>
+        {/* Table wrapper - scrollable */}
+        <div style={{ flex: 1, overflowX: 'auto', overflowY: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
               <tr>
