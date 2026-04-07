@@ -479,19 +479,19 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
         marginBottom: '16px', flexWrap: 'wrap',
       }}>
 
-        {/* PINNED label */}
+        {/* PINNED label with counter */}
         <span style={{
           fontSize: '11px', fontWeight: 600, color: '#9b9b96',
           letterSpacing: '0.06em', textTransform: 'uppercase',
           marginRight: '2px', flexShrink: 0,
         }}>
-          Pinned
+          Pinned ({pinnedEntities.length}/{MAX_PINS})
         </span>
 
         {/* Pinned chips — each has an × to unpin */}
-        {pinnedEntities.map(e => (
+        {pinnedEntities.map((e, idx) => (
           <div
-            key={e.name}
+            key={`${e.name}-${idx}`}
             style={{
               display: 'flex', alignItems: 'center', gap: '5px',
               height: '28px', padding: '0 6px 0 10px',
@@ -520,15 +520,24 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
             <button
               onClick={ev => { ev.stopPropagation(); handleUnpin(e.name) }}
               style={{
-                width: '16px', height: '16px', borderRadius: '50%',
-                border: 'none', background: 'transparent',
+                width: '18px', height: '18px', borderRadius: '50%',
+                border: '0.5px solid rgba(0,0,0,0.15)',
+                background: '#f5f5f4',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', padding: 0, marginLeft: '1px',
-                color: '#9b9b96', fontSize: '12px', lineHeight: 1,
-                flexShrink: 0,
+                cursor: 'pointer', padding: 0, marginLeft: '2px',
+                color: '#6b6b67', fontSize: '13px', lineHeight: 1,
+                fontWeight: 400, flexShrink: 0,
               }}
-              onMouseEnter={ev => (ev.currentTarget as HTMLButtonElement).style.color = '#A32D2D'}
-              onMouseLeave={ev => (ev.currentTarget as HTMLButtonElement).style.color = '#9b9b96'}
+              onMouseEnter={ev => {
+                (ev.currentTarget as HTMLButtonElement).style.background = '#FCEBEB'
+                ;(ev.currentTarget as HTMLButtonElement).style.color = '#A32D2D'
+                ;(ev.currentTarget as HTMLButtonElement).style.borderColor = '#F7C1C1'
+              }}
+              onMouseLeave={ev => {
+                (ev.currentTarget as HTMLButtonElement).style.background = '#f5f5f4'
+                ;(ev.currentTarget as HTMLButtonElement).style.color = '#6b6b67'
+                ;(ev.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,0,0,0.15)'
+              }}
               title={`Unpin ${e.name}`}
             >
               ×
@@ -600,18 +609,27 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
               <button
                 onClick={ev => { ev.stopPropagation(); handlePin(e) }}
                 style={{
-                  width: '16px', height: '16px', borderRadius: '50%',
-                  border: 'none', background: 'transparent',
+                  width: '18px', height: '18px', borderRadius: '50%',
+                  border: '0.5px solid rgba(0,0,0,0.15)',
+                  background: '#f5f5f4',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', padding: 0, marginLeft: '1px',
-                  color: '#9b9b96', fontSize: '11px', lineHeight: 1,
-                  flexShrink: 0,
+                  cursor: 'pointer', padding: 0, marginLeft: '2px',
+                  color: '#6b6b67', fontSize: '13px', lineHeight: 1,
+                  fontWeight: 400, flexShrink: 0,
                 }}
-                onMouseEnter={ev => (ev.currentTarget as HTMLButtonElement).style.color = '#2500D7'}
-                onMouseLeave={ev => (ev.currentTarget as HTMLButtonElement).style.color = '#9b9b96'}
+                onMouseEnter={ev => {
+                  (ev.currentTarget as HTMLButtonElement).style.background = '#EBEAFF'
+                  ;(ev.currentTarget as HTMLButtonElement).style.color = '#2500D7'
+                  ;(ev.currentTarget as HTMLButtonElement).style.borderColor = '#C4C2FF'
+                }}
+                onMouseLeave={ev => {
+                  (ev.currentTarget as HTMLButtonElement).style.background = '#f5f5f4'
+                  ;(ev.currentTarget as HTMLButtonElement).style.color = '#6b6b67'
+                  ;(ev.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,0,0,0.15)'
+                }}
                 title={`Pin ${e.name}`}
               >
-                ⊕
+                +
               </button>
             )}
           </div>
