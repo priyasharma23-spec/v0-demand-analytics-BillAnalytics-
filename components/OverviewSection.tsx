@@ -108,7 +108,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
     { label: 'Total portfolio', value: '₹48.3L', sub: '8 states · 62 branches · 187 CAs', subColor: '#858ea2' },
     { label: 'Total leakages', value: '₹9.2L', sub: '19% of total bill', subColor: '#A32D2D' },
     { label: 'CAs over contracted', value: '43 / 187', sub: '23% of all CAs', subColor: '#854F0B' },
-    { label: 'Potential savings', value: '₹6.1L', sub: 'recoverable annually', subColor: '#3B6D11' },
+    { label: 'Potential savings', value: '₹6.1L', sub: 'annually', subColor: '#3B6D11' },
   ];
 
   const anomalies = [
