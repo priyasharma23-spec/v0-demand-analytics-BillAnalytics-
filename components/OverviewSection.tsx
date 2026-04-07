@@ -459,20 +459,6 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
 
   return (
     <div style={{ padding: '20px', background: '#f5f6fa', minHeight: '100vh' }}>
-      {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
-        {summaryCards.map((card, i) => (
-          <SummaryCard
-            key={i}
-            label={card.label}
-            value={card.value}
-            sub={card.sub}
-            subColor={card.subColor}
-            borderColor="#2500d7"
-          />
-        ))}
-      </div>
-
       {/* Pinned + Recent entities row */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '6px',
@@ -635,6 +621,20 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
           </div>
         ))}
 
+      </div>
+
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
+        {summaryCards.map((card, i) => (
+          <SummaryCard
+            key={i}
+            label={card.label}
+            value={card.value}
+            sub={card.sub}
+            subColor={card.subColor}
+            borderColor="#2500d7"
+          />
+        ))}
       </div>
       <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
