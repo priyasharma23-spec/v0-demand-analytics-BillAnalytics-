@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import '@/lib/chartSetup';
 import { Chart } from 'chart.js';
 import { getFilteredBills, inr, inrK, STATES, getStateBills } from '@/lib/calculations';
-import { MetricCard } from './MetricCard';
+import { SummaryCard } from './SummaryCard';
 import { KpiCard } from './KpiCard';
 
 type BreakdownRow = {
@@ -163,11 +163,11 @@ export default function LeakagesSection() {
   return (
     <div>
       {/* Leakages Overview Metrics */}
-      <div className="metrics grid grid-cols-4 gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
-        <MetricCard label="Total leakages" value={inr(0)} sub="across all charges" subColor="#A32D2D" />
-        <MetricCard label="Excess demand (₹)" value={inr(0)} sub="demand charges" subColor="#E24B4A" />
-        <MetricCard label="PF penalty" value={inr(0)} sub="power factor" subColor="#EF9F27" />
-        <MetricCard label="Periods with leakage" value="0/0" sub="billing cycles" subColor="#185FA5" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '20px', paddingLeft: '24px', paddingRight: '24px', paddingTop: '16px', paddingBottom: '16px' }}>
+        <SummaryCard label="Total leakages" value={inr(0)} sub="across all charges" subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="Excess demand (₹)" value={inr(0)} sub="demand charges" subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="PF penalty" value={inr(0)} sub="power factor" subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="Periods with leakage" value="0/0" sub="billing cycles" subColor="#185FA5" borderColor="#2500D7" />
       </div>
 
       <div className="chart-card px-6 py-6 mb-6">
