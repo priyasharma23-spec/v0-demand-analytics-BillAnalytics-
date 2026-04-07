@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import '@/lib/chartSetup';
 import { Chart } from 'chart.js';
 import { getFilteredBills, inr, getStateBills, STATES } from '@/lib/calculations';
-import { MetricCard } from './MetricCard';
+import { SummaryCard } from './SummaryCard';
 import { KpiCard } from './KpiCard';
 
 type BreakdownRow = {
@@ -177,11 +177,11 @@ export default function ExcessDemandSection() {
   return (
     <div>
       {/* Excess Demand Metrics */}
-      <div className="metrics grid grid-cols-4 gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
-        <MetricCard label="Contracted demand" value={`${edMetrics.avgCont} kVA`} sub="Current level" subColor="#185FA5" />
-        <MetricCard label="Avg max demand (MDI)" value={`${edMetrics.avgMDI} kVA`} sub={edMetrics.avgMDI > edMetrics.avgCont ? 'Over contract' : 'within contract'} subColor={edMetrics.avgMDI > edMetrics.avgCont ? '#A32D2D' : '#3B6D11'} />
-        <MetricCard label="Peak recorded" value={`${edMetrics.peakMDI} kVA`} sub="Aug 2024" subColor="#A32D2D" />
-        <MetricCard label="Excess charges (YTD)" value={inr(edMetrics.totalExcess)} sub="12 of 12 months billed" subColor={edMetrics.overPct > 50 ? '#A32D2D' : '#633806'} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '20px', paddingLeft: '24px', paddingRight: '24px', paddingTop: '16px', paddingBottom: '16px' }}>
+        <SummaryCard label="Contracted demand" value={`${edMetrics.avgCont} kVA`} sub="Current level" subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="Avg max demand (MDI)" value={`${edMetrics.avgMDI} kVA`} sub={edMetrics.avgMDI > edMetrics.avgCont ? 'Over contract' : 'within contract'} subColor={edMetrics.avgMDI > edMetrics.avgCont ? '#A32D2D' : '#3B6D11'} borderColor="#2500D7" />
+        <SummaryCard label="Peak recorded" value={`${edMetrics.peakMDI} kVA`} sub="Aug 2024" subColor="#A32D2D" borderColor="#2500D7" />
+        <SummaryCard label="Excess charges (YTD)" value={inr(edMetrics.totalExcess)} sub="12 of 12 months billed" subColor={edMetrics.overPct > 50 ? '#A32D2D' : '#633806'} borderColor="#2500D7" />
       </div>
 
       <div className="chart-card px-6 py-6 mb-6">
