@@ -105,11 +105,35 @@ const totalFailed  = dbcTableData.reduce((s, r) => s + r.failed, 0)
 const totalPending = dbcTableData.reduce((s, r) => s + r.pending, 0)
 
 // Derived summary metrics
+const totalUnpaid   = stateData.reduce((s, r) => s + (r.generated - r.paid), 0)
+const nearingDue    = Math.round(totalUnpaid * 0.25)
+const overdue       = Math.round(totalUnpaid * 0.30)
+
 const summaryMetrics = [
-  { label: 'Active billers',      value: `${totalBillers}`,           sub: `across ${STATES.length} states`,           subColor: '#858ea2' },
-  { label: 'Avg conversion rate', value: `${FUNNEL.conversionPct}%`,  sub: 'bills generated → paid',                   subColor: '#3B6D11' },
-  { label: 'Bill copy success',   value: `${billCopySuccessPct}%`,    sub: `${totalReceived} of ${totalOpted} opted-in CAs`, subColor: '#3B6D11' },
-  { label: 'CAs needing action',  value: `${totalFailed}`,            sub: 'bill copy failed · payment blocked',        subColor: '#A32D2D' },
+  {
+    label:    'Active billers',
+    value:    `${totalBillers}`,
+    sub:      `across ${STATES.length} states`,
+    subColor: '#858ea2',
+  },
+  {
+    label:    'Avg conversion rate',
+    value:    `${FUNNEL.conversionPct}%`,
+    sub:      'bills generated → paid',
+    subColor: '#3B6D11',
+  },
+  {
+    label:    'Nearing due',
+    value:    `${nearingDue}`,
+    sub:      'next 3 days',
+    subColor: '#854F0B',
+  },
+  {
+    label:    'Overdue',
+    value:    `${overdue}`,
+    sub:      'not yet paid',
+    subColor: '#A32D2D',
+  },
 ]
 
 // Digital bill copy funnel
@@ -131,11 +155,31 @@ export default function BillersSection({ appState }: BillersSectionProps) {
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
       {/* Section 1 — Summary metric cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        {summaryMetrics.map(m => (
-          <div key={m.label} style={{ background: '#fff', borderTop: '1px solid #f3f4f6', borderRight: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', borderLeft: '4px solid #2500d7', borderRadius: '8px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-            <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{m.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 500, color: '#192744', marginBottom: '4px' }}>{m.value}</div>
-            <div style={{ fontSize: '11px', color: m.subColor }}>{m.sub}</div>
+        {summaryMetrics.map((m, i) => (
+          <div key={m.label} style={{
+            background: '#fff',
+            borderTop:    '1px solid #f3f4f6',
+            borderRight:  '1px solid #f3f4f6',
+            borderBottom: '1px solid #f3f4f6',
+            borderLeft: `4px solid ${
+              i === 0 ? '#2500D7' :
+              i === 1 ? '#1A7A45' :
+              i === 2 ? '#EF9F27' :
+                       '#E24B4A'
+            }`,
+            borderRadius: '8px',
+            padding: '14px 16px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          }}>
+            <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+              {m.label}
+            </div>
+            <div style={{ fontSize: '22px', fontWeight: 500, color: '#192744', marginBottom: '4px' }}>
+              {m.value}
+            </div>
+            <div style={{ fontSize: '11px', color: m.subColor }}>
+              {m.sub}
+            </div>
           </div>
         ))}
       </div>
