@@ -178,7 +178,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
         datasets: [
           {
             label: 'Unit consumption (kWh)',
-            data: billComponentData.map(d => d.fixed_charges + d.energy_charges + d.penalty_charges + d.arrears + d.taxes),
+            data: trendData.map(d => d.total_kwh),
             type: 'line',
             borderColor: '#1D9E75',
             backgroundColor: 'rgba(29,158,117,0.08)',
