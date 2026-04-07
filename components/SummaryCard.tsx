@@ -33,6 +33,7 @@ export function SummaryCard({
           textTransform: 'uppercase',
           letterSpacing: '0.04em',
           marginBottom: '6px',
+          fontWeight: 500,
         }}
       >
         {label}
@@ -40,14 +41,14 @@ export function SummaryCard({
       <div
         style={{
           fontSize: '22px',
-          fontWeight: 500,
+          fontWeight: 600,
           color: '#192744',
           marginBottom: '4px',
         }}
       >
         {value}
       </div>
-      <div style={{ fontSize: '11px', color: subColor }}>{sub}</div>
+      <div style={{ fontSize: '11px', color: subColor, fontWeight: 400 }}>{sub}</div>
     </div>
   )
 }
