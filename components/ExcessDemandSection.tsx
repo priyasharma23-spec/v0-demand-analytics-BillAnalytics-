@@ -262,9 +262,8 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
         </div>
       </div>
     </div>
-  );
-}
 
+  return (
     <div>
       {/* Excess Demand Metrics */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '20px', paddingLeft: '24px', paddingRight: '24px', paddingTop: '16px', paddingBottom: '16px' }}>
