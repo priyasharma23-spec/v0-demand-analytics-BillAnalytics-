@@ -15,15 +15,6 @@ interface ConsumptionSectionProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
 }
 
-const CONSUMPTION_RANGES = [
-  { label: '0 (Faulty/Same)',  min: 0,    max: 0,    color: '#F09595', textColor: '#791F1F' },
-  { label: '1–1,000 kWh',     min: 1,    max: 1000,  color: '#B5D4F4', textColor: '#0C447C' },
-  { label: '1K–5K kWh',       min: 1000, max: 5000,  color: '#EF9F27', textColor: '#633806' },
-  { label: '5K–20K kWh',      min: 5000, max: 20000, color: '#1D9E75', textColor: '#085041' },
-  { label: '20K–50K kWh',     min: 20000,max: 50000, color: '#378ADD', textColor: '#0C447C' },
-  { label: '50K+ kWh',        min: 50000,max: Infinity, color: '#E24B4A', textColor: '#791F1F' },
-]
-
 // Consumption data (simulated from API)
 const TOTAL_CAS = Object.values(CAS).flat().length // 187
 
@@ -115,6 +106,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   
   // Distribution chart state
   const [distribution, setDistribution] = useState<any[]>([])
+  const [totalFaulty, setTotalFaulty] = useState(0)
   const [stateConsumption, setStateConsumption] = useState<any[]>([])
   const [consBillData, setConsBillData] = useState<any[]>([])
   const distChartRef = useRef<HTMLCanvasElement>(null)
@@ -139,6 +131,10 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
     setDistribution(distData)
     setStateConsumption(stateData)
     setConsBillData(consBill)
+
+    // Compute total faulty meters (bucket 0 is faulty)
+    const faulty = distData.reduce((sum, m) => sum + m.buckets[0], 0)
+    setTotalFaulty(faulty)
   }, [appState.stateF, appState.branchF, appState.caF])
 
   // Render consumption vs bill chart
@@ -427,7 +423,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
           </div>
 
           {/* Faulty meter badge */}
-          {distData && distData.totalFaulty > 0 && (
+          {totalFaulty > 0 && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '6px 12px', borderRadius: '8px',
@@ -435,7 +431,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
               fontSize: '12px', flexShrink: 0,
             }}>
               <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#E24B4A', flexShrink:0 }} />
-              <span style={{ fontWeight:600, color:'#A32D2D' }}>{distData.totalFaulty}</span>
+              <span style={{ fontWeight:600, color:'#A32D2D' }}>{totalFaulty}</span>
               <span style={{ color:'#791F1F' }}>possible faulty meters</span>
               <span style={{ color:'#858ea2', fontSize:'11px' }}>(opening = closing reading)</span>
             </div>
@@ -444,13 +440,13 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
 
         {/* Custom legend */}
         <div style={{ display:'flex', gap:'14px', marginBottom:'16px', flexWrap:'wrap', fontSize:'12px', color:'#6b6b67' }}>
-          {CONSUMPTION_RANGES.map(r => (
-            <span key={r.label} style={{ display:'flex', alignItems:'center', gap:'5px' }}>
+          {DISTRIBUTION_BUCKETS.map(r => (
+            <span key={r.rangeLabel} style={{ display:'flex', alignItems:'center', gap:'5px' }}>
               <span style={{
                 width:'10px', height:'10px', borderRadius:'50%',
                 background: r.color, flexShrink:0, display:'inline-block',
               }} />
-              {r.label}
+              {r.rangeLabel}
             </span>
           ))}
         </div>
@@ -461,24 +457,25 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
         </div>
 
         {/* Faulty meter months breakdown */}
-        {distData && distData.totalFaulty > 0 && (
+        {totalFaulty > 0 && (
           <div style={{ marginTop:'12px', padding:'10px 12px', background:'#FFF8F8', borderRadius:'8px', border:'0.5px solid #F7C1C1' }}>
             <div style={{ fontSize:'11px', fontWeight:500, color:'#791F1F', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.04em' }}>
               Possible faulty meter — bills with zero unit consumption
             </div>
             <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
-              {MONTHLY_LABELS.map((month, mi) => (
-                distData.faultyPerMonth[mi] > 0 && (
+              {MONTHLY_LABELS.map((month, mi) => {
+                const faultyCount = distribution[mi]?.buckets[0] ?? 0
+                return faultyCount > 0 && (
                   <div key={month} style={{
                     display:'flex', alignItems:'center', gap:'4px',
                     padding:'3px 8px', borderRadius:'4px',
                     background:'#FCEBEB', fontSize:'11px',
                   }}>
                     <span style={{ fontWeight:500, color:'#A32D2D' }}>{month}</span>
-                    <span style={{ color:'#791F1F' }}>{distData.faultyPerMonth[mi]} bills</span>
+                    <span style={{ color:'#791F1F' }}>{faultyCount} bills</span>
                   </div>
                 )
-              ))}
+              })}
             </div>
           </div>
         )}
