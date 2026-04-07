@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { STATES, CAS, getCABills } from '@/lib/calculations'
+import { STATES, CAS, getCABills, MONTHLY_LABELS } from '@/lib/calculations'
 import { SummaryCard } from './SummaryCard'
 import { KpiCard } from './KpiCard'
 import '@/lib/chartSetup'
@@ -10,6 +10,15 @@ import { Chart } from 'chart.js'
 interface ConsumptionSectionProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
 }
+
+const CONSUMPTION_RANGES = [
+  { label: '0 (Faulty/Same)',  min: 0,    max: 0,    color: '#F09595', textColor: '#791F1F' },
+  { label: '1–1,000 kWh',     min: 1,    max: 1000,  color: '#B5D4F4', textColor: '#0C447C' },
+  { label: '1K–5K kWh',       min: 1000, max: 5000,  color: '#EF9F27', textColor: '#633806' },
+  { label: '5K–20K kWh',      min: 5000, max: 20000, color: '#1D9E75', textColor: '#085041' },
+  { label: '20K–50K kWh',     min: 20000,max: 50000, color: '#378ADD', textColor: '#0C447C' },
+  { label: '50K+ kWh',        min: 50000,max: Infinity, color: '#E24B4A', textColor: '#791F1F' },
+]
 
 // Consumption data (simulated from API)
 const TOTAL_CAS = Object.values(CAS).flat().length // 187
@@ -100,83 +109,60 @@ const consumptionVariance = Math.round(((peakMonthlyKwh - minMonthlyKwh) / avgMo
 export default function ConsumptionSection({ appState }: ConsumptionSectionProps) {
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly'>('monthly')
   
-  // Histogram state
-  const [histogramData, setHistogramData] = useState<{
-    bucketLabels: string[]
-    bucketCounts: number[]
-    peakLabel: string
-    peakCount: number
-    median: number
-    totalReadings: number
+  // Distribution chart state
+  const [distData, setDistData] = useState<{
+    monthRangeCounts: number[][]
+    totalFaulty: number
+    faultyPerMonth: number[]
   } | null>(null)
-  const histogramRef = useRef<HTMLCanvasElement>(null)
-  const histogramInstance = useRef<Chart | null>(null)
+  const distChartRef = useRef<HTMLCanvasElement>(null)
+  const distChartInstance = useRef<Chart | null>(null)
 
-  // Compute histogram data from bill records
+  // Compute distribution data from bill records
   useEffect(() => {
-    const allCAReadings: number[] = []
+    const allCAs = Object.values(CAS).flat()
 
-    Object.values(CAS).flat().forEach(ca => {
-      const bills = getCABills(ca, 'monthly')
-      bills.forEach(bill => {
-        if (bill && bill.kwh > 0) {
-          const rounded = Math.round(bill.kwh / 100) * 100
-          allCAReadings.push(rounded)
-        }
+    // monthRangeCounts[monthIndex][rangeIndex] = count of bills
+    const monthRangeCounts: number[][] = MONTHLY_LABELS.map((_, mi) => {
+      return CONSUMPTION_RANGES.map(range => {
+        return allCAs.filter(ca => {
+          const bills = getCABills(ca, 'monthly')
+          const bill = bills[mi]
+          if (!bill) return false
+          const kwh = bill.kwh ?? 0
+          if (range.max === 0) return kwh === 0   // exact zero = faulty meter
+          return kwh > range.min && kwh <= range.max
+        }).length
       })
     })
 
-    if (allCAReadings.length === 0) return
+    // Compute faulty meter count (kwh === 0) per month
+    const faultyPerMonth = monthRangeCounts.map(m => m[0])
+    const totalFaulty = faultyPerMonth.reduce((a, b) => a + b, 0)
 
-    const maxReading = Math.max(...allCAReadings)
-    const bucketSize = 100
-    const maxBucket = Math.ceil(maxReading / 1000) * 1000
-    const bucketCount = maxBucket / bucketSize
-
-    const bucketLabels: string[] = []
-    const bucketCounts: number[] = []
-
-    for (let i = 0; i < bucketCount; i++) {
-      const low = i * bucketSize
-      const high = low + bucketSize
-      bucketLabels.push(low === 0 ? '0' : `${low / 1000 % 1 === 0 ? low / 1000 + 'K' : low}`)
-      bucketCounts.push(allCAReadings.filter(v => v >= low && v < high).length)
-    }
-
-    const peakIdx = bucketCounts.indexOf(Math.max(...bucketCounts))
-    const peakLabel = bucketLabels[peakIdx]
-    const peakCount = bucketCounts[peakIdx]
-
-    const sorted = [...allCAReadings].sort((a, b) => a - b)
-    const median = sorted[Math.floor(sorted.length / 2)]
-
-    setHistogramData({ bucketLabels, bucketCounts, peakLabel, peakCount, median, totalReadings: allCAReadings.length })
+    setDistData({ monthRangeCounts, totalFaulty, faultyPerMonth })
   }, [])
 
-  // Render histogram chart
+  // Render distribution chart
   useEffect(() => {
-    if (!histogramData || !histogramRef.current) return
-    const ctx = histogramRef.current.getContext('2d')
+    if (!distData || !distChartRef.current) return
+    const ctx = distChartRef.current.getContext('2d')
     if (!ctx) return
-    if (histogramInstance.current) histogramInstance.current.destroy()
+    if (distChartInstance.current) distChartInstance.current.destroy()
 
-    const { bucketLabels, bucketCounts, peakCount } = histogramData
+    const { monthRangeCounts } = distData
 
-    histogramInstance.current = new Chart(ctx, {
+    distChartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: bucketLabels,
-        datasets: [{
-          data: bucketCounts,
-          backgroundColor: bucketCounts.map(c =>
-            c >= peakCount * 0.90 ? '#1755C8' :
-            c >= peakCount * 0.40 ? '#378ADD' : '#B5D4F4'
-          ),
-          borderRadius: 3,
+        labels: MONTHLY_LABELS,
+        datasets: CONSUMPTION_RANGES.map((range, ri) => ({
+          label: range.label,
+          data: monthRangeCounts.map(m => m[ri]),
+          backgroundColor: range.color,
+          borderRadius: ri === CONSUMPTION_RANGES.length - 1 ? 4 : 0,
           borderSkipped: false,
-          barPercentage: 0.95,
-          categoryPercentage: 1.0,
-        }]
+        }))
       },
       options: {
         responsive: true,
@@ -185,40 +171,24 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
           legend: { display: false },
           tooltip: {
             callbacks: {
-              title: (items) => {
-                const idx = items[0].dataIndex
-                const low = idx * 100
-                const high = low + 100
-                return `${low.toLocaleString()} – ${high.toLocaleString()} kWh`
-              },
-              label: (item) => ` ${item.raw} bills in this range`,
+              title: items => `${items[0].label} — ${CONSUMPTION_RANGES[items[0].datasetIndex].label}`,
+              label: item => ` ${item.raw} bills`,
             }
           }
         },
         scales: {
           x: {
+            stacked: true,
             grid: { display: false },
-            ticks: {
-              color: '#888',
-              font: { size: 10 },
-              callback: (_val: any, i: number) => i % 10 === 0 ? bucketLabels[i] : '',
-              maxRotation: 0,
-              autoSkip: false,
-            },
-            title: {
-              display: true,
-              text: 'Unit consumption (kWh)',
-              color: '#858ea2',
-              font: { size: 11 },
-            }
+            ticks: { color: '#888', font: { size: 11 } },
           },
           y: {
-            grid: { color: 'rgba(0,0,0,0.06)' },
+            stacked: true,
+            grid: { color: 'rgba(0,0,0,0.06)', borderDash: [4, 4] },
             ticks: {
               color: '#888',
               font: { size: 11 },
-              stepSize: 1,
-              callback: (v: any) => Number.isInteger(v) ? v : '',
+              stepSize: 10,
             },
             title: {
               display: true,
@@ -231,8 +201,8 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
       }
     })
 
-    return () => { if (histogramInstance.current) histogramInstance.current.destroy() }
-  }, [histogramData])
+    return () => { if (distChartInstance.current) distChartInstance.current.destroy() }
+  }, [distData])
 
   return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
@@ -286,56 +256,75 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
         </div>
       </div>
 
-      {/* Section 4 — Meter reading distribution histogram */}
+      {/* Section 4 — Bill reading distribution */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '4px' }}>
+
+        {/* Header row */}
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'12px' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Meter reading distribution</div>
-            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Number of bills by unit consumption range · 100 kWh buckets · opening to closing reading</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill reading distribution</div>
+            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>
+              Count of bills by unit consumption range · opening to closing reading · monthly
+            </div>
           </div>
 
-          {/* Summary pills */}
-          {histogramData && (
-            <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              <div style={{ padding: '4px 10px', borderRadius: '6px', background: '#E6F1FB', fontSize: '11px', fontWeight: 500, color: '#0C447C' }}>
-                Peak: {histogramData.peakLabel} kWh · {histogramData.peakCount} bills
-              </div>
-              <div style={{ padding: '4px 10px', borderRadius: '6px', background: '#EAF3DE', fontSize: '11px', fontWeight: 500, color: '#27500A' }}>
-                Median: {Math.round(histogramData.median / 100) * 100} kWh
-              </div>
-              <div style={{ padding: '4px 10px', borderRadius: '6px', background: '#f5f5f4', fontSize: '11px', fontWeight: 500, color: '#6b6b67' }}>
-                {histogramData.totalReadings} total readings
-              </div>
+          {/* Faulty meter badge */}
+          {distData && distData.totalFaulty > 0 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '6px 12px', borderRadius: '8px',
+              background: '#FCEBEB', border: '0.5px solid #F7C1C1',
+              fontSize: '12px', flexShrink: 0,
+            }}>
+              <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#E24B4A', flexShrink:0 }} />
+              <span style={{ fontWeight:600, color:'#A32D2D' }}>{distData.totalFaulty}</span>
+              <span style={{ color:'#791F1F' }}>possible faulty meters</span>
+              <span style={{ color:'#858ea2', fontSize:'11px' }}>(opening = closing reading)</span>
             </div>
           )}
         </div>
 
-        {/* Colour legend */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', marginTop: '10px', fontSize: '11px', color: '#6b6b67', flexWrap: 'wrap' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1755C8', display: 'inline-block' }} />
-            High frequency (top 10%)
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#378ADD', display: 'inline-block' }} />
-            Mid frequency
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#B5D4F4', display: 'inline-block' }} />
-            Low frequency
-          </span>
+        {/* Custom legend */}
+        <div style={{ display:'flex', gap:'14px', marginBottom:'16px', flexWrap:'wrap', fontSize:'12px', color:'#6b6b67' }}>
+          {CONSUMPTION_RANGES.map(r => (
+            <span key={r.label} style={{ display:'flex', alignItems:'center', gap:'5px' }}>
+              <span style={{
+                width:'10px', height:'10px', borderRadius:'50%',
+                background: r.color, flexShrink:0, display:'inline-block',
+              }} />
+              {r.label}
+            </span>
+          ))}
         </div>
 
-        {/* Chart canvas */}
-        <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-          <canvas ref={histogramRef}></canvas>
+        {/* Canvas */}
+        <div style={{ position:'relative', width:'100%', height:'280px' }}>
+          <canvas ref={distChartRef}></canvas>
         </div>
 
-        {/* X axis note */}
-        <div style={{ fontSize: '11px', color: '#9b9b96', marginTop: '8px', textAlign: 'center' }}>
-          Each bar = 100 kWh range · values rounded to nearest 100 · based on Unit Consumption field (kWh)
-        </div>
+        {/* Faulty meter months breakdown */}
+        {distData && distData.totalFaulty > 0 && (
+          <div style={{ marginTop:'12px', padding:'10px 12px', background:'#FFF8F8', borderRadius:'8px', border:'0.5px solid #F7C1C1' }}>
+            <div style={{ fontSize:'11px', fontWeight:500, color:'#791F1F', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.04em' }}>
+              Possible faulty meter — bills with zero unit consumption
+            </div>
+            <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
+              {MONTHLY_LABELS.map((month, mi) => (
+                distData.faultyPerMonth[mi] > 0 && (
+                  <div key={month} style={{
+                    display:'flex', alignItems:'center', gap:'4px',
+                    padding:'3px 8px', borderRadius:'4px',
+                    background:'#FCEBEB', fontSize:'11px',
+                  }}>
+                    <span style={{ fontWeight:500, color:'#A32D2D' }}>{month}</span>
+                    <span style={{ color:'#791F1F' }}>{distData.faultyPerMonth[mi]} bills</span>
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px' }}>
         <KpiCard
