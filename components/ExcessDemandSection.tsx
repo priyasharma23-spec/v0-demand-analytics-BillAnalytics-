@@ -75,17 +75,8 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
     return 'All states';
   }
 
-  function getGranularityLabel(view: string): string {
-    return view === '1y' || view === 'yearly' ? 'Yearly' : 'Monthly';
-  }
-
-  function getDateRangeLabel(view: string): string {
-    return view === '1y' || view === 'yearly' ? 'FY22 – FY25' : 'Apr 2024 – Mar 2025';
-  }
-
   const renderExcessDemand = () => {
-    const view = appState.view === '1y' || appState.view === 'yearly' ? 'yearly' : 'monthly';
-    const data = getFilteredBills(view, appState.stateF, appState.branchF, appState.caF);
+    const data = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF);
     const labels = data.map(d => d.label);
 
     const totalExcess = data.reduce((a, d) => a + d.excessCharge, 0);
@@ -112,8 +103,8 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
 
     setChartMeta({
       scopeLabel: getScopeLabel(appState.stateF, appState.branchF, appState.caF),
-      granularityLabel: getGranularityLabel(view),
-      dateRangeLabel: getDateRangeLabel(view),
+      granularityLabel: 'Monthly',
+      dateRangeLabel: 'Apr 2024 – Mar 2025',
     });
 
     setKpis([
@@ -168,7 +159,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
       setBreakdownCols(['State', 'Contracted', 'Avg MDI', 'Excess periods', 'Total leakage', 'Status']);
       setBreakdownRows(
         STATES.map(st => {
-          const d = getStateBills(st, view);
+          const d = getStateBills(st, 'monthly');
           const avgMDI = Math.round(d.reduce((a, r) => a + r.mdi, 0) / d.length);
           const contracted = Math.round(d.reduce((a, r) => a + r.contracted, 0) / d.length);
           const over = d.filter(r => r.mdi > r.contracted).length;
