@@ -287,9 +287,6 @@ export default function BillersSection({ appState }: BillersSectionProps) {
                         </div>
                       </div>
                     </td>
-                        </div>
-                      </div>
-                    </td>
                   </tr>
                 )
               })}
