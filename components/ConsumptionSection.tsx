@@ -118,6 +118,15 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   const distChartRef = useRef<HTMLCanvasElement>(null)
   const distChartInstance = useRef<Chart | null>(null)
 
+  // New chart refs and state
+  const [stateConsumption, setStateConsumption] = useState<Array<{
+    state: string; totalKwh: number; totalBill: number; avgRate: number
+  }>>([])
+  const consumptionVsBillRef = useRef<HTMLCanvasElement>(null)
+  const consumptionVsBillInstance = useRef<Chart | null>(null)
+  const topStatesRef = useRef<HTMLCanvasElement>(null)
+  const topStatesInstance = useRef<Chart | null>(null)
+
   // Compute distribution data from bill records
   useEffect(() => {
     const allCAs = Object.values(CAS).flat()
@@ -141,9 +150,133 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
     const totalFaulty = faultyPerMonth.reduce((a, b) => a + b, 0)
 
     setDistData({ monthRangeCounts, totalFaulty, faultyPerMonth })
+
+    // Compute state consumption
+    const stateData = STATES.map(state => {
+      const allCAsinState = Object.keys(CAS).filter(br => br.startsWith(state.substring(0, 2))).flatMap(br => CAS[br] || [])
+      const allBills = allCAsinState.flatMap(ca => getCABills(ca, 'monthly'))
+      const totalKwh = allBills.reduce((s, r) => s + (r.kwh ?? 0), 0)
+      const totalBill = allBills.reduce((s, r) => s + (r.totalBill ?? 0), 0)
+      const avgRate = totalKwh > 0 ? Math.round(totalBill / totalKwh * 100) / 100 : 0
+      return { state, totalKwh, totalBill, avgRate }
+    }).sort((a, b) => b.totalKwh - a.totalKwh)
+
+    setStateConsumption(stateData)
   }, [])
 
-  // Render distribution chart
+  // Render consumption vs bill chart
+  useEffect(() => {
+    if (!consumptionVsBillRef.current) return
+    const ctx = consumptionVsBillRef.current.getContext('2d')
+    if (!ctx) return
+    if (consumptionVsBillInstance.current) consumptionVsBillInstance.current.destroy()
+
+    consumptionVsBillInstance.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: billComponentData.map(d => d.period_label),
+        datasets: [
+          {
+            label: 'Unit consumption (kWh)',
+            data: billComponentData.map(d => d.fixed_charges + d.energy_charges + d.penalty_charges + d.arrears + d.taxes),
+            type: 'line',
+            borderColor: '#1D9E75',
+            backgroundColor: 'rgba(29,158,117,0.08)',
+            borderWidth: 2,
+            pointBackgroundColor: '#1D9E75',
+            pointRadius: 3,
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'y',
+          },
+          {
+            label: 'Total bill amount (₹)',
+            data: billComponentData.map(d => d.total_bill),
+            type: 'line',
+            borderColor: '#2500D7',
+            backgroundColor: 'rgba(37,0,215,0.05)',
+            borderWidth: 2,
+            pointBackgroundColor: '#2500D7',
+            pointRadius: 3,
+            tension: 0.35,
+            fill: false,
+            yAxisID: 'y2',
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            type: 'linear',
+            position: 'left',
+            grid: { color: 'rgba(0,0,0,0.06)' },
+            ticks: { color: '#888', font: { size: 11 }, callback: v => (v/1000).toFixed(0) + 'K kWh' },
+            title: { display: true, text: 'kWh consumed', color: '#858ea2', font: { size: 11 } },
+          },
+          y2: {
+            type: 'linear',
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#888', font: { size: 11 }, callback: v => '₹' + (v/100000).toFixed(1) + 'L' },
+            title: { display: true, text: 'Total bill (₹)', color: '#858ea2', font: { size: 11 } },
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#888', font: { size: 11 } },
+          },
+        }
+      }
+    })
+
+    return () => { if (consumptionVsBillInstance.current) consumptionVsBillInstance.current.destroy() }
+  }, [])
+
+  // Render top states chart
+  useEffect(() => {
+    if (!topStatesRef.current || stateConsumption.length === 0) return
+    const ctx = topStatesRef.current.getContext('2d')
+    if (!ctx) return
+    if (topStatesInstance.current) topStatesInstance.current.destroy()
+
+    topStatesInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: stateConsumption.map(s => s.state),
+        datasets: [
+          {
+            label: 'Total consumption (kWh)',
+            data: stateConsumption.map(s => s.totalKwh),
+            backgroundColor: stateConsumption.map((_, i) =>
+              i === 0 ? '#1755C8' : i <= 2 ? '#378ADD' : '#B5D4F4'
+            ),
+            borderRadius: 4,
+            barPercentage: 0.6,
+          },
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            grid: { color: 'rgba(0,0,0,0.06)' },
+            ticks: { color: '#888', font: { size: 11 }, callback: v => (v/1000).toFixed(0) + 'K' },
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: '#192744', font: { size: 12, weight: '500' } },
+          },
+        }
+      }
+    })
+
+    return () => { if (topStatesInstance.current) topStatesInstance.current.destroy() }
+  }, [stateConsumption])
   useEffect(() => {
     if (!distData || !distChartRef.current) return
     const ctx = distChartRef.current.getContext('2d')
@@ -242,6 +375,56 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
           <div style={{ height: '200px', background: '#f9f9f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#858ea2', fontSize: '12px' }}>
             [Line chart: ₹/kWh per period]
           </div>
+        </div>
+      </div>
+
+      {/* New Chart 1: Unit consumption vs bill amount */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
+        <div style={{ marginBottom: '14px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Unit consumption vs bill amount</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>kWh consumed (left axis) vs total bill ₹ (right axis) · monthly</div>
+        </div>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '10px', fontSize: '12px', color: '#6b6b67' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1D9E75', display: 'inline-block' }} />
+            Unit consumption (kWh)
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#2500D7', display: 'inline-block' }} />
+            Total bill amount (₹)
+          </span>
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '240px' }}>
+          <canvas ref={consumptionVsBillRef}></canvas>
+        </div>
+      </div>
+
+      {/* New Chart 2: Top consuming states */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
+        <div style={{ marginBottom: '14px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Top consuming states</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Total kWh consumed per state · ranked highest to lowest · current period</div>
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+          <canvas ref={topStatesRef}></canvas>
+        </div>
+        {/* Summary table */}
+        <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '6px' }}>
+          {stateConsumption.map((s, i) => (
+            <div key={s.state} style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '6px 10px', borderRadius: '6px',
+              background: i === 0 ? '#E6F1FB' : '#f9f9f9',
+              border: i === 0 ? '0.5px solid #B5D4F4' : '0.5px solid rgba(0,0,0,0.07)',
+            }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', width: '14px', flexShrink: 0 }}>{i+1}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.state}</div>
+                <div style={{ fontSize: '11px', color: '#858ea2' }}>{(s.totalKwh/1000).toFixed(0)}K kWh</div>
+              </div>
+              <div style={{ fontSize: '11px', color: '#3B6D11', fontWeight: 500, flexShrink: 0 }}>₹{s.avgRate}/u</div>
+            </div>
+          ))}
         </div>
       </div>
 
