@@ -176,7 +176,6 @@ const AnomalyCard = ({ anomalyKey, title, desc, tags, amount, amountLabel, amoun
 export default function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange, onHeatmapCellClick, onAnomalyClick }: OverviewSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
-  const [activeSort, setActiveSort] = useState<'impact' | 'frequency' | 'state'>('impact');
 
   const pinnedEntities = [
     { name: 'Maharashtra', type: 'state' },
@@ -453,11 +452,6 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
           <div>
             <div style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>Surfaced anomalies</div>
             <div style={{ fontSize: '12px', color: '#858ea2' }}>Ranked by avoidable cost · click any card to drill in</div>
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <SortPill label="By impact" active={activeSort === 'impact'} onClick={() => setActiveSort('impact')} />
-            <SortPill label="By frequency" active={activeSort === 'frequency'} onClick={() => setActiveSort('frequency')} />
-            <SortPill label="By state" active={activeSort === 'state'} onClick={() => setActiveSort('state')} />
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
