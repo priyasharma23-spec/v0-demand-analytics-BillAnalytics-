@@ -160,10 +160,10 @@ export default function BillersSection({ appState }: BillersSectionProps) {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table wrapper */}
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <thead>
+            <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
               <tr>
                 {(statusView === 'state'
                   ? ['State','Billers','Active CAs','Bill available','Paid','Unpaid','Conversion']
