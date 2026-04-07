@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CAS, BRANCHES, STATES } from '@/lib/calculations'
 import { KpiCard } from './KpiCard'
+import { SummaryCard } from '@/components/SummaryCard'
 
 interface BillersSectionProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
@@ -156,31 +157,19 @@ export default function BillersSection({ appState }: BillersSectionProps) {
       {/* Section 1 — Summary metric cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
         {summaryMetrics.map((m, i) => (
-          <div key={m.label} style={{
-            background: '#fff',
-            borderTop:    '1px solid #f3f4f6',
-            borderRight:  '1px solid #f3f4f6',
-            borderBottom: '1px solid #f3f4f6',
-            borderLeft: `4px solid ${
+          <SummaryCard
+            key={m.label}
+            label={m.label}
+            value={m.value}
+            sub={m.sub}
+            subColor={m.subColor}
+            borderColor={
               i === 0 ? '#2500D7' :
               i === 1 ? '#1A7A45' :
               i === 2 ? '#EF9F27' :
                        '#E24B4A'
-            }`,
-            borderRadius: '8px',
-            padding: '14px 16px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-          }}>
-            <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
-              {m.label}
-            </div>
-            <div style={{ fontSize: '22px', fontWeight: 500, color: '#192744', marginBottom: '4px' }}>
-              {m.value}
-            </div>
-            <div style={{ fontSize: '11px', color: m.subColor }}>
-              {m.sub}
-            </div>
-          </div>
+            }
+          />
         ))}
       </div>
 

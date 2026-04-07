@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { STATES, BRANCHES, CAS } from '@/lib/calculations';
+import { SummaryCard } from '@/components/SummaryCard';
 
 interface AppState {
   view: 'yearly' | 'monthly';
@@ -438,11 +439,14 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
         {summaryCards.map((card, i) => (
-          <div key={i} style={{ background: '#fff', borderTop: '1px solid #f3f4f6', borderRight: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', borderLeft: '4px solid #2500d7', borderRadius: '8px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-            <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{card.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 500, color: '#192744', marginBottom: '4px' }}>{card.value}</div>
-            <div style={{ fontSize: '11px', color: card.subColor }}>{card.sub}</div>
-          </div>
+          <SummaryCard
+            key={i}
+            label={card.label}
+            value={card.value}
+            sub={card.sub}
+            subColor={card.subColor}
+            borderColor="#2500d7"
+          />
         ))}
       </div>
 
