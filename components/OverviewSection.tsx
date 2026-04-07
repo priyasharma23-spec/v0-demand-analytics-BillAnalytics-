@@ -19,6 +19,7 @@ interface OverviewSectionProps {
   onCAChange: (ca: string) => void;
   onSectionChange: (section: string) => void;
   onHeatmapCellClick?: (state: string, month: string, monthIndex: number) => void;
+  onAnomalyClick?: (anomalyKey: 'over_contracted_every_month' | 'pf_below_threshold' | 'recurring_late_payment' | 'under_utilised') => void;
 }
 
 const SearchIcon = () => (
@@ -55,7 +56,7 @@ const SortPill = ({ label, active, onClick }: any) => (
   </button>
 );
 
-const AnomalyCard = ({ color, title, desc, tags, amount, amountLabel, cta, section, onCTA }: any) => {
+const AnomalyCard = ({ color, title, desc, tags, amount, amountLabel, cta, section, onCTA, anomalyKey, onAnomalyClick }: any) => {
   const iconBgs: Record<string, string> = { red: '#FCEBEB', amber: '#FAEEDA', blue: '#E6F1FB' };
   const iconChars: Record<string, string> = { red: '⚠', amber: '!', blue: 'i' };
   const tagColors: Record<string, { bg: string; color: string }> = {
@@ -66,7 +67,7 @@ const AnomalyCard = ({ color, title, desc, tags, amount, amountLabel, cta, secti
   };
 
   return (
-    <div onClick={() => onCTA(section)} style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.15)', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: '14px', cursor: 'pointer', transition: 'border-color 0.2s' }} onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#2500D7'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(0,0,0,0.15)'; }}>
+    <div onClick={() => onAnomalyClick?.(anomalyKey)} style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.15)', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: '14px', cursor: 'pointer', transition: 'border-color 0.2s' }} onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#2500D7'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(0,0,0,0.15)'; }}>
       <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: iconBgs[color], fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{iconChars[color]}</div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: '13px', fontWeight: 500, color: '#192744', marginBottom: '3px' }}>{title}</div>
@@ -86,7 +87,7 @@ const AnomalyCard = ({ color, title, desc, tags, amount, amountLabel, cta, secti
   );
 };
 
-export default function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange, onHeatmapCellClick }: OverviewSectionProps) {
+export default function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange, onHeatmapCellClick, onAnomalyClick }: OverviewSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSort, setActiveSort] = useState<'impact' | 'frequency' | 'state'>('impact');
@@ -113,6 +114,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
 
   const anomalies = [
     {
+      key: 'over_contracted_every_month' as const,
       color: 'red',
       title: '43 CAs exceeded contracted demand every single month',
       desc: 'Across Maharashtra, Delhi and Karnataka — these CAs have structurally under-sized contracts. Raising contracted demand to P90 MDI + 15% buffer would eliminate excess charges.',
@@ -123,6 +125,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
       section: 'excess-demand',
     },
     {
+      key: 'pf_below_threshold' as const,
       color: 'amber',
       title: 'Power factor below 0.90 in 28 branches for 6+ months',
       desc: 'PF penalty triggered consistently in Uttar Pradesh and Rajasthan clusters. Installing capacitor banks at 6 high-impact branches would recover most of this charge.',
@@ -133,6 +136,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
       section: 'leakages',
     },
     {
+      key: 'recurring_late_payment' as const,
       color: 'red',
       title: 'Late payment surcharge recurring in 19 CAs — 3+ consecutive months',
       desc: 'Concentrated in West Bengal and Gujarat. Payment scheduling alignment would eliminate this entirely — no tariff or infrastructure changes needed.',
@@ -143,6 +147,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
       section: 'leakages',
     },
     {
+      key: 'under_utilised' as const,
       color: 'blue',
       title: '12 CAs under-utilising contracted demand below 70% — revision opportunity',
       desc: 'Tamil Nadu and Rajasthan clusters are consistently drawing well below contracted level. Reducing contracted demand for these CAs would lower fixed charges.',
@@ -346,8 +351,8 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {anomalies.map((a, i) => (
-            <AnomalyCard key={i} {...a} onCTA={handleAnomalyCTA} />
+          {anomalies.map((a) => (
+            <AnomalyCard key={a.key} {...a} anomalyKey={a.key} onCTA={handleAnomalyCTA} onAnomalyClick={onAnomalyClick} />
           ))}
         </div>
       </div>

@@ -8,6 +8,7 @@ import ExcessDemandSection from '@/components/ExcessDemandSection';
 import LeakagesSection from '@/components/LeakagesSection';
 import BillersSection from '@/components/BillersSection';
 import HeatmapDrilldownPage from '@/components/HeatmapDrilldownPage';
+import AnomalyDrilldownPage from '@/components/AnomalyDrilldownPage';
 import { BillCategory } from '@/lib/calculations';
 
 export default function AnalyticsPage() {
@@ -24,6 +25,7 @@ export default function AnalyticsPage() {
   });
 
   const [drilldown, setDrilldown] = useState<{ state: string; month: string; monthIndex: number } | null>(null);
+  const [anomalyDrilldown, setAnomalyDrilldown] = useState<'over_contracted_every_month' | 'pf_below_threshold' | 'recurring_late_payment' | 'under_utilised' | null>(null);
 
   const handleProductChange = (product: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst') => {
     setActiveProduct(product);
@@ -82,7 +84,19 @@ export default function AnalyticsPage() {
 
       {/* Section content */}
       <div className="content">
-        {drilldown ? (
+        {anomalyDrilldown ? (
+          <AnomalyDrilldownPage
+            anomalyKey={anomalyDrilldown}
+            onBack={() => setAnomalyDrilldown(null)}
+            onNavigate={(section, filters) => {
+              setAnomalyDrilldown(null);
+              if (filters?.caF) handleCAChange(filters.caF);
+              if (filters?.branchF) handleBranchChange(filters.branchF);
+              setActiveSection(section as any);
+            }}
+            appState={appState}
+          />
+        ) : drilldown ? (
           <HeatmapDrilldownPage
             state={drilldown.state}
             month={drilldown.month}
@@ -114,6 +128,7 @@ export default function AnalyticsPage() {
                     onHeatmapCellClick={(state, month, monthIndex) => {
                       setDrilldown({ state, month, monthIndex });
                     }}
+                    onAnomalyClick={(anomalyKey) => setAnomalyDrilldown(anomalyKey)}
                   />
                 )}
                 {activeSection === 'billers' && <BillersSection appState={appState} />}
