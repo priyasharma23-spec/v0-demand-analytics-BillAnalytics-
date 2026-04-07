@@ -605,80 +605,165 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
 
       </div>
 
-      {/* Pinned + Recent entities row — simplified */}
+      {/* Pinned + Recent entities row */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: '8px',
+        display: 'flex', alignItems: 'center', gap: '6px',
         marginBottom: '16px', flexWrap: 'wrap',
-        padding: '12px 0',
       }}>
 
-        {/* PINNED label */}
+        {/* PINNED label with counter */}
         <span style={{
-          fontSize: '12px', fontWeight: 600, color: '#9b9b96',
-          letterSpacing: '0.04em', textTransform: 'uppercase',
-          marginRight: '6px', flexShrink: 0,
+          fontSize: '11px', fontWeight: 600, color: '#9b9b96',
+          letterSpacing: '0.06em', textTransform: 'uppercase',
+          marginRight: '2px', flexShrink: 0,
         }}>
-          Pinned
+          Pinned ({pinnedEntities.length}/{MAX_PINS})
         </span>
 
-        {/* Pinned chips — simple dots + names */}
+        {/* Pinned chips — each has an × to unpin */}
         {pinnedEntities.map((e, idx) => (
           <div
             key={`${e.name}-${idx}`}
             style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              height: '24px',
-              fontSize: '13px', fontWeight: 500,
+              display: 'flex', alignItems: 'center', gap: '5px',
+              height: '28px', padding: '0 6px 0 10px',
+              borderRadius: '20px',
+              border: '0.5px solid rgba(0,0,0,0.15)',
+              background: '#fff',
+              fontSize: '12px', fontWeight: 500,
               color: '#192744',
               cursor: 'pointer',
-              flexShrink: 0,
+              transition: 'border-color 0.1s',
             }}
             onClick={() => handleSelectEntity(e.name, e.type)}
-            title={e.name}
+            onMouseEnter={el => (el.currentTarget as HTMLDivElement).style.borderColor = '#2500D7'}
+            onMouseLeave={el => (el.currentTarget as HTMLDivElement).style.borderColor = 'rgba(0,0,0,0.15)'}
           >
             {/* Dot */}
             <div style={{
               width: '6px', height: '6px', borderRadius: '50%',
               background: dotColor(e.type), flexShrink: 0,
             }} />
+
             {/* Name */}
             <span>{e.name}</span>
+
+            {/* × unpin button */}
+            <button
+              onClick={ev => { ev.stopPropagation(); handleUnpin(e.name) }}
+              style={{
+                width: '18px', height: '18px', borderRadius: '50%',
+                border: '0.5px solid rgba(0,0,0,0.15)',
+                background: '#f5f5f4',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', padding: 0, marginLeft: '2px',
+                color: '#6b6b67', fontSize: '13px', lineHeight: 1,
+                fontWeight: 400, flexShrink: 0,
+              }}
+              onMouseEnter={ev => {
+                (ev.currentTarget as HTMLButtonElement).style.background = '#FCEBEB'
+                ;(ev.currentTarget as HTMLButtonElement).style.color = '#A32D2D'
+                ;(ev.currentTarget as HTMLButtonElement).style.borderColor = '#F7C1C1'
+              }}
+              onMouseLeave={ev => {
+                (ev.currentTarget as HTMLButtonElement).style.background = '#f5f5f4'
+                ;(ev.currentTarget as HTMLButtonElement).style.color = '#6b6b67'
+                ;(ev.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,0,0,0.15)'
+              }}
+              title={`Unpin ${e.name}`}
+            >
+              ×
+            </button>
           </div>
         ))}
+
+        {/* Pin capacity indicator — shown when >= 8 pins */}
+        {pinnedEntities.length >= 8 && (
+          <span style={{
+            fontSize: '10px', color: pinnedEntities.length >= MAX_PINS ? '#A32D2D' : '#854F0B',
+            fontWeight: 500, padding: '2px 6px', borderRadius: '4px',
+            background: pinnedEntities.length >= MAX_PINS ? '#FCEBEB' : '#FAEEDA',
+            flexShrink: 0,
+          }}>
+            {pinnedEntities.length >= MAX_PINS
+              ? 'Max 10 reached'
+              : `${MAX_PINS - pinnedEntities.length} slots left`}
+          </span>
+        )}
 
         {/* Divider */}
         {visibleRecent.length > 0 && (
           <span style={{
-            fontSize: '12px', fontWeight: 600, color: '#9b9b96',
-            letterSpacing: '0.04em', textTransform: 'uppercase',
-            margin: '0 6px', flexShrink: 0,
+            fontSize: '11px', fontWeight: 600, color: '#9b9b96',
+            letterSpacing: '0.06em', textTransform: 'uppercase',
+            margin: '0 2px', flexShrink: 0,
           }}>
             Recent
           </span>
         )}
 
-        {/* Recent chips — simple dots + names */}
+        {/* Recent chips — dashed border, click to pin OR navigate */}
         {visibleRecent.map(e => (
           <div
             key={e.name}
             style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              height: '24px',
-              fontSize: '13px', fontWeight: 400,
+              display: 'flex', alignItems: 'center', gap: '5px',
+              height: '28px', padding: '0 8px 0 10px',
+              borderRadius: '20px',
+              border: '0.5px dashed rgba(0,0,0,0.20)',
+              background: '#fff',
+              fontSize: '12px', fontWeight: 400,
               color: '#6b6b67',
               cursor: 'pointer',
-              flexShrink: 0,
+              transition: 'border-color 0.1s, color 0.1s',
             }}
             onClick={() => handleSelectEntity(e.name, e.type)}
-            title={e.name}
+            onMouseEnter={el => {
+              (el.currentTarget as HTMLDivElement).style.borderColor = '#2500D7'
+              ;(el.currentTarget as HTMLDivElement).style.color = '#192744'
+            }}
+            onMouseLeave={el => {
+              (el.currentTarget as HTMLDivElement).style.borderColor = 'rgba(0,0,0,0.20)'
+              ;(el.currentTarget as HTMLDivElement).style.color = '#6b6b67'
+            }}
           >
             {/* Dot */}
             <div style={{
               width: '6px', height: '6px', borderRadius: '50%',
-              background: dotColor(e.type), flexShrink: 0, opacity: 0.7,
+              background: dotColor(e.type), flexShrink: 0, opacity: 0.6,
             }} />
+
             {/* Name */}
             <span>{e.name}</span>
+
+            {/* Pin icon — shown on hover, click to pin */}
+            {pinnedEntities.length < MAX_PINS && (
+              <button
+                onClick={ev => { ev.stopPropagation(); handlePin(e) }}
+                style={{
+                  width: '18px', height: '18px', borderRadius: '50%',
+                  border: '0.5px solid rgba(0,0,0,0.15)',
+                  background: '#f5f5f4',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', padding: 0, marginLeft: '2px',
+                  color: '#6b6b67', fontSize: '13px', lineHeight: 1,
+                  fontWeight: 400, flexShrink: 0,
+                }}
+                onMouseEnter={ev => {
+                  (ev.currentTarget as HTMLButtonElement).style.background = '#EBEAFF'
+                  ;(ev.currentTarget as HTMLButtonElement).style.color = '#2500D7'
+                  ;(ev.currentTarget as HTMLButtonElement).style.borderColor = '#C4C2FF'
+                }}
+                onMouseLeave={ev => {
+                  (ev.currentTarget as HTMLButtonElement).style.background = '#f5f5f4'
+                  ;(ev.currentTarget as HTMLButtonElement).style.color = '#6b6b67'
+                  ;(ev.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,0,0,0.15)'
+                }}
+                title={`Pin ${e.name}`}
+              >
+                +
+              </button>
+            )}
           </div>
         ))}
 
