@@ -51,17 +51,17 @@ export default function BillersSection({ appState }: BillersSectionProps) {
   return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
       {/* Section 1 — Summary metric cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
         {[
-          { label: 'Total billers',    value: '48',    sub: 'across 8 states',  subColor: '#858ea2' },
-          { label: 'Bills generated',  value: '1,284', sub: 'this month',       subColor: '#3B6D11' },
-          { label: 'Bills paid',       value: '1,106', sub: '86% conversion',   subColor: '#3B6D11' },
-          { label: 'Pending / failed', value: '178',   sub: '14% drop-off',     subColor: '#A32D2D' },
+          { label: 'Active billers',       value: '48',    sub: 'across 8 states',              subColor: '#858ea2' },
+          { label: 'Avg conversion rate',  value: '86%',   sub: 'bills generated → paid',      subColor: '#3B6D11' },
+          { label: 'Bill copy success',    value: '78.7%', sub: '354 of 450 opted-in CAs',    subColor: '#3B6D11' },
+          { label: 'CAs needing action',   value: '34',    sub: 'bill copy failed · payment blocked', subColor: '#A32D2D' },
         ].map(m => (
-          <div key={m.label} style={{ background: '#fff', borderTop: '1px solid #f3f4f6', borderRight: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', borderLeft: '4px solid #2500d7', borderRadius: '8px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-            <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{m.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 500, color: '#192744', marginBottom: '4px' }}>{m.value}</div>
-            <div style={{ fontSize: '11px', color: m.subColor }}>{m.sub}</div>
+          <div key={m.label} style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '10px', padding: '12px 14px' }}>
+            <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '5px' }}>{m.label}</div>
+            <div style={{ fontSize: '20px', fontWeight: 500, color: '#192744' }}>{m.value}</div>
+            <div style={{ fontSize: '11px', marginTop: '3px', color: m.subColor }}>{m.sub}</div>
           </div>
         ))}
       </div>
