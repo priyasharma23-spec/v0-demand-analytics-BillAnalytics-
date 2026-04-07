@@ -257,32 +257,53 @@ export default function BillersSection({ appState }: BillersSectionProps) {
             </thead>
             <tbody>
               {(statusView === 'state' ? stateData : billerData).map((r: any) => {
-                const convPct = Math.round(r.paid / r.total * 100)
-                const barColor = convPct >= 85 ? '#1D9E75' : convPct >= 80 ? '#EF9F27' : '#E24B4A'
+                const unpaid    = r.generated - r.paid
+                const convPct   = Math.round(r.paid / r.total * 100)
+                const barColor  = convPct >= 85 ? '#1D9E75' : convPct >= 75 ? '#EF9F27' : '#E24B4A'
                 return (
                   <tr key={statusView === 'state' ? r.state : r.biller}
                     onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
                     onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
                   >
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#2500D7' }}>
+                    {/* Col 1: State or Biller name */}
+                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', fontWeight:500, color:'#2500D7' }}>
                       {statusView === 'state' ? r.state : r.biller}
                     </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>
+
+                    {/* Col 2: Billers (state view) or State name (biller view) */}
+                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', color:'#858ea2' }}>
                       {statusView === 'state' ? r.billers : r.state}
                     </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.generated}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
-                      {r.received} <span style={{ fontSize: '11px', color: '#858ea2' }}>({Math.round(r.received/r.total*100)}%)</span>
+
+                    {/* Col 3: Active CAs — total CAs in this entity */}
+                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', color:'#192744', fontWeight:500 }}>
+                      {r.total}
                     </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.paid}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
-                      {r.processed} <span style={{ fontSize: '11px', color: '#858ea2' }}>({Math.round(r.processed/r.total*100)}%)</span>
+
+                    {/* Col 4: Bill available — bills generated in the system */}
+                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', color:'#192744' }}>
+                      {r.generated}
+                      <span style={{ fontSize:'11px', color:'#858ea2', marginLeft:'4px' }}>
+                        ({Math.round(r.generated / r.total * 100)}%)
+                      </span>
                     </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{convPct}%</span>
-                        <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#f0f0f0', overflow: 'hidden', minWidth: '60px' }}>
-                          <div style={{ width: `${convPct}%`, height: '100%', borderRadius: '3px', background: barColor }} />
+
+                    {/* Col 5: Paid */}
+                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', fontWeight:500, color:'#3B6D11' }}>
+                      {r.paid}
+                    </td>
+
+                    {/* Col 6: Unpaid = generated - paid */}
+                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)', color: unpaid > 0 ? '#A32D2D' : '#3B6D11', fontWeight: unpaid > 0 ? 500 : 400 }}>
+                      {unpaid}
+                    </td>
+
+                    {/* Col 7: Conversion = paid / total */}
+                    <td style={{ padding:'9px 10px', borderBottom:'0.5px solid rgba(0,0,0,0.07)' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                        <span style={{ fontSize:'12px', fontWeight:500, color:barColor }}>{convPct}%</span>
+                        <div style={{ flex:1, height:'6px', borderRadius:'3px', background:'#f0f0f0', overflow:'hidden', minWidth:'60px' }}>
+                          <div style={{ width:`${convPct}%`, height:'100%', borderRadius:'3px', background:barColor }} />
                         </div>
                       </div>
                     </td>
