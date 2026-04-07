@@ -8,6 +8,7 @@ import ExcessDemandSection from '@/components/ExcessDemandSection';
 import LeakagesSection from '@/components/LeakagesSection';
 import BillersSection from '@/components/BillersSection';
 import ConsumptionSection from '@/components/ConsumptionSection';
+import SavingsSection from '@/components/SavingsSection';
 import HeatmapDrilldownPage from '@/components/HeatmapDrilldownPage';
 import AnomalyDrilldownPage from '@/components/AnomalyDrilldownPage';
 import { BillCategory } from '@/lib/calculations';
@@ -136,11 +137,7 @@ export default function AnalyticsPage() {
                 {activeSection === 'excess-demand' && <ExcessDemandSection />}
                 {activeSection === 'consumption' && <ConsumptionSection appState={appState} />}
                 {activeSection === 'leakages' && <LeakagesSection />}
-                {activeSection === 'savings' && (
-                  <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
-                    Active Section: <span className="font-semibold">{activeSection}</span>
-                  </div>
-                )}
+                {activeSection === 'savings' && <SavingsSection appState={appState} />}
                 {activeSection === 'optimization' && (
                   <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
                     Active Section: <span className="font-semibold">{activeSection}</span>
