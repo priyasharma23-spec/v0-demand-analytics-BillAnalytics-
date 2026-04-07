@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { STATES, CAS } from '@/lib/calculations'
+import { useState, useRef, useEffect } from 'react'
+import { STATES, CAS, getCABills } from '@/lib/calculations'
 import { SummaryCard } from './SummaryCard'
 import { KpiCard } from './KpiCard'
+import '@/lib/chartSetup'
+import { Chart } from 'chart.js'
 
 interface ConsumptionSectionProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
@@ -97,6 +99,140 @@ const consumptionVariance = Math.round(((peakMonthlyKwh - minMonthlyKwh) / avgMo
 
 export default function ConsumptionSection({ appState }: ConsumptionSectionProps) {
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly'>('monthly')
+  
+  // Histogram state
+  const [histogramData, setHistogramData] = useState<{
+    bucketLabels: string[]
+    bucketCounts: number[]
+    peakLabel: string
+    peakCount: number
+    median: number
+    totalReadings: number
+  } | null>(null)
+  const histogramRef = useRef<HTMLCanvasElement>(null)
+  const histogramInstance = useRef<Chart | null>(null)
+
+  // Compute histogram data from bill records
+  useEffect(() => {
+    const allCAReadings: number[] = []
+
+    Object.values(CAS).flat().forEach(ca => {
+      const bills = getCABills(ca, 'monthly')
+      bills.forEach(bill => {
+        if (bill && bill.kwh > 0) {
+          const rounded = Math.round(bill.kwh / 100) * 100
+          allCAReadings.push(rounded)
+        }
+      })
+    })
+
+    if (allCAReadings.length === 0) return
+
+    const maxReading = Math.max(...allCAReadings)
+    const bucketSize = 100
+    const maxBucket = Math.ceil(maxReading / 1000) * 1000
+    const bucketCount = maxBucket / bucketSize
+
+    const bucketLabels: string[] = []
+    const bucketCounts: number[] = []
+
+    for (let i = 0; i < bucketCount; i++) {
+      const low = i * bucketSize
+      const high = low + bucketSize
+      bucketLabels.push(low === 0 ? '0' : `${low / 1000 % 1 === 0 ? low / 1000 + 'K' : low}`)
+      bucketCounts.push(allCAReadings.filter(v => v >= low && v < high).length)
+    }
+
+    const peakIdx = bucketCounts.indexOf(Math.max(...bucketCounts))
+    const peakLabel = bucketLabels[peakIdx]
+    const peakCount = bucketCounts[peakIdx]
+
+    const sorted = [...allCAReadings].sort((a, b) => a - b)
+    const median = sorted[Math.floor(sorted.length / 2)]
+
+    setHistogramData({ bucketLabels, bucketCounts, peakLabel, peakCount, median, totalReadings: allCAReadings.length })
+  }, [])
+
+  // Render histogram chart
+  useEffect(() => {
+    if (!histogramData || !histogramRef.current) return
+    const ctx = histogramRef.current.getContext('2d')
+    if (!ctx) return
+    if (histogramInstance.current) histogramInstance.current.destroy()
+
+    const { bucketLabels, bucketCounts, peakCount } = histogramData
+
+    histogramInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: bucketLabels,
+        datasets: [{
+          data: bucketCounts,
+          backgroundColor: bucketCounts.map(c =>
+            c >= peakCount * 0.90 ? '#1755C8' :
+            c >= peakCount * 0.40 ? '#378ADD' : '#B5D4F4'
+          ),
+          borderRadius: 3,
+          borderSkipped: false,
+          barPercentage: 0.95,
+          categoryPercentage: 1.0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const idx = items[0].dataIndex
+                const low = idx * 100
+                const high = low + 100
+                return `${low.toLocaleString()} – ${high.toLocaleString()} kWh`
+              },
+              label: (item) => ` ${item.raw} bills in this range`,
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              color: '#888',
+              font: { size: 10 },
+              callback: (_val: any, i: number) => i % 10 === 0 ? bucketLabels[i] : '',
+              maxRotation: 0,
+              autoSkip: false,
+            },
+            title: {
+              display: true,
+              text: 'Unit consumption (kWh)',
+              color: '#858ea2',
+              font: { size: 11 },
+            }
+          },
+          y: {
+            grid: { color: 'rgba(0,0,0,0.06)' },
+            ticks: {
+              color: '#888',
+              font: { size: 11 },
+              stepSize: 1,
+              callback: (v: any) => Number.isInteger(v) ? v : '',
+            },
+            title: {
+              display: true,
+              text: 'Number of bills',
+              color: '#858ea2',
+              font: { size: 11 },
+            }
+          }
+        }
+      }
+    })
+
+    return () => { if (histogramInstance.current) histogramInstance.current.destroy() }
+  }, [histogramData])
 
   return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
@@ -150,7 +286,57 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
         </div>
       </div>
 
-      {/* Section 4 — KPI insight cards */}
+      {/* Section 4 — Meter reading distribution histogram */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Meter reading distribution</div>
+            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Number of bills by unit consumption range · 100 kWh buckets · opening to closing reading</div>
+          </div>
+
+          {/* Summary pills */}
+          {histogramData && (
+            <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <div style={{ padding: '4px 10px', borderRadius: '6px', background: '#E6F1FB', fontSize: '11px', fontWeight: 500, color: '#0C447C' }}>
+                Peak: {histogramData.peakLabel} kWh · {histogramData.peakCount} bills
+              </div>
+              <div style={{ padding: '4px 10px', borderRadius: '6px', background: '#EAF3DE', fontSize: '11px', fontWeight: 500, color: '#27500A' }}>
+                Median: {Math.round(histogramData.median / 100) * 100} kWh
+              </div>
+              <div style={{ padding: '4px 10px', borderRadius: '6px', background: '#f5f5f4', fontSize: '11px', fontWeight: 500, color: '#6b6b67' }}>
+                {histogramData.totalReadings} total readings
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Colour legend */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', marginTop: '10px', fontSize: '11px', color: '#6b6b67', flexWrap: 'wrap' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1755C8', display: 'inline-block' }} />
+            High frequency (top 10%)
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#378ADD', display: 'inline-block' }} />
+            Mid frequency
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#B5D4F4', display: 'inline-block' }} />
+            Low frequency
+          </span>
+        </div>
+
+        {/* Chart canvas */}
+        <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+          <canvas ref={histogramRef}></canvas>
+        </div>
+
+        {/* X axis note */}
+        <div style={{ fontSize: '11px', color: '#9b9b96', marginTop: '8px', textAlign: 'center' }}>
+          Each bar = 100 kWh range · values rounded to nearest 100 · based on Unit Consumption field (kWh)
+        </div>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px' }}>
         <KpiCard
           variant="info"
