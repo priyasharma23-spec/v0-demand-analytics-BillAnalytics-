@@ -101,10 +101,10 @@ const billComponentData = [
 
 // KPI calculations
 const monthlyConsumptions = trendData.map(d => d.total_kwh)
-const avgMonthlyKwh = monthlyConsumptions.reduce((a, b) => a + b) / monthlyConsumptions.length
-const peakMonthlyKwh = Math.max(...monthlyConsumptions)
-const minMonthlyKwh = Math.min(...monthlyConsumptions)
-const consumptionVariance = Math.round(((peakMonthlyKwh - minMonthlyKwh) / avgMonthlyKwh) * 100)
+const avgMonthlyKwh = monthlyConsumptions.length > 0 ? monthlyConsumptions.reduce((a, b) => a + b) / monthlyConsumptions.length : 0
+const peakMonthlyKwh = monthlyConsumptions.length > 0 ? Math.max(...monthlyConsumptions) : 0
+const minMonthlyKwh = monthlyConsumptions.length > 0 ? Math.min(...monthlyConsumptions) : 0
+const consumptionVariance = avgMonthlyKwh > 0 ? Math.round(((peakMonthlyKwh - minMonthlyKwh) / avgMonthlyKwh) * 100) : 0
 
 export default function ConsumptionSection({ appState }: ConsumptionSectionProps) {
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly'>('monthly')

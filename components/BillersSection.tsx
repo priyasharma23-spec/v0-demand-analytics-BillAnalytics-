@@ -57,7 +57,7 @@ const stateData = STATES.map(state => {
   const received  = Math.round(total * 0.70)
   const processed = Math.round(total * 0.63)
   const paid      = Math.round(total * 0.60)
-  const dropPct   = Math.round((total - paid) / total * 100)
+  const dropPct   = total > 0 ? Math.round((total - paid) / total * 100) : 0
   return {
     state,
     billers: (STATE_BILLERS_LIST[state] ?? []).length,
@@ -83,7 +83,7 @@ const billerData = STATES.flatMap(state => {
     const received   = Math.round(total * 0.70)
     const processed  = Math.round(total * 0.63)
     const paid       = Math.round(total * 0.60)
-    const dropPct    = Math.round((total - paid) / total * 100)
+    const dropPct    = total > 0 ? Math.round((total - paid) / total * 100) : 0
     return { biller, state, total, generated, received, processed, paid, dropPct }
   })
 })
@@ -101,7 +101,7 @@ const dbcTableData = billerData.map(b => {
 const totalBillers = Object.values(STATE_BILLERS_LIST).flat().length
 const totalOpted   = dbcTableData.reduce((s, r) => s + r.opted, 0)
 const totalReceived = dbcTableData.reduce((s, r) => s + r.received, 0)
-const billCopySuccessPct = Math.round(totalReceived / totalOpted * 100)
+const billCopySuccessPct = totalOpted > 0 ? Math.round(totalReceived / totalOpted * 100) : 0
 const totalFailed  = dbcTableData.reduce((s, r) => s + r.failed, 0)
 const totalPending = dbcTableData.reduce((s, r) => s + r.pending, 0)
 
@@ -143,9 +143,9 @@ const dbcFunnel = {
   received: totalReceived,
   pending:  totalPending,
   failed:   totalFailed,
-  receivedPct: Math.round(totalReceived / totalOpted * 100),
-  pendingPct:  Math.round(totalPending / totalOpted * 100),
-  failedPct:   Math.round(totalFailed / totalOpted * 100),
+    receivedPct: totalOpted > 0 ? Math.round(totalReceived / totalOpted * 100) : 0,
+    pendingPct:  totalOpted > 0 ? Math.round(totalPending / totalOpted * 100) : 0,
+    failedPct:   totalOpted > 0 ? Math.round(totalFailed / totalOpted * 100) : 0,
 }
 
 export default function BillersSection({ appState }: BillersSectionProps) {
@@ -285,7 +285,7 @@ export default function BillersSection({ appState }: BillersSectionProps) {
             </thead>
             <tbody>
               {(statusView === 'state' ? stateData : billerData).map((r: any) => {
-                const convPct = Math.round(r.paid / r.total * 100)
+                const convPct = r.total > 0 ? Math.round(r.paid / r.total * 100) : 0
                 const barColor = convPct >= 85 ? '#1D9E75' : convPct >= 75 ? '#EF9F27' : '#E24B4A'
                 return (
                   <tr key={statusView === 'state' ? r.state : r.biller}
@@ -301,7 +301,7 @@ export default function BillersSection({ appState }: BillersSectionProps) {
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.total}</td>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
                       {r.generated}
-                      <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '4px' }}>({Math.round(r.generated/r.total*100)}%)</span>
+                      <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '4px' }}>({r.total > 0 ? Math.round(r.generated/r.total*100) : 0}%)</span>
                     </td>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.paid}</td>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
@@ -352,7 +352,7 @@ export default function BillersSection({ appState }: BillersSectionProps) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
           <KpiCard variant="danger" label="Failed bill copies"   value={`${dbcFunnel.failed}`}   desc={`${dbcFunnel.failedPct}% fetch failure rate — check biller API connectivity for these CAs`} />
           <KpiCard variant="warn"   label="Pending >48 hrs"      value={`${Math.round(dbcFunnel.pending * 0.45)}`}   desc={`${Math.round(dbcFunnel.pending * 0.45)} of ${dbcFunnel.pending} pending CAs have been waiting over 48 hours — needs manual intervention`} />
-          <KpiCard variant="good"   label="Opt-in coverage"      value={`${Math.round(totalOpted / TOTAL_CAS * 100)}%`}  desc={`${totalOpted} of ${TOTAL_CAS} CAs opted in — ${TOTAL_CAS - totalOpted} CAs yet to opt in`} />
+          <KpiCard variant="good"   label="Opt-in coverage"      value={`${TOTAL_CAS > 0 ? Math.round(totalOpted / TOTAL_CAS * 100) : 0}%`}  desc={`${totalOpted} of ${TOTAL_CAS} CAs opted in — ${TOTAL_CAS - totalOpted} CAs yet to opt in`} />
           <KpiCard variant="info"   label="Successful delivery"  value={`${dbcFunnel.received}`}  desc={`${billCopySuccessPct}% of opted-in CAs received digital bill copy successfully this month`} />
         </div>
 
@@ -369,8 +369,8 @@ export default function BillersSection({ appState }: BillersSectionProps) {
             </thead>
             <tbody>
               {dbcTableData.map(r => {
-                const rate = Math.round(r.received / r.opted * 100)
-                const failRate = r.failed / r.opted
+                const rate = r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0
+                const failRate = r.opted > 0 ? r.failed / r.opted : 0
                 const barColor = rate >= 80 ? '#1D9E75' : rate >= 70 ? '#EF9F27' : '#E24B4A'
                 const badge = failRate > 0.10
                   ? { bg: '#FCEBEB', color: '#A32D2D', label: 'High failure' }
