@@ -76,41 +76,47 @@ export default function BillersSection({ appState }: BillersSectionProps) {
         </div>
 
         {/* Stage cards - horizontal */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-          {[
-            { stage: 'Active CAs', count: 700, drop: null, color: '#C47A00', bg: '#FFF9E6' },
-            { stage: 'Generated', count: 530, drop: '−170', color: '#1755C8', bg: '#EAF2FF' },
-            { stage: 'Paid', count: 420, drop: '−110', color: '#1A7A45', bg: '#E6F9EF' },
-          ].map(item => (
-            <div key={item.stage} style={{ background: item.bg, border: `1px solid ${item.color}20`, borderRadius: '10px', padding: '14px 16px', flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', color: item.color, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{item.stage}</div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: item.color, lineHeight: 1 }}>{item.count}</div>
-              {item.drop && (
-                <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 600, marginTop: '4px' }}>{item.drop}</div>
-              )}
-            </div>
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px', padding: '12px 16px', background: '#f9f9f9', borderRadius: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: '#C47A00' }}>700</span>
+            <span style={{ fontSize: '13px', color: '#858ea2' }}>active CAs</span>
+          </div>
+          <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: '#1755C8' }}>530</span>
+            <span style={{ fontSize: '13px', color: '#858ea2' }}>generated</span>
+            <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−170</span>
+          </div>
+          <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A7A45' }}>420</span>
+            <span style={{ fontSize: '13px', color: '#858ea2' }}>paid</span>
+            <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−110</span>
+          </div>
+          <div style={{ marginLeft: 'auto', fontSize: '13px', color: '#858ea2' }}>
+            Overall conversion <span style={{ fontSize: '15px', fontWeight: 700, color: '#1A7A45', marginLeft: '4px' }}>60%</span>
+          </div>
         </div>
 
         {/* Bar rows */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '14px' }}>
           {[
-            { label: 'Total CA', pct: 87.5, count: 700, color: '#C47A00', loss: null, total: 800 },
-            { label: 'Bills generated', pct: 75.7, count: 530, color: '#1755C8', loss: 170 },
-            { label: 'Bills paid', pct: 60, count: 420, color: '#1A7A45', loss: 110 },
+            { label: 'Active CAs', count: 700, pct: 100, fillColor: '#C47A00', chipColor: '#A05E00', drop: null },
+            { label: 'Bills generated', count: 530, pct: 75.7, fillColor: '#1755C8', chipColor: '#0d3d8a', drop: { val: 170, pct: '75.7%' } },
+            { label: 'Bills paid', count: 420, pct: 60.0, fillColor: '#1A7A45', chipColor: '#145c34', drop: { val: 110, pct: '60%' } },
           ].map(row => (
-            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500, width: '100px', flexShrink: 0 }}>{row.label}</div>
-              <div style={{ flex: 1, height: '20px', background: '#e8e8e8', borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                <div style={{ width: `${row.pct}%`, height: '100%', background: row.color, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '6px' }}>
-                  <div style={{ height: '16px', padding: '0 6px', borderRadius: '8px', fontSize: '10px', fontWeight: 600, color: '#fff', background: row.color, display: 'flex', alignItems: 'center' }}>
+            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500, width: '110px', flexShrink: 0 }}>{row.label}</div>
+              <div style={{ flex: 1, height: '36px', background: '#e8e8e8', borderRadius: '20px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ width: `${row.pct}%`, height: '100%', background: row.fillColor, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '8px' }}>
+                  <div style={{ height: '26px', padding: '0 12px', borderRadius: '13px', fontSize: '13px', fontWeight: 600, color: '#fff', background: row.chipColor, display: 'flex', alignItems: 'center' }}>
                     {row.count}
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: '12px', color: '#192744', fontWeight: 600, minWidth: '28px', textAlign: 'right' }}>{row.pct}%</div>
-              {row.loss && (
-                <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 600, minWidth: '42px', textAlign: 'right' }}>−{row.loss}</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744', minWidth: '36px', textAlign: 'right' }}>{row.pct}%</div>
+              {row.drop && (
+                <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500, minWidth: '48px', textAlign: 'right' }}>−{row.drop.val}</div>
               )}
             </div>
           ))}
