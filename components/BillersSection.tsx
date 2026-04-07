@@ -1,63 +1,137 @@
 'use client'
 
 import { useState } from 'react'
+import { CAS, BRANCHES, STATES } from '@/lib/calculations'
 import { KpiCard } from './KpiCard'
 
 interface BillersSectionProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
 }
 
+// Compute CA counts from calculations.ts data
+const TOTAL_CAS = Object.values(CAS).flat().length  // 187
+
+const CAS_PER_STATE: Record<string, number> = {}
+STATES.forEach(state => {
+  CAS_PER_STATE[state] = (BRANCHES[state] ?? [])
+    .reduce((sum, br) => sum + (CAS[br]?.length ?? 0), 0)
+})
+
+const BRANCHES_PER_STATE: Record<string, number> = {}
+STATES.forEach(state => {
+  BRANCHES_PER_STATE[state] = BRANCHES[state]?.length ?? 0
+})
+
+// Bill generation funnel derived from TOTAL_CAS
+const FUNNEL = {
+  activeCAs:     TOTAL_CAS,
+  generated:     Math.round(TOTAL_CAS * 0.757),
+  paid:          Math.round(TOTAL_CAS * 0.60),
+  notGenerated:  TOTAL_CAS - Math.round(TOTAL_CAS * 0.757),
+  unpaid:        Math.round(TOTAL_CAS * 0.757) - Math.round(TOTAL_CAS * 0.60),
+  approvalHold:  Math.round(TOTAL_CAS * 0.068),
+  generatedDrop: TOTAL_CAS - Math.round(TOTAL_CAS * 0.757),
+  paidDrop:      Math.round(TOTAL_CAS * 0.757) - Math.round(TOTAL_CAS * 0.60),
+  generatedPct:  75.7,
+  paidPct:       60.0,
+  conversionPct: 60,
+}
+
+// Biller-to-state mapping
+const STATE_BILLERS_LIST: Record<string, string[]> = {
+  'Maharashtra':   ['MSEDCL', 'BEST'],
+  'Karnataka':     ['BESCOM'],
+  'Tamil Nadu':    ['TNEB'],
+  'Gujarat':       ['DGVCL', 'UGVCL'],
+  'Delhi':         ['TPDDL', 'BSES Rajdhani'],
+  'Rajasthan':     ['JVVNL'],
+  'Uttar Pradesh': ['UPPCL'],
+  'West Bengal':   ['WBSEDCL'],
+}
+
+// Derive stateData from actual CA counts
+const stateData = STATES.map(state => {
+  const total = CAS_PER_STATE[state]
+  const generated = Math.round(total * 0.757)
+  const received  = Math.round(total * 0.70)
+  const processed = Math.round(total * 0.63)
+  const paid      = Math.round(total * 0.60)
+  const dropPct   = Math.round((total - paid) / total * 100)
+  return {
+    state,
+    billers: (STATE_BILLERS_LIST[state] ?? []).length,
+    total,
+    generated,
+    received,
+    processed,
+    paid,
+    dropPct,
+  }
+})
+
+// Derive billerData from state totals split among billers
+const billerData = STATES.flatMap(state => {
+  const billers = STATE_BILLERS_LIST[state] ?? []
+  const stateTotal = CAS_PER_STATE[state]
+  return billers.map((biller, idx) => {
+    const splitFactor = billers.length === 2
+      ? (idx === 0 ? 0.55 : 0.45)
+      : 1.0
+    const total      = Math.round(stateTotal * splitFactor)
+    const generated  = Math.round(total * 0.757)
+    const received   = Math.round(total * 0.70)
+    const processed  = Math.round(total * 0.63)
+    const paid       = Math.round(total * 0.60)
+    const dropPct    = Math.round((total - paid) / total * 100)
+    return { biller, state, total, generated, received, processed, paid, dropPct }
+  })
+})
+
+// Digital bill copy data
+const dbcTableData = billerData.map(b => {
+  const opted    = Math.round(b.total * 0.75)
+  const received = Math.round(opted * 0.787)
+  const pending  = Math.round(opted * 0.138)
+  const failed   = opted - received - pending
+  return { biller: b.biller, state: b.state, opted, received, pending, failed }
+})
+
+// Aggregate metrics for KPI cards
+const totalBillers = Object.values(STATE_BILLERS_LIST).flat().length
+const totalOpted   = dbcTableData.reduce((s, r) => s + r.opted, 0)
+const totalReceived = dbcTableData.reduce((s, r) => s + r.received, 0)
+const billCopySuccessPct = Math.round(totalReceived / totalOpted * 100)
+const totalFailed  = dbcTableData.reduce((s, r) => s + r.failed, 0)
+const totalPending = dbcTableData.reduce((s, r) => s + r.pending, 0)
+
+// Derived summary metrics
+const summaryMetrics = [
+  { label: 'Active billers',      value: `${totalBillers}`,           sub: `across ${STATES.length} states`,           subColor: '#858ea2' },
+  { label: 'Avg conversion rate', value: `${FUNNEL.conversionPct}%`,  sub: 'bills generated → paid',                   subColor: '#3B6D11' },
+  { label: 'Bill copy success',   value: `${billCopySuccessPct}%`,    sub: `${totalReceived} of ${totalOpted} opted-in CAs`, subColor: '#3B6D11' },
+  { label: 'CAs needing action',  value: `${totalFailed}`,            sub: 'bill copy failed · payment blocked',        subColor: '#A32D2D' },
+]
+
+// Digital bill copy funnel
+const dbcFunnel = {
+  optedIn:  totalOpted,
+  received: totalReceived,
+  pending:  totalPending,
+  failed:   totalFailed,
+  receivedPct: Math.round(totalReceived / totalOpted * 100),
+  pendingPct:  Math.round(totalPending / totalOpted * 100),
+  failedPct:   Math.round(totalFailed / totalOpted * 100),
+}
+
 export default function BillersSection({ appState }: BillersSectionProps) {
   const [funnelView, setFunnelView] = useState<'all'|'state'|'biller'>('all')
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
-
-  const stateData = [
-    { state:'Maharashtra',   billers:8, total:280, generated:280, received:262, processed:248, paid:241, dropPct:14 },
-    { state:'Delhi',         billers:6, total:210, generated:210, received:195, processed:186, paid:178, dropPct:15 },
-    { state:'Karnataka',     billers:7, total:195, generated:195, received:184, processed:175, paid:169, dropPct:13 },
-    { state:'Tamil Nadu',    billers:5, total:168, generated:168, received:158, processed:151, paid:147, dropPct:13 },
-    { state:'Gujarat',       billers:6, total:155, generated:155, received:147, processed:140, paid:136, dropPct:12 },
-    { state:'Rajasthan',     billers:5, total:142, generated:142, received:132, processed:126, paid:122, dropPct:14 },
-    { state:'Uttar Pradesh', billers:6, total:134, generated:134, received:124, processed:118, paid:114, dropPct:15 },
-    { state:'West Bengal',   billers:5, total:122, generated:122, received:113, processed:108, paid:105, dropPct:14 },
-  ]
-
-  const billerData = [
-    { biller:'MSEDCL',        state:'Maharashtra',   total:95, generated:95, received:89, processed:84, paid:82,  dropPct:14 },
-    { biller:'BEST',          state:'Maharashtra',   total:88, generated:88, received:83, processed:79, paid:76,  dropPct:14 },
-    { biller:'BESCOM',        state:'Karnataka',     total:82, generated:82, received:77, processed:73, paid:71,  dropPct:13 },
-    { biller:'TPDDL',         state:'Delhi',         total:78, generated:78, received:73, processed:70, paid:67,  dropPct:14 },
-    { biller:'TNEB',          state:'Tamil Nadu',    total:74, generated:74, received:70, processed:67, paid:65,  dropPct:12 },
-    { biller:'BSES Rajdhani', state:'Delhi',         total:72, generated:72, received:67, processed:64, paid:62,  dropPct:14 },
-    { biller:'DGVCL',         state:'Gujarat',       total:68, generated:68, received:65, processed:62, paid:60,  dropPct:12 },
-    { biller:'JVVNL',         state:'Rajasthan',     total:65, generated:65, received:60, processed:57, paid:55,  dropPct:15 },
-    { biller:'UPPCL',         state:'Uttar Pradesh', total:62, generated:62, received:57, processed:54, paid:52,  dropPct:16 },
-    { biller:'WBSEDCL',       state:'West Bengal',   total:58, generated:58, received:54, processed:51, paid:49,  dropPct:16 },
-  ]
-
-  const dbcTableData = [
-    { biller:'MSEDCL',        state:'Maharashtra',   opted:95, received:76, pending:12, failed:7  },
-    { biller:'BESCOM',        state:'Karnataka',     opted:82, received:68, pending:9,  failed:5  },
-    { biller:'TPDDL',         state:'Delhi',         opted:78, received:60, pending:11, failed:7  },
-    { biller:'TNEB',          state:'Tamil Nadu',    opted:74, received:59, pending:10, failed:5  },
-    { biller:'BEST',          state:'Maharashtra',   opted:68, received:52, pending:8,  failed:8  },
-    { biller:'DGVCL',         state:'Gujarat',       opted:53, received:39, pending:7,  failed:7  },
-    { biller:'JVVNL',         state:'Rajasthan',     opted:48, received:35, pending:6,  failed:7  },
-    { biller:'UPPCL',         state:'Uttar Pradesh', opted:44, received:31, pending:7,  failed:6  },
-    { biller:'WBSEDCL',       state:'West Bengal',   opted:40, received:28, pending:6,  failed:6  },
-    { biller:'BSES Rajdhani', state:'Delhi',         opted:36, received:24, pending:4,  failed:8  },
-  ]
 
   return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
       {/* Section 1 — Summary metric cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        {[
-          { label: 'Active billers',       value: '48',    sub: 'across 8 states',              subColor: '#858ea2' },
-          { label: 'Avg conversion rate',  value: '86%',   sub: 'bills generated → paid',      subColor: '#3B6D11' },
-          { label: 'Bill copy success',    value: '78.7%', sub: '354 of 450 opted-in CAs',    subColor: '#3B6D11' },
-          { label: 'CAs needing action',   value: '34',    sub: 'bill copy failed · payment blocked', subColor: '#A32D2D' },
-        ].map(m => (
+        {summaryMetrics.map(m => (
           <div key={m.label} style={{ background: '#fff', borderTop: '1px solid #f3f4f6', borderRight: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', borderLeft: '4px solid #2500d7', borderRadius: '8px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
             <div style={{ fontSize: '11px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{m.label}</div>
             <div style={{ fontSize: '22px', fontWeight: 500, color: '#192744', marginBottom: '4px' }}>{m.value}</div>
@@ -78,32 +152,32 @@ export default function BillersSection({ appState }: BillersSectionProps) {
         {/* Stage cards - horizontal */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px', padding: '12px 16px', background: '#f9f9f9', borderRadius: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-            <span style={{ fontSize: '22px', fontWeight: 700, color: '#C47A00' }}>700</span>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: '#C47A00' }}>{FUNNEL.activeCAs}</span>
             <span style={{ fontSize: '13px', color: '#858ea2' }}>active CAs</span>
           </div>
           <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-            <span style={{ fontSize: '22px', fontWeight: 700, color: '#1755C8' }}>530</span>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: '#1755C8' }}>{FUNNEL.generated}</span>
             <span style={{ fontSize: '13px', color: '#858ea2' }}>generated</span>
-            <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−170</span>
+            <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−{FUNNEL.generatedDrop}</span>
           </div>
           <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-            <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A7A45' }}>420</span>
+            <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A7A45' }}>{FUNNEL.paid}</span>
             <span style={{ fontSize: '13px', color: '#858ea2' }}>paid</span>
-            <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−110</span>
+            <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−{FUNNEL.paidDrop}</span>
           </div>
           <div style={{ marginLeft: 'auto', fontSize: '13px', color: '#858ea2' }}>
-            Overall conversion <span style={{ fontSize: '15px', fontWeight: 700, color: '#1A7A45', marginLeft: '4px' }}>60%</span>
+            Overall conversion <span style={{ fontSize: '15px', fontWeight: 700, color: '#1A7A45', marginLeft: '4px' }}>{FUNNEL.conversionPct}%</span>
           </div>
         </div>
 
         {/* Bar rows */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '14px' }}>
           {[
-            { label: 'Active CAs', count: 700, pct: 100, fillColor: '#C47A00', chipColor: '#A05E00', drop: null },
-            { label: 'Bills generated', count: 530, pct: 75.7, fillColor: '#1755C8', chipColor: '#0d3d8a', drop: { val: 170, pct: '75.7%' } },
-            { label: 'Bills paid', count: 420, pct: 60.0, fillColor: '#1A7A45', chipColor: '#145c34', drop: { val: 110, pct: '60%' } },
+            { label: 'Active CAs', count: FUNNEL.activeCAs, pct: 100, fillColor: '#C47A00', chipColor: '#A05E00', drop: null },
+            { label: 'Bills generated', count: FUNNEL.generated, pct: FUNNEL.generatedPct, fillColor: '#1755C8', chipColor: '#0d3d8a', drop: { val: FUNNEL.generatedDrop, pct: `${FUNNEL.generatedPct}%` } },
+            { label: 'Bills paid', count: FUNNEL.paid, pct: FUNNEL.paidPct, fillColor: '#1A7A45', chipColor: '#145c34', drop: { val: FUNNEL.paidDrop, pct: `${FUNNEL.paidPct}%` } },
           ].map(row => (
             <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500, width: '110px', flexShrink: 0 }}>{row.label}</div>
@@ -126,9 +200,9 @@ export default function BillersSection({ appState }: BillersSectionProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', gap: '8px' }}>
             {[
-              { label: 'Not generated', val: 170, color: '#E24B4A', bg: '#FEF0F0' },
-              { label: 'Unpaid', val: 110, color: '#C47A00', bg: '#FFF8ED' },
-              { label: 'Approval hold', val: 48, color: '#C47A00', bg: '#FFF8ED' },
+              { label: 'Not generated', val: FUNNEL.notGenerated, color: '#E24B4A', bg: '#FEF0F0' },
+              { label: 'Unpaid', val: FUNNEL.unpaid, color: '#C47A00', bg: '#FFF8ED' },
+              { label: 'Approval hold', val: FUNNEL.approvalHold, color: '#C47A00', bg: '#FFF8ED' },
             ].map(e => (
               <div key={e.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: e.bg, borderRadius: '20px', fontSize: '12px' }}>
                 <span style={{ fontWeight: 600, color: e.color }}>{e.val}</span>
@@ -136,7 +210,7 @@ export default function BillersSection({ appState }: BillersSectionProps) {
               </div>
             ))}
           </div>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: '#1A7A45' }}>60% conversion</div>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: '#1A7A45' }}>{FUNNEL.conversionPct}% conversion</div>
         </div>
 
       </div>
@@ -229,10 +303,10 @@ export default function BillersSection({ appState }: BillersSectionProps) {
         {/* Four-stage funnel */}
         <div style={{ display: 'flex', gap: '3px', alignItems: 'stretch', marginBottom: '16px' }}>
           {[
-            { num: 450, label: 'Opted in',  sub: 'bill_copy_enabled = true', bg: '#E6F1FB', numColor: '#0C447C', labelColor: '#0C447C', subColor: '#185FA5' },
-            { num: 354, label: 'Received',  sub: '78.7% of opted',           bg: '#EAF3DE', numColor: '#27500A', labelColor: '#27500A', subColor: '#3B6D11' },
-            { num: 62,  label: 'Pending',   sub: '13.8% awaiting',           bg: '#FAEEDA', numColor: '#633806', labelColor: '#633806', subColor: '#854F0B' },
-            { num: 34,  label: 'Failed',    sub: '7.6% failed fetch',         bg: '#FCEBEB', numColor: '#791F1F', labelColor: '#791F1F', subColor: '#A32D2D' },
+            { num: dbcFunnel.optedIn, label: 'Opted in',  sub: 'bill_copy_enabled = true', bg: '#E6F1FB', numColor: '#0C447C', labelColor: '#0C447C', subColor: '#185FA5' },
+            { num: dbcFunnel.received, label: 'Received',  sub: `${dbcFunnel.receivedPct}% of opted`,           bg: '#EAF3DE', numColor: '#27500A', labelColor: '#27500A', subColor: '#3B6D11' },
+            { num: dbcFunnel.pending,  label: 'Pending',   sub: `${dbcFunnel.pendingPct}% awaiting`,           bg: '#FAEEDA', numColor: '#633806', labelColor: '#633806', subColor: '#854F0B' },
+            { num: dbcFunnel.failed,   label: 'Failed',    sub: `${dbcFunnel.failedPct}% failed fetch`,         bg: '#FCEBEB', numColor: '#791F1F', labelColor: '#791F1F', subColor: '#A32D2D' },
           ].map((s, i) => (
             <div key={s.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
               <div style={{ flex: 1, background: s.bg, borderRadius: '8px', padding: '14px 12px' }}>
@@ -247,10 +321,10 @@ export default function BillersSection({ appState }: BillersSectionProps) {
 
         {/* KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
-          <KpiCard variant="danger" label="Failed bill copies"   value="34"   desc="7.6% fetch failure rate — check biller API connectivity for these CAs" />
-          <KpiCard variant="warn"   label="Pending >48 hrs"      value="28"   desc="28 of 62 pending CAs have been waiting over 48 hours — needs manual intervention" />
-          <KpiCard variant="good"   label="Opt-in coverage"      value="78%"  desc="450 of 580 total CAs have bill_copy_enabled — 130 CAs yet to opt in" />
-          <KpiCard variant="info"   label="Successful delivery"  value="354"  desc="78.7% of opted-in CAs received digital bill copy successfully this month" />
+          <KpiCard variant="danger" label="Failed bill copies"   value={`${dbcFunnel.failed}`}   desc={`${dbcFunnel.failedPct}% fetch failure rate — check biller API connectivity for these CAs`} />
+          <KpiCard variant="warn"   label="Pending >48 hrs"      value={`${Math.round(dbcFunnel.pending * 0.45)}`}   desc={`${Math.round(dbcFunnel.pending * 0.45)} of ${dbcFunnel.pending} pending CAs have been waiting over 48 hours — needs manual intervention`} />
+          <KpiCard variant="good"   label="Opt-in coverage"      value={`${Math.round(totalOpted / TOTAL_CAS * 100)}%`}  desc={`${totalOpted} of ${TOTAL_CAS} CAs opted in — ${TOTAL_CAS - totalOpted} CAs yet to opt in`} />
+          <KpiCard variant="info"   label="Successful delivery"  value={`${dbcFunnel.received}`}  desc={`${billCopySuccessPct}% of opted-in CAs received digital bill copy successfully this month`} />
         </div>
 
         {/* Bill copy by biller table */}
