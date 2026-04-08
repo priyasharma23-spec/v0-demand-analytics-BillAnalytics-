@@ -468,7 +468,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
             value={card.value}
             sub={card.sub}
             subColor={card.subColor}
-            borderColor="#2500d7"
+            borderColor="#2500D7"
           />
         ))}
       </div>
