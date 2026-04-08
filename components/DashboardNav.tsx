@@ -50,7 +50,6 @@ export default function DashboardNav({
     { id: 'consumption', label: 'Consumption' },
     { id: 'leakages', label: 'Leakages' },
     { id: 'savings', label: 'Savings' },
-    { id: 'optimization', label: 'Optimization' },
   ];
 
   const products = [
@@ -135,17 +134,6 @@ export default function DashboardNav({
             <path d="M7 9.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             <path d="M5 11.5l2 1 2-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M5.5 5.5C5.5 5.5 6 4.5 7 4.5s1.5.8 1.5 1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-          </svg>
-        );
-      case 'optimization':
-        return (
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
-            <path d="M2 4h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M2 7h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M2 10h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <circle cx="5" cy="4" r="1.5" fill="var(--color-background-primary, white)" stroke="currentColor" strokeWidth="1.5"/>
-            <circle cx="9" cy="7" r="1.5" fill="var(--color-background-primary, white)" stroke="currentColor" strokeWidth="1.5"/>
-            <circle cx="5" cy="10" r="1.5" fill="var(--color-background-primary, white)" stroke="currentColor" strokeWidth="1.5"/>
           </svg>
         );
       default:

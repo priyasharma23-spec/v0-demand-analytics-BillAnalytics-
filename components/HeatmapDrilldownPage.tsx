@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '@/lib/chartSetup';
 import { Chart } from 'chart.js';
-import { BRANCHES, CAS, getStateBills, getBranchBills, getCABills, AppState } from '@/lib/calculations';
+import { BRANCHES, CAS, getStateBills, getBranchBills, getCABills } from '@/lib/calculations';
 import { MetricCard } from './MetricCard';
 import { KpiCard } from './KpiCard';
 
@@ -14,7 +14,7 @@ interface HeatmapDrilldownProps {
   onBack: () => void;
   onViewAllSections: () => void;
   onBranchClick: (branch: string) => void;
-  appState: AppState;
+  appState: { view: string; stateF: string; branchF: string; caF: string; billCategory: string; section: string };
 }
 
 function inr(v: number): string {
@@ -488,7 +488,7 @@ export default function HeatmapDrilldownPage({
               gap: 0,
               padding: '12px 16px',
               background: '#f5f5f4',
-              borderBottomTop: '1px solid rgba(0,0,0,0.08)',
+              borderBottom: '1px solid rgba(0,0,0,0.08)',
               fontSize: '12px',
               fontWeight: 600,
               color: '#6b6b67',
@@ -512,7 +512,7 @@ export default function HeatmapDrilldownPage({
               warn: { bg: '#FAEEDA', color: '#633806', label: 'Elevated' },
               ok: { bg: '#EAF3DE', color: '#3B6D11', label: 'OK' },
             };
-            const statusStyle = statusColors[row.status];
+            const statusStyle = statusColors[row.status as keyof typeof statusColors as keyof typeof statusColors];
 
             return (
               <div
@@ -522,7 +522,7 @@ export default function HeatmapDrilldownPage({
                   gridTemplateColumns: '180px 140px 140px 120px 140px 120px 120px 100px',
                   gap: 0,
                   padding: '12px 16px',
-                  borderTopTop: idx === 0 ? 'none' : '1px solid rgba(0,0,0,0.05)',
+                  borderTop: idx === 0 ? 'none' : '1px solid rgba(0,0,0,0.05)',
                   fontSize: '13px',
                   fontFamily: '"Inter", sans-serif',
                   cursor: 'pointer',

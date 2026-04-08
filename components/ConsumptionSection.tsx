@@ -198,14 +198,14 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
             type: 'linear',
             position: 'left',
             grid: { color: 'rgba(0,0,0,0.06)' },
-            ticks: { color: '#888', font: { size: 11 }, callback: v => (v/1000).toFixed(0) + 'K kWh' },
+            ticks: { color: '#888', font: { size: 11 }, callback: (v: any) => (Number(v)/1000).toFixed(0) + 'K kWh' },
             title: { display: true, text: 'kWh consumed', color: '#858ea2', font: { size: 11 } },
           },
           y2: {
             type: 'linear',
             position: 'right',
             grid: { drawOnChartArea: false },
-            ticks: { color: '#888', font: { size: 11 }, callback: v => '₹' + (v/100000).toFixed(1) + 'L' },
+            ticks: { color: '#888', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v)/100000).toFixed(1) + 'L' },
             title: { display: true, text: 'Total bill (₹)', color: '#858ea2', font: { size: 11 } },
           },
           x: {
@@ -250,11 +250,11 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
         scales: {
           x: {
             grid: { color: 'rgba(0,0,0,0.06)' },
-            ticks: { color: '#888', font: { size: 11 }, callback: v => (v/1000).toFixed(0) + 'K' },
+            ticks: { color: '#888', font: { size: 11 }, callback: (v: any) => (Number(v)/1000).toFixed(0) + 'K' },
           },
           y: {
             grid: { display: false },
-            ticks: { color: '#192744', font: { size: 12, weight: '500' } },
+            ticks: { color: '#192744', font: { size: 12, weight: 500 } },
           },
         }
       }

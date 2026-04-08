@@ -1,15 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AppState } from '@/lib/types';
 
 type AnomalyKey = 'over_contracted_every_month' | 'pf_below_threshold' | 'recurring_late_payment' | 'under_utilised';
 
 interface AnomalyDrilldownProps {
   anomalyKey: AnomalyKey;
   onBack: () => void;
-  onNavigate: (section: string, filters?: Partial<AppState>) => void;
-  appState: AppState;
+  onNavigate: (section: string, filters?: Partial<{ view: string; stateF: string; branchF: string; caF: string; billCategory: string; section: string }>) => void;
+  appState: { view: string; stateF: string; branchF: string; caF: string; billCategory: string; section: string };
 }
 
 const ANOMALY_CONFIG: Record<AnomalyKey, {
@@ -532,7 +531,7 @@ export default function AnomalyDrilldownPage({
                       </td>
                       <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
                         <button
-                          onClick={() => onNavigate('savings', { branchF: r.branch })}
+                          onClick={() => onNavigate('optimization', { branchF: r.branch })}
                           style={{
                             fontSize: '11px',
                             fontWeight: 500,

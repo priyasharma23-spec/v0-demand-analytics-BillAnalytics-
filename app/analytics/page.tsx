@@ -16,7 +16,7 @@ import { BillCategory } from '@/lib/calculations';
 
 export default function AnalyticsPage() {
   const [activeProduct, setActiveProduct] = useState<'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst'>('bill-payment');
-  const [activeSection, setActiveSection] = useState<'overview' | 'billers' | 'excess-demand' | 'consumption' | 'leakages' | 'savings' | 'optimization'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'billers' | 'excess-demand' | 'consumption' | 'leakages' | 'savings'>('overview');
 
   const [appState, setAppState] = useState({
     view: 'yearly' as 'yearly' | 'monthly',
@@ -71,7 +71,7 @@ export default function AnalyticsPage() {
         activeProduct={activeProduct}
         onProductChange={handleProductChange}
         activeSection={activeSection}
-        onSectionChange={setActiveSection}
+        onSectionChange={(s) => setActiveSection(s as any)}
         appState={appState}
         onStateChange={handleStateChange}
         onBranchChange={handleBranchChange}
@@ -130,7 +130,7 @@ export default function AnalyticsPage() {
                     onStateChange={handleStateChange}
                     onBranchChange={handleBranchChange}
                     onCAChange={handleCAChange}
-                    onSectionChange={setActiveSection}
+                    onSectionChange={(s) => setActiveSection(s as any)}
                     onHeatmapCellClick={(state, month, monthIndex) => {
                       setDrilldown({ state, month, monthIndex });
                     }}
@@ -142,11 +142,7 @@ export default function AnalyticsPage() {
                 {activeSection === 'consumption' && <ConsumptionSection appState={appState} />}
                 {activeSection === 'leakages' && <LeakagesSection />}
                 {activeSection === 'savings' && <SavingsSection appState={appState} />}
-                {activeSection === 'optimization' && (
-                  <div className="p-6 bg-background-secondary border border-border rounded-lg text-foreground">
-                    Active Section: <span className="font-semibold">{activeSection}</span>
-                  </div>
-                )}
+                
               </>
             ) : (
               <div

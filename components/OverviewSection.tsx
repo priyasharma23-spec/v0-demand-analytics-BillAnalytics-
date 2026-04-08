@@ -533,8 +533,8 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
               >
                 {/* Left: Title and description */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '15px', fontWeight: 600, color: item.color, marginBottom: '2px' }}>{item.title}</div>
-                  <div style={{ fontSize: '12px', color: item.color }}>{item.desc}</div>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: item.countColor, marginBottom: '2px' }}>{item.title}</div>
+                  <div style={{ fontSize: '12px', color: item.countColor }}>{item.desc}</div>
                 </div>
                 {/* Right: Count */}
                 <div style={{ fontSize: '36px', fontWeight: 700, color: item.countColor, marginLeft: '16px', flexShrink: 0 }}>{item.count}</div>
