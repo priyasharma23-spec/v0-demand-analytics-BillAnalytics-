@@ -25,6 +25,9 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
     promptPaymentPotential: 0, totalIncentivePotential: 0,
     digitalPaymentBenefit: 0, earlyPaymentDiscount: 0,
     totalEarnedIncentives: 0, digitalPotential: 0,
+    totalBillGenerated: 0, paidViaPlatform: 0, paidViaPlatformPct: 0,
+    earnedEarlyBenefit: 0, earlyBenefitBills: 0,
+    missedDigitalDiscount: 0, missedDigitalAmount: 0, totalPeriods: 0,
   })
   const [cleanData,       setCleanData]       = useState<any[]>([])
   const [savingsTrendData, setSavingsTrendData] = useState<any[]>([])
@@ -66,11 +69,27 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
     const digitalPotential       = Math.round(totalEnergyCharge * 0.0075)
     const totalIncentivePotential = potentialPfIncentive + promptPaymentPotential + digitalPotential
 
+    // New calculations for updated summary cards
+    const totalBillGenerated = data.reduce((s, d) => s + d.totalBill, 0)
+    const paidViaPlatform = data.reduce((s, d) =>
+      s + ((d.earlyPaymentDiscount ?? 0) > 0 || (d.digitalPaymentBenefit ?? 0) > 0
+        ? d.totalBill : 0), 0)
+    const paidViaPlatformPct = Math.round(paidViaPlatform / Math.max(totalBillGenerated, 1) * 100)
+    const earnedEarlyBenefit = data.reduce((s, d) => s + (d.earlyPaymentDiscount ?? 0), 0)
+    const earlyBenefitBills  = data.filter(d => (d.earlyPaymentDiscount ?? 0) > 0).length
+    const missedDigitalBills   = data.filter(d => d.latePayment === 0 && (d.digitalPaymentBenefit ?? 0) === 0)
+    const missedDigitalAmount  = missedDigitalBills.reduce((s, d) => s + d.totalBill, 0)
+    const missedDigitalDiscount = Math.round(missedDigitalAmount * 0.0075)
+    const totalPeriods = data.length
+
     setSummary({
       totalBill, avoidable, cleanBill, cleanPct, avoidablePct,
       contractSaving, pfSaving, totalSaving,
       earnedPfIncentive, potentialPfIncentive, promptPaymentPotential, totalIncentivePotential,
       digitalPaymentBenefit, earlyPaymentDiscount, totalEarnedIncentives, digitalPotential,
+      totalBillGenerated, paidViaPlatform, paidViaPlatformPct,
+      earnedEarlyBenefit, earlyBenefitBills,
+      missedDigitalDiscount, missedDigitalAmount, totalPeriods,
     })
 
     setCleanData(data.map(d => ({
@@ -230,10 +249,39 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
 
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total bill (period)"      value={inr(summary.totalBill)}      sub="all charges incl. penalties"                                                          subColor="#858ea2" borderColor="#2500D7" />
-        <SummaryCard label="Avoidable charges"        value={inr(summary.avoidable)}      sub={`${summary.avoidablePct}% of total bill`}                                             subColor="#A32D2D" borderColor="#2500D7" />
-        <SummaryCard label="Contract revision saving" value={inr(summary.contractSaving)} sub="net of higher fixed charge at revised level"                                          subColor="#3B6D11" borderColor="#2500D7" />
-        <SummaryCard label="Total potential saving"   value={inr(summary.totalSaving)}    sub={`${Math.round(summary.totalSaving / Math.max(summary.totalBill,1)*100)}% recoverable`} subColor="#3B6D11" borderColor="#2500D7" />
+
+        <SummaryCard
+          label="Total bill generated"
+          value={inr(summary.totalBillGenerated)}
+          sub={`across ${summary.totalPeriods ?? 12} billing periods`}
+          subColor="#858ea2"
+          borderColor="#2500D7"
+        />
+
+        <SummaryCard
+          label="Paid via platform"
+          value={inr(summary.paidViaPlatform)}
+          sub={`${summary.paidViaPlatformPct}% of total bill`}
+          subColor="#185FA5"
+          borderColor="#185FA5"
+        />
+
+        <SummaryCard
+          label="Early payment benefit earned"
+          value={inr(summary.earnedEarlyBenefit)}
+          sub={`across ${summary.earlyBenefitBills} billing periods`}
+          subColor="#3B6D11"
+          borderColor="#1A7A45"
+        />
+
+        <SummaryCard
+          label="Missed digital discount"
+          value={inr(summary.missedDigitalDiscount)}
+          sub="bills paid outside platform · 0.75% discount foregone"
+          subColor="#A32D2D"
+          borderColor="#E24B4A"
+        />
+
       </div>
 
       {/* Charts */}
