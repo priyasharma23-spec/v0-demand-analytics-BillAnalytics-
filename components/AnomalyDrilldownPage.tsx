@@ -532,7 +532,7 @@ export default function AnomalyDrilldownPage({
                       </td>
                       <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
                         <button
-                          onClick={() => onNavigate('optimization', { branchF: r.branch })}
+                          onClick={() => onNavigate('savings', { branchF: r.branch })}
                           style={{
                             fontSize: '11px',
                             fontWeight: 500,
