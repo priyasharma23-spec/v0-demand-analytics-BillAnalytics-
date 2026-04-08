@@ -243,10 +243,10 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
 
       {/* Summary metric cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total leakages"      value={inr(leakSummary.totalLeak)}   sub={`${Math.round(leakSummary.totalLeak   / Math.max(leakSummary.totalBill, 1) * 100)}% of total bill`}  subColor="#A32D2D" borderColor="#E24B4A" />
-        <SummaryCard label="Excess demand"        value={inr(leakSummary.totalExcess)} sub={`${Math.round(leakSummary.totalExcess / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#A32D2D" borderColor="#E24B4A" />
-        <SummaryCard label="PF penalty"           value={inr(leakSummary.totalPF)}     sub={`${Math.round(leakSummary.totalPF     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#854F0B" borderColor="#EF9F27" />
-        <SummaryCard label="Late payment charges" value={inr(leakSummary.totalLP)}     sub={`${Math.round(leakSummary.totalLP     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#854F0B" borderColor="#EF9F27" />
+        <SummaryCard label="Total leakages"      value={inr(leakSummary.totalLeak)}   sub={`${Math.round(leakSummary.totalLeak   / Math.max(leakSummary.totalBill, 1) * 100)}% of total bill`}  subColor="#A32D2D" borderColor="#2500D7" />
+        <SummaryCard label="Excess demand"        value={inr(leakSummary.totalExcess)} sub={`${Math.round(leakSummary.totalExcess / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#A32D2D" borderColor="#2500D7" />
+        <SummaryCard label="PF penalty"           value={inr(leakSummary.totalPF)}     sub={`${Math.round(leakSummary.totalPF     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#854F0B" borderColor="#2500D7" />
+        <SummaryCard label="Late payment charges" value={inr(leakSummary.totalLP)}     sub={`${Math.round(leakSummary.totalLP     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#854F0B" borderColor="#2500D7" />
       </div>
 
       {/* Stacked leakage chart */}
