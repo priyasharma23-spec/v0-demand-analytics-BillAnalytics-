@@ -259,13 +259,15 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   }, [stateConsumption])
   useEffect(() => {
     if (!distribution || distribution.length === 0 || !distChartRef.current) return
+    console.log('[v0] Rendering dist chart, distribution:', {
       len: distribution.length,
       sample: distribution[0],
       ref: distChartRef.current,
     })
     const ctx = distChartRef.current.getContext('2d')
     if (!ctx) {
-        return
+      console.log('[v0] No 2d context')
+      return
     }
     if (distChartInstance.current) distChartInstance.current.destroy()
 
