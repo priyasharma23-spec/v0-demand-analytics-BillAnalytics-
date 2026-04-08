@@ -357,6 +357,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
 
     const labels = billComponentData.map(d => d.period_label)
 
+
     compChartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -480,30 +481,7 @@ return (
         ))}
       </div>
 
-      {/* Section 2 — Charts grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-        {/* Chart 1: kWh + Energy charges trend */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px' }}>
-          <div style={{ marginBottom: '14px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>kWh consumed & energy charges</div>
-            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Monthly trend</div>
-          </div>
-          <div style={{ height: '200px', background: '#f9f9f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#858ea2', fontSize: '12px' }}>
-            [Dual-axis chart: kWh bars + energy charges line]
-          </div>
-        </div>
 
-        {/* Chart 2: Cost per unit trend */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px' }}>
-          <div style={{ marginBottom: '14px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Effective rate per kWh</div>
-            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Blended tariff trend</div>
-          </div>
-          <div style={{ height: '200px', background: '#f9f9f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#858ea2', fontSize: '12px' }}>
-            [Line chart: ₹/kWh per period]
-          </div>
-        </div>
-      </div>
 
       {/* New Chart 1: Unit consumption vs bill amount */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
