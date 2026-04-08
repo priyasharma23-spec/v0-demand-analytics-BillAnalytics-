@@ -259,15 +259,13 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   }, [stateConsumption])
   useEffect(() => {
     if (!distribution || distribution.length === 0 || !distChartRef.current) return
-    console.log('[v0] Rendering dist chart, distribution:', {
       len: distribution.length,
       sample: distribution[0],
       ref: distChartRef.current,
     })
     const ctx = distChartRef.current.getContext('2d')
     if (!ctx) {
-      console.log('[v0] No 2d context')
-      return
+        return
     }
     if (distChartInstance.current) distChartInstance.current.destroy()
 
@@ -276,22 +274,39 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
       data: {
         labels: MONTHLY_LABELS,
         datasets: DISTRIBUTION_BUCKETS.map((bucket, bi) => ({
-          label:           bucket.rangeLabel,
-          data:            distribution.map(m => m.buckets[bi]),
+          label: bucket.rangeLabel,
+          data: distribution.map(m => m.buckets[bi]),
           backgroundColor: bucket.color,
-          borderRadius:    bi === DISTRIBUTION_BUCKETS.length - 1 ? 4 : 0,
-          borderSkipped:   false,
+          borderRadius: bi === DISTRIBUTION_BUCKETS.length - 1
+            ? { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }
+            : 0,
+          borderSkipped: false,
+          barPercentage: 0.75,
+          categoryPercentage: 0.85,
         }))
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
+            backgroundColor: '#192744',
+            titleColor: '#fff',
+            bodyColor: 'rgba(255,255,255,0.8)',
+            padding: 12,
+            cornerRadius: 8,
             callbacks: {
-              title: items => `${items[0].label} — ${DISTRIBUTION_BUCKETS[items[0].datasetIndex].rangeLabel}`,
-              label: item => ` ${item.raw} bills`,
+              title: items => `${items[0].label}`,
+              label: item => {
+                const bucket = DISTRIBUTION_BUCKETS[item.datasetIndex]
+                return `  ${bucket.rangeLabel}: ${item.raw} bills`
+              },
+              footer: items => {
+                const total = items.reduce((s, i) => s + (i.raw as number), 0)
+                return `Total: ${total} bills`
+              }
             }
           }
         },
@@ -299,15 +314,18 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
           x: {
             stacked: true,
             grid: { display: false },
-            ticks: { color: '#888', font: { size: 11 } },
+            border: { display: false },
+            ticks: { color: '#858ea2', font: { size: 11 }, padding: 6 },
           },
           y: {
             stacked: true,
-            grid: { color: 'rgba(0,0,0,0.06)', borderDash: [4, 4] },
+            border: { display: false },
+            grid: { color: 'rgba(0,0,0,0.05)' },
             ticks: {
-              color: '#888',
+              color: '#858ea2',
               font: { size: 11 },
-              stepSize: 10,
+              padding: 8,
+              callback: (v) => Number(v) % 40 === 0 ? v : '',
             },
             title: {
               display: true,

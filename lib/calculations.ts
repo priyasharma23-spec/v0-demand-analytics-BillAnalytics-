@@ -381,38 +381,33 @@ export interface MonthlyDistribution {
 }
 
 export const DISTRIBUTION_BUCKETS: DistributionBucket[] = [
-  { rangeLabel: '0 (Faulty)',   min: 0,      max: 0,      color: '#F09595' },
-  { rangeLabel: '1–1K',        min: 1,      max: 1000,   color: '#B5D4F4' },
-  { rangeLabel: '1K–5K',       min: 1000,   max: 5000,   color: '#EF9F27' },
-  { rangeLabel: '5K–20K',      min: 5000,   max: 20000,  color: '#1D9E75' },
-  { rangeLabel: '20K–50K',     min: 20000,  max: 50000,  color: '#378ADD' },
-  { rangeLabel: '50K+',        min: 50000,  max: Infinity, color: '#E24B4A' },
+  { rangeLabel: '0 (Faulty)',    min: 0,       max: 0,       color: '#F09595' },
+  { rangeLabel: '<100K',         min: 1,       max: 100000,  color: '#B5D4F4' },
+  { rangeLabel: '100K–150K',     min: 100000,  max: 150000,  color: '#EF9F27' },
+  { rangeLabel: '150K–200K',     min: 150000,  max: 200000,  color: '#1D9E75' },
+  { rangeLabel: '200K–300K',     min: 200000,  max: 300000,  color: '#378ADD' },
+  { rangeLabel: '300K+',         min: 300000,  max: Infinity, color: '#E24B4A' },
 ];
 
 // Cache so we don't recompute on every render
 let _distCache: MonthlyDistribution[] | null = null;
 
 export function getConsumptionDistribution(): MonthlyDistribution[] {
-  if (_distCache) {
-    console.log('[v0] dist cache hit, len:', _distCache.length, 'sample:', _distCache[0])
-    return _distCache
-  }
-
-  console.log('[v0] Computing distribution from scratch...')
   const allCAs = Object.values(CAS).flat()
-  console.log('[v0] Total CAs for distribution:', allCAs.length)
 
-  _distCache = MONTHLY_LABELS.map((month, mi) => {
+  const result = MONTHLY_LABELS.map((month, mi) => {
     // Collect all CA readings for this month
-    const readings: number[] = allCAs.map(ca => {
+    const readings: number[] = allCAs.map((ca, ci) => {
       const bills = getCABills(ca, 'monthly')
       const bill = bills[mi]
       if (!bill) return -1
+      // Simulate ~3% faulty meters (same opening and closing reading = 0 unit diff)
+      // Use deterministic seed so same CA always faulty in same month
+      const isFaulty = ((ci * 7 + mi * 13) % 33 === 0)
+      if (isFaulty) return 0
       // Round to nearest 100 kWh
       return Math.round((bill.kwh ?? 0) / 100) * 100
     }).filter(v => v >= 0)
-
-    console.log('[v0] Month', month, '- readings count:', readings.length, 'sample:', readings.slice(0, 3))
 
     // Count bills per bucket
     const buckets = DISTRIBUTION_BUCKETS.map(bucket => {
@@ -420,15 +415,13 @@ export function getConsumptionDistribution(): MonthlyDistribution[] {
         // Exact zero = faulty/same reading
         return readings.filter(v => v === 0).length
       }
-      return readings.filter(v => v > bucket.min && v <= bucket.max).length
+      return readings.filter(v => v >= (bucket.min === 0 ? 1 : bucket.min) && v <= bucket.max).length
     })
 
-    console.log('[v0] Month', month, '- buckets:', buckets)
     return { month, buckets }
   })
 
-  console.log('[v0] Computed distribution:', _distCache)
-  return _distCache
+  return result
 }
 
 /* ── State consumption summary ──
@@ -445,9 +438,7 @@ export interface StateConsumptionSummary {
 let _stateConsCache: StateConsumptionSummary[] | null = null;
 
 export function getStateConsumptionSummary(): StateConsumptionSummary[] {
-  if (_stateConsCache) return _stateConsCache;
-
-  _stateConsCache = STATES.map(state => {
+  const result = STATES.map(state => {
     const d = getStateBills(state, 'monthly');
     const totalKwh  = d.reduce((s, r) => s + r.kwh, 0);
     const totalBill = d.reduce((s, r) => s + r.totalBill, 0);
@@ -457,7 +448,7 @@ export function getStateConsumptionSummary(): StateConsumptionSummary[] {
     return { state, totalKwh, totalBill, avgRate };
   }).sort((a, b) => b.totalKwh - a.totalKwh);
 
-  return _stateConsCache;
+  return result;
 }
 
 /* ── Unit consumption vs bill amount trend ──
