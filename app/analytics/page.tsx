@@ -11,6 +11,7 @@ import ConsumptionSection from '@/components/ConsumptionSection';
 import SavingsSection from '@/components/SavingsSection';
 import HeatmapDrilldownPage from '@/components/HeatmapDrilldownPage';
 import AnomalyDrilldownPage from '@/components/AnomalyDrilldownPage';
+import MultiBillReviewPage from '@/components/MultiBillReviewPage';
 import { BillCategory } from '@/lib/calculations';
 
 export default function AnalyticsPage() {
@@ -28,6 +29,7 @@ export default function AnalyticsPage() {
 
   const [drilldown, setDrilldown] = useState<{ state: string; month: string; monthIndex: number } | null>(null);
   const [anomalyDrilldown, setAnomalyDrilldown] = useState<'over_contracted_every_month' | 'pf_below_threshold' | 'recurring_late_payment' | 'under_utilised' | null>(null);
+  const [multiBillReview, setMultiBillReview] = useState(false);
 
   const handleProductChange = (product: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst') => {
     setActiveProduct(product);
@@ -86,7 +88,9 @@ export default function AnalyticsPage() {
 
       {/* Section content */}
       <div className="content">
-        {anomalyDrilldown ? (
+        {multiBillReview ? (
+          <MultiBillReviewPage onBack={() => setMultiBillReview(false)} />
+        ) : anomalyDrilldown ? (
           <AnomalyDrilldownPage
             anomalyKey={anomalyDrilldown}
             onBack={() => setAnomalyDrilldown(null)}
@@ -133,7 +137,7 @@ export default function AnalyticsPage() {
                     onAnomalyClick={(anomalyKey) => setAnomalyDrilldown(anomalyKey)}
                   />
                 )}
-                {activeSection === 'billers' && <BillersSection appState={appState} />}
+                {activeSection === 'billers' && <BillersSection appState={appState} onMultiBillReview={() => setMultiBillReview(true)} />}
                 {activeSection === 'excess-demand' && <ExcessDemandSection appState={appState} />}
                 {activeSection === 'consumption' && <ConsumptionSection appState={appState} />}
                 {activeSection === 'leakages' && <LeakagesSection />}

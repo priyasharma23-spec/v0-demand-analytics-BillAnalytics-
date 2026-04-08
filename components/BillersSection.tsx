@@ -7,6 +7,7 @@ import { SummaryCard } from '@/components/SummaryCard'
 
 interface BillersSectionProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
+  onMultiBillReview?: () => void
 }
 
 // Compute CA counts from calculations.ts data
@@ -99,6 +100,20 @@ const dbcTableData = billerData.map(b => {
 
 // Aggregate metrics for KPI cards
 const totalBillers = Object.values(STATE_BILLERS_LIST).flat().length
+
+// Billers generating more than 1 bill per month per CA
+// In BBPS, some billers (e.g. MSEDCL, BEST) issue supplementary/revised bills
+// Simulated: ~15% of billers have multi-bill CAs, avg 1.3 bills per CA
+const MULTI_BILL_BILLERS = ['MSEDCL', 'BEST', 'DGVCL', 'TPDDL']
+const multiBillCount = MULTI_BILL_BILLERS.length
+const multiBillCAs   = MULTI_BILL_BILLERS.reduce((s, b) => {
+  const stateEntry = Object.entries(STATE_BILLERS_LIST).find(([, billers]) => billers.includes(b))
+  if (!stateEntry) return s
+  const stateCAs = CAS_PER_STATE[stateEntry[0]] ?? 0
+  const billerShare = 1 / (STATE_BILLERS_LIST[stateEntry[0]]?.length ?? 1)
+  return s + Math.round(stateCAs * billerShare * 0.18) // ~18% of CAs get supplementary bill
+}, 0)
+const multiBillExtraBills = Math.round(multiBillCAs * 0.3) // avg 1.3 bills = 0.3 extra per CA
 const totalOpted   = dbcTableData.reduce((s, r) => s + r.opted, 0)
 const totalReceived = dbcTableData.reduce((s, r) => s + r.received, 0)
 const billCopySuccessPct = totalOpted > 0 ? Math.round(totalReceived / totalOpted * 100) : 0
@@ -148,7 +163,7 @@ const dbcFunnel = {
     failedPct:   totalOpted > 0 ? Math.round(totalFailed / totalOpted * 100) : 0,
 }
 
-export default function BillersSection({ appState }: BillersSectionProps) {
+export default function BillersSection({ appState, onMultiBillReview }: BillersSectionProps) {
   const [funnelView, setFunnelView] = useState<'all'|'state'|'biller'>('all')
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
 
@@ -349,11 +364,14 @@ export default function BillersSection({ appState }: BillersSectionProps) {
         </div>
 
         {/* KPI cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
           <KpiCard variant="danger" label="Failed bill copies"   value={`${dbcFunnel.failed}`}   desc={`${dbcFunnel.failedPct}% fetch failure rate — check biller API connectivity for these CAs`} />
           <KpiCard variant="warn"   label="Pending >48 hrs"      value={`${Math.round(dbcFunnel.pending * 0.45)}`}   desc={`${Math.round(dbcFunnel.pending * 0.45)} of ${dbcFunnel.pending} pending CAs have been waiting over 48 hours — needs manual intervention`} />
           <KpiCard variant="good"   label="Opt-in coverage"      value={`${TOTAL_CAS > 0 ? Math.round(totalOpted / TOTAL_CAS * 100) : 0}%`}  desc={`${totalOpted} of ${TOTAL_CAS} CAs opted in — ${TOTAL_CAS - totalOpted} CAs yet to opt in`} />
           <KpiCard variant="info"   label="Successful delivery"  value={`${dbcFunnel.received}`}  desc={`${billCopySuccessPct}% of opted-in CAs received digital bill copy successfully this month`} />
+          <div onClick={onMultiBillReview} style={{ cursor: 'pointer' }}>
+            <KpiCard variant="warn"   label="Multi-bill billers"   value={`${multiBillCount} billers`} desc={`${multiBillCAs} CAs received >1 bill this month · click to review for duplicates`} />
+          </div>
         </div>
 
         {/* Bill copy by biller table */}
