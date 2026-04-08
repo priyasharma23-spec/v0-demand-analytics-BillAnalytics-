@@ -193,13 +193,22 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
               legend: { display: false },
               tooltip: {
                 backgroundColor: '#192744',
+                titleColor: '#fff',
+                bodyColor: 'rgba(255,255,255,0.85)',
+                padding: 10,
+                cornerRadius: 8,
                 callbacks: { label: item => `  Leakage: ${item.raw}% of bill` }
               }
             },
             scales: {
               x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-              y: { max: 35, border: { display: false }, grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
+              y: {
+                max: 35,
+                border: { display: false },
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' },
+                afterDataLimits: (axis: any) => { axis.max = 35 },
+              },
             },
           },
         });
@@ -225,11 +234,39 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '55%',
             plugins: {
-              legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 10, padding: 8 } },
+              legend: {
+                position: 'right',
+                labels: {
+                  font: { size: 12 },
+                  boxWidth: 12,
+                  padding: 12,
+                  generateLabels: (chart: any) => {
+                    const data = chart.data
+                    const total = data.datasets[0].data.reduce((a: number, b: number) => a + b, 0)
+                    return data.labels.map((label: string, i: number) => ({
+                      text: `${label}  ${Math.round(data.datasets[0].data[i] / Math.max(total,1) * 100)}%`,
+                      fillStyle: data.datasets[0].backgroundColor[i],
+                      strokeStyle: 'transparent',
+                      index: i,
+                    }))
+                  }
+                }
+              },
               tooltip: {
                 backgroundColor: '#192744',
-                callbacks: { label: item => ` ${item.label}: ${inrK(item.parsed)}` }
+                titleColor: '#fff',
+                bodyColor: 'rgba(255,255,255,0.85)',
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: {
+                  label: (item: any) => {
+                    const total = item.dataset.data.reduce((a: number, b: number) => a + b, 0)
+                    const pct = Math.round(item.parsed / Math.max(total, 1) * 100)
+                    return ` ${item.label}: ${inrK(item.parsed)} (${pct}%)`
+                  }
+                }
               }
             },
           },
