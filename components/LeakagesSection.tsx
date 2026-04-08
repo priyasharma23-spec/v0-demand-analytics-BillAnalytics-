@@ -45,7 +45,7 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
       if (pctChartInstance.current)   pctChartInstance.current.destroy();
       if (donutChartInstance.current) donutChartInstance.current.destroy();
     };
-  }, [appState?.stateF, appState?.branchF, appState?.caF]);
+  }, [appState?.stateF ?? 'all', appState?.branchF ?? 'all', appState?.caF ?? 'all']);
 
   const handleDrillDown = (_r: BreakdownRow) => {};
 
