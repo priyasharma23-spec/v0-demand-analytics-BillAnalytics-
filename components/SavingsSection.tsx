@@ -267,9 +267,9 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
         />
 
         <SummaryCard
-          label="Early payment benefit earned"
+          label="Early payment benefit"
           value={inr(summary.earnedEarlyBenefit)}
-          sub={`across ${summary.earlyBenefitBills} billing periods`}
+          sub={`earned across ${summary.earlyBenefitBills} billing periods`}
           subColor="#3B6D11"
           borderColor="#1A7A45"
         />

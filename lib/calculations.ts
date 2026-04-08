@@ -236,6 +236,20 @@ export function genBill(ca: string, i: number, periodType: 'yearly' | 'monthly')
   /* ── LATE PAYMENT SURCHARGE ──
      Formula: (totalBillBeforeLPS) × 2% per month overdue
      Occurs ~20% of the time */
+  /* ── DIGITAL PAYMENT BENEFIT ──
+     Discount offered by some billers for digital/online payment
+     Credited as adjustment in next bill · occurs ~40% of CAs · 0.5-1% of energy charge */
+  const digitalPaymentBenefit = (seed(s + 55) < 0.40)
+    ? Math.round(energyCharge * (0.005 + seed(s + 57) * 0.005))
+    : 0;
+
+  /* ── EARLY PAYMENT DISCOUNT ──
+     Offered by some DISCOMs for payment before due date
+     Occurs ~30% of the time · 1-1.5% of energy + fixed charges */
+  const earlyPaymentDiscount = seed(s + 58) < 0.30
+    ? Math.round((fixedCharge + energyCharge) * (0.01 + seed(s + 59) * 0.005))
+    : 0;
+
   const billBeforeLPS = fixedCharge + energyCharge + excessCharge + pfPenalty - pfIncentive + todViolation + lvSurcharge + meterRent;
   const latePayment = seed(s + 60) < 0.20 ? Math.round(billBeforeLPS * 0.02) : 0;
 
@@ -246,7 +260,7 @@ export function genBill(ca: string, i: number, periodType: 'yearly' | 'monthly')
      = Fixed charge + Energy charge + Excess demand charge
      + PF penalty − PF incentive + TOD violation
      + LV surcharge + Meter rent + Late payment + Arrears */
-  const totalBill = billBeforeLPS + latePayment + arrears;
+  const totalBill = billBeforeLPS + latePayment + arrears - digitalPaymentBenefit - earlyPaymentDiscount;
 
   /* Total leakage = all avoidable charges */
   const totalLeakage = excessCharge + pfPenalty + todViolation + lvSurcharge + latePayment;
@@ -255,7 +269,8 @@ export function genBill(ca: string, i: number, periodType: 'yearly' | 'monthly')
     mdi, contracted: p.contracted, sanctioned: p.sanctioned, connected: p.connected,
     kwh, fixedCharge, energyCharge, excessCharge, pfPenalty, pfIncentive,
     todViolation, lvSurcharge, meterRent, latePayment, arrears, totalBill,
-    totalLeakage, pf, excessKVA
+    totalLeakage, pf, excessKVA,
+    digitalPaymentBenefit, earlyPaymentDiscount
   };
 }
 
@@ -296,6 +311,8 @@ export function aggregateBills(billSets: any[][]) {
       arrears: sum('arrears'),
       totalBill: sum('totalBill'),
       totalLeakage: sum('totalLeakage'),
+      digitalPaymentBenefit: sum('digitalPaymentBenefit'),
+      earlyPaymentDiscount:  sum('earlyPaymentDiscount'),
       pf: rows.reduce((a: number, r: any) => a + r.pf, 0) / rows.length,
       excessKVA: avg('excessKVA')
     };
