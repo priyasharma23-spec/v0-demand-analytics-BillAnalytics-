@@ -1,15 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AppState } from '@/lib/types';
 
 type AnomalyKey = 'over_contracted_every_month' | 'pf_below_threshold' | 'recurring_late_payment' | 'under_utilised';
 
 interface AnomalyDrilldownProps {
   anomalyKey: AnomalyKey;
   onBack: () => void;
-  onNavigate: (section: string, filters?: Partial<AppState>) => void;
-  appState: AppState;
+  onNavigate: (section: string, filters?: Partial<{ view: string; stateF: string; branchF: string; caF: string; billCategory: string; section: string }>) => void;
+  appState: { view: string; stateF: string; branchF: string; caF: string; billCategory: string; section: string };
 }
 
 const ANOMALY_CONFIG: Record<AnomalyKey, {
