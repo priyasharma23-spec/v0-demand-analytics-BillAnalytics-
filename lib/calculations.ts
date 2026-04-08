@@ -393,33 +393,42 @@ export const DISTRIBUTION_BUCKETS: DistributionBucket[] = [
 let _distCache: MonthlyDistribution[] | null = null;
 
 export function getConsumptionDistribution(): MonthlyDistribution[] {
-  if (_distCache) return _distCache;
+  if (_distCache) {
+    console.log('[v0] dist cache hit, len:', _distCache.length, 'sample:', _distCache[0])
+    return _distCache
+  }
 
-  const allCAs = Object.values(CAS).flat();
+  console.log('[v0] Computing distribution from scratch...')
+  const allCAs = Object.values(CAS).flat()
+  console.log('[v0] Total CAs for distribution:', allCAs.length)
 
   _distCache = MONTHLY_LABELS.map((month, mi) => {
     // Collect all CA readings for this month
     const readings: number[] = allCAs.map(ca => {
-      const bills = getCABills(ca, 'monthly');
-      const bill = bills[mi];
-      if (!bill) return -1;
+      const bills = getCABills(ca, 'monthly')
+      const bill = bills[mi]
+      if (!bill) return -1
       // Round to nearest 100 kWh
-      return Math.round((bill.kwh ?? 0) / 100) * 100;
-    }).filter(v => v >= 0);
+      return Math.round((bill.kwh ?? 0) / 100) * 100
+    }).filter(v => v >= 0)
+
+    console.log('[v0] Month', month, '- readings count:', readings.length, 'sample:', readings.slice(0, 3))
 
     // Count bills per bucket
     const buckets = DISTRIBUTION_BUCKETS.map(bucket => {
       if (bucket.max === 0) {
         // Exact zero = faulty/same reading
-        return readings.filter(v => v === 0).length;
+        return readings.filter(v => v === 0).length
       }
-      return readings.filter(v => v > bucket.min && v <= bucket.max).length;
-    });
+      return readings.filter(v => v > bucket.min && v <= bucket.max).length
+    })
 
-    return { month, buckets };
-  });
+    console.log('[v0] Month', month, '- buckets:', buckets)
+    return { month, buckets }
+  })
 
-  return _distCache;
+  console.log('[v0] Computed distribution:', _distCache)
+  return _distCache
 }
 
 /* ── State consumption summary ──

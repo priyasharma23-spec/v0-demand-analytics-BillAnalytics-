@@ -128,6 +128,13 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
       appState?.caF ?? 'all'
     )
 
+    console.log('[v0] Consumption data loaded:', {
+      distDataLen: distData.length,
+      distDataSample: distData[0],
+      stateDataLen: stateData.length,
+      consBillLen: consBill.length,
+    })
+
     setDistribution(distData)
     setStateConsumption(stateData)
     setConsBillData(consBill)
@@ -252,8 +259,16 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   }, [stateConsumption])
   useEffect(() => {
     if (!distribution || distribution.length === 0 || !distChartRef.current) return
+    console.log('[v0] Rendering dist chart, distribution:', {
+      len: distribution.length,
+      sample: distribution[0],
+      ref: distChartRef.current,
+    })
     const ctx = distChartRef.current.getContext('2d')
-    if (!ctx) return
+    if (!ctx) {
+      console.log('[v0] No 2d context')
+      return
+    }
     if (distChartInstance.current) distChartInstance.current.destroy()
 
     distChartInstance.current = new Chart(ctx, {
