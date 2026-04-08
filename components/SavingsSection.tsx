@@ -5,7 +5,7 @@ import '@/lib/chartSetup'
 import { Chart } from 'chart.js'
 import { SummaryCard } from './SummaryCard'
 import { KpiCard } from './KpiCard'
-import { getFilteredBills, inr, inrK } from '@/lib/calculations'
+import { getFilteredBills, CAS, getCABills, inr, inrK } from '@/lib/calculations'
 
 interface SavingsSectionProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
@@ -31,6 +31,7 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
   })
   const [cleanData,       setCleanData]       = useState<any[]>([])
   const [savingsTrendData, setSavingsTrendData] = useState<any[]>([])
+  const [cleanChartView, setCleanChartView] = useState<'amount' | 'count'>('amount')
 
   useEffect(() => {
     const data = getFilteredBills(
@@ -92,11 +93,20 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
       missedDigitalDiscount, missedDigitalAmount, totalPeriods,
     })
 
-    setCleanData(data.map(d => ({
-      label:   d.label,
-      clean:   d.totalBill - d.totalLeakage,
-      penalty: d.totalLeakage,
-    })))
+    setCleanData(data.map((d, mi) => {
+      const monthBills   = Object.values(CAS).flat()
+        .map(ca => getCABills(ca, 'monthly')[mi])
+        .filter(Boolean)
+      const cleanCount   = monthBills.filter(b => (b?.totalLeakage ?? 0) === 0).length
+      const penaltyCount = monthBills.filter(b => (b?.totalLeakage ?? 0) > 0).length
+      return {
+        label:        d.label,
+        clean:        d.totalBill - d.totalLeakage,
+        penalty:      d.totalLeakage,
+        cleanCount,
+        penaltyCount,
+      }
+    }))
 
     setSavingsTrendData(data.map(d => ({
       label:         d.label,
@@ -114,14 +124,17 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
     const ctx = cleanVsPenaltyRef.current.getContext('2d')
     if (!ctx) return
     if (cleanVsPenaltyChart.current) cleanVsPenaltyChart.current.destroy()
+    
+    const isAmount = cleanChartView === 'amount'
+    
     cleanVsPenaltyChart.current = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: cleanData.map(d => d.label),
         datasets: [
           {
-            label: 'Clean bill',
-            data: cleanData.map(d => d.clean),
+            label: isAmount ? 'Clean bill' : 'Clean bills',
+            data: cleanData.map(d => isAmount ? d.clean : d.cleanCount),
             backgroundColor: 'rgba(29,158,117,0.75)',
             borderRadius: 0,
             borderSkipped: false,
@@ -129,8 +142,8 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
             categoryPercentage: 0.85,
           },
           {
-            label: 'Penalties',
-            data: cleanData.map(d => d.penalty),
+            label: isAmount ? 'Penalties' : 'Penalised bills',
+            data: cleanData.map(d => isAmount ? d.penalty : d.penaltyCount),
             backgroundColor: '#E24B4A',
             borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 } as any,
             borderSkipped: false,
@@ -152,20 +165,34 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
             padding: 12,
             cornerRadius: 8,
             callbacks: {
-              label: item => `  ${item.dataset.label}: ${inrK(item.raw as number)}`,
-              footer: items => `Total: ${inrK(items.reduce((s, i) => s + (i.raw as number), 0))}`,
+              label: item => isAmount
+                ? `  ${item.dataset.label}: ${inrK(item.raw as number)}`
+                : `  ${item.dataset.label}: ${item.raw} bills`,
+              footer: items => isAmount
+                ? `Total: ${inrK(items.reduce((s, i) => s + (i.raw as number), 0))}`
+                : `Total: ${items.reduce((s, i) => s + (i.raw as number), 0)} bills`,
             }
           }
         },
         scales: {
           x: { stacked: true, grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-          y: { stacked: true, border: { display: false }, grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v)/100000).toFixed(1) + 'L' } },
+          y: { 
+            stacked: true, 
+            border: { display: false }, 
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { 
+              color: '#858ea2', 
+              font: { size: 11 }, 
+              callback: isAmount
+                ? (v: any) => '₹' + (Number(v)/100000).toFixed(1) + 'L'
+                : (v: any) => Number.isInteger(Number(v)) ? v + ' bills' : '',
+            } 
+          },
         },
       },
     })
     return () => { if (cleanVsPenaltyChart.current) cleanVsPenaltyChart.current.destroy() }
-  }, [cleanData])
+  }, [cleanData, cleanChartView])
 
   // Monthly savings trend — smooth area chart
   useEffect(() => {
@@ -289,14 +316,35 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
 
         {/* Clean vs penalty */}
         <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Realised savings vs avoidable losses</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>Clean bill (green) vs penalty charges (red) · monthly</div>
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'10px' }}>
+            <div>
+              <div style={{ fontSize:'14px', fontWeight:600, color:'#192744', marginBottom:'3px' }}>Realised savings vs avoidable losses</div>
+              <div style={{ fontSize:'12px', color:'#858ea2' }}>
+                {cleanChartView === 'amount'
+                  ? 'Clean bill ₹ (green) vs penalty charges ₹ (red) · monthly'
+                  : 'Count of bills with zero leakage vs bills with penalties · monthly'}
+              </div>
+            </div>
+            <div style={{ display:'flex', background:'#f5f5f4', borderRadius:'8px', padding:'3px', gap:'2px', flexShrink:0 }}>
+              {(['amount', 'count'] as const).map(v => (
+                <button key={v} onClick={() => setCleanChartView(v)} style={{
+                  padding:'4px 12px', borderRadius:'6px', fontSize:'12px', fontWeight:500,
+                  border:'none', cursor:'pointer',
+                  background: cleanChartView === v ? '#fff' : 'transparent',
+                  color: cleanChartView === v ? '#192744' : '#858ea2',
+                  boxShadow: cleanChartView === v ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                }}>
+                  {v === 'amount' ? '₹ Amount' : '# Count'}
+                </button>
+              ))}
+            </div>
+          </div>
           <div style={{ display: 'flex', gap: '14px', marginBottom: '10px', fontSize: '12px', color: '#6b6b67' }}>
             <span style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(29,158,117,0.75)', display:'inline-block' }} />Clean bill
+              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(29,158,117,0.75)', display:'inline-block' }} />{cleanChartView === 'amount' ? 'Clean bill' : 'Clean bills'}
             </span>
             <span style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'#E24B4A', display:'inline-block' }} />Penalties
+              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'#E24B4A', display:'inline-block' }} />{cleanChartView === 'amount' ? 'Penalties' : 'Penalised bills'}
             </span>
           </div>
           <div style={{ position: 'relative', width: '100%', height: '240px' }}>
