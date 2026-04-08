@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import {
-  STATES, CAS, getCABills, MONTHLY_LABELS,
+  STATES, CAS, getCABills, MONTHLY_LABELS, getFilteredBills,
   getConsumptionDistribution, getStateConsumptionSummary, getConsumptionVsBill,
   DISTRIBUTION_BUCKETS, inr as inrCalculations
 } from '@/lib/calculations'
@@ -81,18 +81,7 @@ const trendData = [
   { period: '2024-12', period_label: 'Dec 24', total_kwh: 98000, energy_charges: 784000, rate_per_unit: 8.00 },
 ]
 
-// Bill component split
-const billComponentData = [
-  { period: '2024-04', period_label: 'Apr 24', fixed_charges: 202500, energy_charges: 784000, penalty_charges: 63000, arrears: 12000, taxes: 18000, total_bill: 1079500 },
-  { period: '2024-05', period_label: 'May 24', fixed_charges: 202500, energy_charges: 816000, penalty_charges: 65000, arrears: 12000, taxes: 19000, total_bill: 1114500 },
-  { period: '2024-06', period_label: 'Jun 24', fixed_charges: 202500, energy_charges: 864000, penalty_charges: 69000, arrears: 12000, taxes: 20000, total_bill: 1167500 },
-  { period: '2024-07', period_label: 'Jul 24', fixed_charges: 202500, energy_charges: 896000, penalty_charges: 72000, arrears: 12000, taxes: 21000, total_bill: 1203500 },
-  { period: '2024-08', period_label: 'Aug 24', fixed_charges: 202500, energy_charges: 944000, penalty_charges: 75000, arrears: 12000, taxes: 22000, total_bill: 1255500 },
-  { period: '2024-09', period_label: 'Sep 24', fixed_charges: 202500, energy_charges: 920000, penalty_charges: 74000, arrears: 12000, taxes: 22000, total_bill: 1230500 },
-  { period: '2024-10', period_label: 'Oct 24', fixed_charges: 202500, energy_charges: 880000, penalty_charges: 70000, arrears: 12000, taxes: 21000, total_bill: 1185500 },
-  { period: '2024-11', period_label: 'Nov 24', fixed_charges: 202500, energy_charges: 840000, penalty_charges: 67000, arrears: 12000, taxes: 20000, total_bill: 1141500 },
-  { period: '2024-12', period_label: 'Dec 24', fixed_charges: 202500, energy_charges: 784000, penalty_charges: 63000, arrears: 12000, taxes: 18000, total_bill: 1079500 },
-]
+// Bill component split — derived from getFilteredBills in component
 
 // KPI calculations
 const monthlyConsumptions = trendData.map(d => d.total_kwh)
@@ -105,12 +94,15 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly'>('monthly')
   
   // Distribution chart state
+  const [billComponentData, setBillComponentData] = useState<any[]>([])
   const [distribution, setDistribution] = useState<any[]>([])
   const [totalFaulty, setTotalFaulty] = useState(0)
   const [stateConsumption, setStateConsumption] = useState<any[]>([])
   const [consBillData, setConsBillData] = useState<any[]>([])
   const distChartRef = useRef<HTMLCanvasElement>(null)
   const distChartInstance = useRef<Chart | null>(null)
+  const compChartRef = useRef<HTMLCanvasElement>(null)
+  const compChartInstance = useRef<Chart | null>(null)
 
   // New chart refs
   const consumptionVsBillRef = useRef<HTMLCanvasElement>(null)
@@ -134,6 +126,19 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
       stateDataLen: stateData.length,
       consBillLen: consBill.length,
     })
+
+    // Derive bill component data from getFilteredBills
+    const filteredData = getFilteredBills('monthly', appState?.stateF ?? 'all', appState?.branchF ?? 'all', appState?.caF ?? 'all')
+    const compData = filteredData.map(d => ({
+      period_label: d.label,
+      fixed_charges:   d.fixedCharge,
+      energy_charges:  d.energyCharge,
+      penalty_charges: d.totalLeakage,
+      arrears:         Math.abs(d.arrears ?? 0),
+      taxes:           Math.round(d.totalBill * 0.05),
+      total_bill:      d.totalBill,
+    }))
+    setBillComponentData(compData)
 
     setDistribution(distData)
     setStateConsumption(stateData)
@@ -343,7 +348,123 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
     return () => { if (distChartInstance.current) distChartInstance.current.destroy() }
   }, [distribution])
 
-  return (
+  // Render bill component breakdown chart
+  useEffect(() => {
+    if (!compChartRef.current) return
+    const ctx = compChartRef.current.getContext('2d')
+    if (!ctx) return
+    if (compChartInstance.current) compChartInstance.current.destroy()
+
+    const labels = billComponentData.map(d => d.period_label)
+
+    compChartInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Fixed charges',
+            data: billComponentData.map(d => d.fixed_charges),
+            backgroundColor: '#85B7EB',
+            borderRadius: 0,
+            borderSkipped: false,
+            barPercentage: 0.75,
+            categoryPercentage: 0.85,
+          },
+          {
+            label: 'Energy charges',
+            data: billComponentData.map(d => d.energy_charges),
+            backgroundColor: '#1D9E75',
+            borderRadius: 0,
+            borderSkipped: false,
+            barPercentage: 0.75,
+            categoryPercentage: 0.85,
+          },
+          {
+            label: 'Penalties',
+            data: billComponentData.map(d => d.penalty_charges),
+            backgroundColor: '#E24B4A',
+            borderRadius: 0,
+            borderSkipped: false,
+            barPercentage: 0.75,
+            categoryPercentage: 0.85,
+          },
+          {
+            label: 'Arrears',
+            data: billComponentData.map(d => d.arrears),
+            backgroundColor: '#EF9F27',
+            borderRadius: 0,
+            borderSkipped: false,
+            barPercentage: 0.75,
+            categoryPercentage: 0.85,
+          },
+          {
+            label: 'Taxes',
+            data: billComponentData.map(d => d.taxes),
+            backgroundColor: '#888780',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
+            borderSkipped: false,
+            barPercentage: 0.75,
+            categoryPercentage: 0.85,
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#192744',
+            titleColor: '#fff',
+            bodyColor: 'rgba(255,255,255,0.85)',
+            padding: 12,
+            cornerRadius: 8,
+            callbacks: {
+              label: item => {
+                const v = item.raw as number
+                return `  ${item.dataset.label}: ${v >= 100000 ? '₹' + (v/100000).toFixed(1) + 'L' : '₹' + (v/1000).toFixed(0) + 'K'}`
+              },
+              footer: items => {
+                const total = items.reduce((s, i) => s + (i.raw as number), 0)
+                return `Total: ₹${(total/100000).toFixed(1)}L`
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: { display: false },
+            border: { display: false },
+            ticks: { color: '#858ea2', font: { size: 11 }, padding: 6 },
+          },
+          y: {
+            stacked: true,
+            border: { display: false },
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: {
+              color: '#858ea2',
+              font: { size: 11 },
+              padding: 8,
+              callback: (v: any) => '₹' + (Number(v)/100000).toFixed(1) + 'L',
+            },
+            title: {
+              display: true,
+              text: 'Bill amount (₹)',
+              color: '#858ea2',
+              font: { size: 11 },
+            }
+          }
+        }
+      }
+    })
+
+    return () => { if (compChartInstance.current) compChartInstance.current.destroy() }
+  }, [billComponentData])
+
+return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
       {/* Section 1 — Summary metric cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
@@ -440,8 +561,22 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill component breakdown</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Fixed / energy / penalties / taxes per period</div>
         </div>
-        <div style={{ height: '220px', background: '#f9f9f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#858ea2', fontSize: '12px' }}>
-          [Stacked bar chart: Fixed / Energy / Penalties / Arrears / Taxes]
+        <div style={{ display:'flex', gap:'14px', marginBottom:'10px', flexWrap:'wrap', fontSize:'12px', color:'#6b6b67' }}>
+          {[
+            { color:'#85B7EB', label:'Fixed charges' },
+            { color:'#1D9E75', label:'Energy charges' },
+            { color:'#E24B4A', label:'Penalties' },
+            { color:'#EF9F27', label:'Arrears' },
+            { color:'#888780', label:'Taxes' },
+          ].map(item => (
+            <span key={item.label} style={{ display:'flex', alignItems:'center', gap:'5px' }}>
+              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:item.color, display:'inline-block' }} />
+              {item.label}
+            </span>
+          ))}
+        </div>
+        <div style={{ position:'relative', width:'100%', height:'240px' }}>
+          <canvas ref={compChartRef}></canvas>
         </div>
       </div>
 
