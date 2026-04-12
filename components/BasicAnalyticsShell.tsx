@@ -23,14 +23,28 @@ export default function BasicAnalyticsShell({ appState }: BasicAnalyticsShellPro
     <div style={{ background: '#f0f5fa', minHeight: '100vh' }}>
 
       {/* Section pills */}
-      <div style={{ background: '#fff', borderBottom: '0.5px solid rgba(0,0,0,0.08)', padding: '0 24px', display: 'flex', gap: '4px' }}>
+      <div style={{
+        background: '#fff',
+        borderBottom: '0.5px solid rgba(0,0,0,0.08)',
+        padding: '0 20px',
+        display: 'flex',
+        gap: '2px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
         {BASIC_SECTIONS.map(s => (
           <button key={s.id} onClick={() => setSection(s.id)} style={{
-            padding: '10px 16px', fontSize: '13px', fontWeight: 500,
-            border: 'none', background: 'transparent', cursor: 'pointer',
+            padding: '11px 18px',
+            fontSize: '13px',
+            fontWeight: section === s.id ? 600 : 400,
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
             color: section === s.id ? '#2500D7' : '#858ea2',
             borderBottom: section === s.id ? '2px solid #2500D7' : '2px solid transparent',
             transition: 'all 0.15s',
+            whiteSpace: 'nowrap',
           }}>
             {s.label}
           </button>
@@ -49,19 +63,30 @@ export default function BasicAnalyticsShell({ appState }: BasicAnalyticsShellPro
 }
 
 // ── Placeholder sections ────────────────────────────────
-function PlaceholderSection({ title, desc }: { title: string; desc: string }) {
+function PlaceholderSection({ title, desc, bullets }: { title: string; desc: string; bullets?: string[] }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '320px', gap: '12px' }}>
-      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#EBEAFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <rect x="2" y="14" width="4" height="6" rx="1" fill="#2500D7" opacity="0.4"/>
-          <rect x="9" y="9" width="4" height="11" rx="1" fill="#2500D7" opacity="0.7"/>
-          <rect x="16" y="4" width="4" height="16" rx="1" fill="#2500D7"/>
+    <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '40px 32px', display: 'flex', alignItems: 'center', gap: '32px' }}>
+      <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: '#EBEAFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="2" y="16" width="5" height="8" rx="1.5" fill="#2500D7" opacity="0.35"/>
+          <rect x="10" y="10" width="5" height="14" rx="1.5" fill="#2500D7" opacity="0.65"/>
+          <rect x="18" y="4" width="5" height="20" rx="1.5" fill="#2500D7"/>
         </svg>
       </div>
-      <div style={{ fontSize: '15px', fontWeight: 600, color: '#192744' }}>{title}</div>
-      <div style={{ fontSize: '13px', color: '#858ea2', textAlign: 'center', maxWidth: '320px' }}>{desc}</div>
-      <div style={{ fontSize: '11px', color: '#2500D7', fontWeight: 500, padding: '4px 12px', borderRadius: '6px', background: '#EBEAFF' }}>Coming up next</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: '15px', fontWeight: 600, color: '#192744', marginBottom: '6px' }}>{title}</div>
+        <div style={{ fontSize: '13px', color: '#858ea2', marginBottom: bullets ? '12px' : 0 }}>{desc}</div>
+        {bullets && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {bullets.map(b => (
+              <span key={b} style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', background: '#EBEAFF', color: '#2500D7', fontWeight: 500 }}>{b}</span>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{ fontSize: '11px', color: '#2500D7', fontWeight: 500, padding: '5px 14px', borderRadius: '6px', background: '#EBEAFF', flexShrink: 0 }}>
+        In progress
+      </div>
     </div>
   )
 }
@@ -98,6 +123,42 @@ function BasicSummary() {
     total: getStateBills(st, 'monthly').reduce((s, d) => s + d.totalBill, 0),
     cas:   (BRANCHES[st] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0),
   })).sort((a, b) => b.total - a.total)
+
+  return (
+    <div>
+
+      {/* Welcome banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, #2500D7 0%, #7B6FE8 100%)',
+        borderRadius: '12px',
+        padding: '20px 24px',
+        marginBottom: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <div>
+          <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '5px' }}>
+            Bill Payments — Basic Analytics
+          </div>
+          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', maxWidth: '480px' }}>
+            Portfolio overview across {totalStates} states · {totalCAs} CAs · Apr 2024 – Mar 2025.
+            Connect bill copy data to unlock leakage detection, excess demand analysis, and savings recommendations.
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0, marginLeft: '24px' }}>
+          <button style={{
+            padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
+            border: 'none', cursor: 'pointer',
+            background: '#fff', color: '#2500D7',
+          }}>
+            Unlock Advanced →
+          </button>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.55)', textAlign: 'center' }}>
+            Bill copy integration required
+          </div>
+        </div>
+      </div>
 
   return (
     <div>
@@ -239,7 +300,7 @@ function BasicLocations() {
         <SummaryCard label="Top state"            value={topState.state}               sub={`${inr(topState.total)} · ${Math.round(topState.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
         <SummaryCard label="Avg spend per state"  value={inr(avgStateSpend)}           sub="across all states · current period"                                                          subColor="#858ea2" borderColor="#185FA5" />
         <SummaryCard label="Outlier states"       value={`${outliers.length}`}         sub=">10% YoY change · needs review"                                                              subColor={outliers.length > 2 ? '#A32D2D' : '#854F0B'} borderColor={outliers.length > 2 ? '#E24B4A' : '#EF9F27'} />
-        <SummaryCard label="Highest avg CA bill"  value={inr(Math.max(...stateData.map(d => d.avgBill)))} sub={stateData.sort((a,b) => b.avgBill - a.avgBill)[0].state + ' · per CA per period'} subColor="#854F0B" borderColor="#EF9F27" />
+        <SummaryCard label="Highest avg CA bill"  value={inr(Math.max(...stateData.map(d => d.avgBill)))} sub={stateData.sort((a,b) => b.avgBill - a.avgBill)[0].state + ' �� per CA per period'} subColor="#854F0B" borderColor="#EF9F27" />
       </div>
 
       {/* State heatmap — grid of states coloured by spend */}

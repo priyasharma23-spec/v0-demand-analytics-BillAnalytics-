@@ -147,60 +147,63 @@ export default function DashboardNav({
 
   return (
     <nav style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderBottom: '1px solid #F3F4F6' }}>
-      {/* Analytics mode toggle — sits above product tabs */}
+      {/* Analytics mode toggle */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '10px 24px 0', borderBottom: '0.5px solid rgba(0,0,0,0.08)',
+        padding: '8px 24px',
         background: '#fff',
+        borderBottom: '0.5px solid rgba(0,0,0,0.08)',
       }}>
-        <div style={{ display: 'flex', gap: '4px', background: '#f5f5f4', borderRadius: '10px', padding: '3px' }}>
-          {(['basic', 'advanced'] as const).map(mode => (
-            <button
-              key={mode}
-              onClick={() => onModeChange(mode)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                padding: '6px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 500,
-                border: 'none', cursor: 'pointer',
-                background: analyticsMode === mode ? '#fff' : 'transparent',
-                color: analyticsMode === mode ? '#192744' : '#858ea2',
-                boxShadow: analyticsMode === mode ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
-                transition: 'all 0.15s',
-              }}
-            >
-              {mode === 'basic' ? (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <rect x="1" y="8" width="3" height="5" rx="1" fill={analyticsMode === 'basic' ? '#2500D7' : '#9b9b96'} />
-                    <rect x="5.5" y="5" width="3" height="8" rx="1" fill={analyticsMode === 'basic' ? '#2500D7' : '#9b9b96'} />
-                    <rect x="10" y="2" width="3" height="11" rx="1" fill={analyticsMode === 'basic' ? '#2500D7' : '#9b9b96'} />
-                  </svg>
-                  Basic Analytics
-                </>
-              ) : (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <circle cx="7" cy="7" r="5.5" stroke={analyticsMode === 'advanced' ? '#2500D7' : '#9b9b96'} strokeWidth="1.2" fill="none"/>
-                    <path d="M4.5 7h5M7 4.5v5" stroke={analyticsMode === 'advanced' ? '#2500D7' : '#9b9b96'} strokeWidth="1.2" strokeLinecap="round"/>
-                  </svg>
-                  Advanced Analytics
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Mode toggle pill */}
+          <div style={{ display: 'flex', gap: '3px', background: '#f5f5f4', borderRadius: '10px', padding: '3px' }}>
+            {([
+              { id: 'basic', label: 'Basic Analytics', icon: '◎' },
+              { id: 'advanced', label: 'Advanced Analytics', icon: '⬡', badge: 'BILL COPY' },
+            ] as const).map(mode => (
+              <button
+                key={mode.id}
+                onClick={() => onModeChange?.(mode.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '5px 14px', borderRadius: '8px',
+                  fontSize: '12px', fontWeight: 500,
+                  border: 'none', cursor: 'pointer',
+                  background: analyticsMode === mode.id ? '#fff' : 'transparent',
+                  color: analyticsMode === mode.id ? '#192744' : '#9b9b96',
+                  boxShadow: analyticsMode === mode.id ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: '10px', color: analyticsMode === mode.id ? '#2500D7' : '#c4c4c4' }}>{mode.icon}</span>
+                {mode.label}
+                {'badge' in mode && (
                   <span style={{
-                    fontSize: '9px', fontWeight: 600, padding: '1px 5px', borderRadius: '4px',
-                    background: analyticsMode === 'advanced' ? '#EBEAFF' : '#f0f0f0',
-                    color: analyticsMode === 'advanced' ? '#2500D7' : '#9b9b96',
-                    letterSpacing: '0.03em',
+                    fontSize: '9px', fontWeight: 600, padding: '1px 5px', borderRadius: '3px',
+                    background: analyticsMode === mode.id ? '#EBEAFF' : '#f0f0f0',
+                    color: analyticsMode === mode.id ? '#2500D7' : '#b0b0b0',
+                    letterSpacing: '0.04em',
                   }}>
-                    BILL COPY
+                    {mode.badge}
                   </span>
-                </>
-              )}
-            </button>
-          ))}
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Breadcrumb — only shown in Advanced */}
+          {analyticsMode === 'advanced' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#9b9b96' }}>
+              <span>·</span>
+              <span>Bill copy data connected</span>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#1D9E75', display: 'inline-block', marginLeft: '2px' }} />
+            </div>
+          )}
         </div>
 
-        {/* Right side — show data freshness */}
-        <div style={{ fontSize: '11px', color: '#9b9b96' }}>
-          Data as of Apr 2025 · Auto-refreshed daily
+        {/* Right — data freshness */}
+        <div style={{ fontSize: '11px', color: '#b0b0b0' }}>
+          Updated daily · Apr 2025
         </div>
       </div>
 
