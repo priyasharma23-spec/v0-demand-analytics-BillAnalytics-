@@ -533,5 +533,197 @@ function BasicTrends() {
 }
 
 function BasicDueDates() {
-  return <PlaceholderSection title="Due date calendar" desc="Upcoming bill due dates, capital planning view, and payment prioritisation by amount" />
+  const [selectedMonth, setSelectedMonth] = useState(0) // 0 = current month view
+
+  const data    = getFilteredBills('monthly', 'all', 'all', 'all')
+  const allCAs  = Object.values(CAS).flat()
+  const totalCAs = allCAs.length
+
+  // Generate due date schedule — each CA has a due date between 1-28 of month
+  // Deterministically assign due dates based on CA name seed
+  const caSchedule = allCAs.map((ca, i) => {
+    const seed       = ca.charCodeAt(0) + ca.charCodeAt(ca.length - 1)
+    const dueDay     = (seed % 25) + 3           // due day 3–27
+    const billAmt    = Math.round(180000 + (seed % 50) * 4200)
+    const isPaid     = (seed % 10) < 6           // 60% paid
+    const isOverdue  = !isPaid && (seed % 10) < 8 // 20% overdue
+    const isDueSoon  = !isPaid && !isOverdue      // 20% due soon
+    const state      = STATES[i % STATES.length]
+    return { ca, dueDay, billAmt, isPaid, isOverdue, isDueSoon, state }
+  })
+
+  // Group by due day for calendar
+  const byDay: Record<number, typeof caSchedule> = {}
+  caSchedule.forEach(ca => {
+    if (!byDay[ca.dueDay]) byDay[ca.dueDay] = []
+    byDay[ca.dueDay].push(ca)
+  })
+
+  // Capital planning — cumulative amount due each week
+  const weeks = [
+    { label: 'Week 1 (1–7)',   days: [1,2,3,4,5,6,7]   },
+    { label: 'Week 2 (8–14)',  days: [8,9,10,11,12,13,14] },
+    { label: 'Week 3 (15–21)', days: [15,16,17,18,19,20,21] },
+    { label: 'Week 4 (22–28)', days: [22,23,24,25,26,27,28] },
+  ]
+  const weeklyAmounts = weeks.map(w => {
+    const cas    = w.days.flatMap(d => byDay[d] ?? [])
+    const total  = cas.reduce((s, c) => s + c.billAmt, 0)
+    const unpaid = cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+    const overdue = cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
+    return { ...w, total, unpaid, overdue, count: cas.length, unpaidCount: cas.filter(c => !c.isPaid).length }
+  })
+
+  const totalUnpaid  = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+  const totalOverdue = caSchedule.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
+  const totalDueSoon = caSchedule.filter(c => c.isDueSoon).reduce((s, c) => s + c.billAmt, 0)
+  const overdueCount = caSchedule.filter(c => c.isOverdue).length
+  const dueSoonCount = caSchedule.filter(c => c.isDueSoon).length
+
+  // Calendar grid — 28 days
+  const calendarDays = Array.from({ length: 28 }, (_, i) => i + 1)
+
+  return (
+    <div>
+
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
+        <SummaryCard label="Total unpaid"     value={inr(totalUnpaid)}   sub={`${totalCAs - caSchedule.filter(c=>c.isPaid).length} CAs · current period`}  subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="Overdue"          value={inr(totalOverdue)}  sub={`${overdueCount} CAs past due date`}                                           subColor="#A32D2D" borderColor="#E24B4A" />
+        <SummaryCard label="Due within 7 days" value={inr(totalDueSoon)} sub={`${dueSoonCount} CAs · pay to avoid late charges`}                            subColor="#854F0B" borderColor="#EF9F27" />
+        <SummaryCard label="Paid this period"  value={inr(caSchedule.filter(c=>c.isPaid).reduce((s,c)=>s+c.billAmt,0))} sub={`${caSchedule.filter(c=>c.isPaid).length} CAs · ${Math.round(caSchedule.filter(c=>c.isPaid).length/totalCAs*100)}% conversion`} subColor="#3B6D11" borderColor="#1A7A45" />
+      </div>
+
+      {/* Two column — calendar + weekly capital plan */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+
+        {/* Due date calendar */}
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Due date calendar</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Bills due per day · current month</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+            {calendarDays.map(day => {
+              const dayCAs  = byDay[day] ?? []
+              const hasOver = dayCAs.some(c => c.isOverdue)
+              const hasSoon = dayCAs.some(c => c.isDueSoon)
+              const hasPaid = dayCAs.some(c => c.isPaid)
+              const bg      = dayCAs.length === 0 ? '#f9f9f9' : hasOver ? '#FCEBEB' : hasSoon ? '#FAEEDA' : '#EAF3DE'
+              const border  = dayCAs.length === 0 ? 'rgba(0,0,0,0.06)' : hasOver ? '#F7C1C1' : hasSoon ? '#FAC775' : '#C0DD97'
+              const textCol = dayCAs.length === 0 ? '#c4c4c4' : hasOver ? '#A32D2D' : hasSoon ? '#633806' : '#27500A'
+              return (
+                <div key={day} style={{ background: bg, border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px', textAlign: 'center', cursor: dayCAs.length > 0 ? 'pointer' : 'default' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: textCol }}>{day}</div>
+                  {dayCAs.length > 0 && (
+                    <div style={{ fontSize: '9px', color: textCol, marginTop: '1px' }}>{dayCAs.length} CA{dayCAs.length > 1 ? 's' : ''}</div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
+            {[
+              { color: '#F7C1C1', label: 'Overdue' },
+              { color: '#FAC775', label: 'Due soon' },
+              { color: '#C0DD97', label: 'Paid' },
+              { color: 'rgba(0,0,0,0.06)', label: 'No bills' },
+            ].map(item => (
+              <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: item.color, display: 'inline-block', border: '0.5px solid rgba(0,0,0,0.08)' }} />
+                {item.label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Weekly capital planning */}
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Weekly capital plan</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Cash required by week · plan ahead to avoid late charges</div>
+          {weeklyAmounts.map((w, i) => (
+            <div key={w.label} style={{ marginBottom: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                <div>
+                  <span style={{ fontSize: '12px', fontWeight: 500, color: '#192744' }}>{w.label}</span>
+                  <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '6px' }}>{w.count} bills</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {w.overdue > 0 && (
+                    <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: '#FCEBEB', color: '#A32D2D', fontWeight: 500 }}>₹{(w.overdue/100000).toFixed(1)}L overdue</span>
+                  )}
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>{inr(w.unpaid)}</span>
+                </div>
+              </div>
+              <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', borderRadius: '4px',
+                  background: w.overdue > 0 ? '#E24B4A' : i === 0 ? '#2500D7' : '#7B6FE8',
+                  width: `${Math.round(w.unpaid / Math.max(...weeklyAmounts.map(x => x.unpaid)) * 100)}%`,
+                }} />
+              </div>
+              <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '3px' }}>{w.unpaidCount} unpaid · {inr(w.unpaid)} cash needed</div>
+            </div>
+          ))}
+          <div style={{ padding: '10px 12px', background: '#E6F1FB', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', fontWeight: 500, color: '#0C447C' }}>Total cash required this month</span>
+            <span style={{ fontSize: '15px', fontWeight: 700, color: '#185FA5' }}>{inr(totalUnpaid)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Upcoming dues table */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Upcoming & overdue bills</div>
+        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Sorted by urgency — overdue first, then by due date</div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <thead>
+            <tr>
+              {['CA Number', 'State', 'Due date', 'Bill amount', 'Status', 'Action'].map(h => (
+                <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {caSchedule
+              .filter(c => !c.isPaid)
+              .sort((a, b) => (a.isOverdue === b.isOverdue ? a.dueDay - b.dueDay : a.isOverdue ? -1 : 1))
+              .slice(0, 10)
+              .map(c => (
+                <tr key={c.ca}
+                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
+                  onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
+                >
+                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontFamily: 'monospace', fontSize: '12px', color: '#192744' }}>{c.ca}</td>
+                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{c.state}</td>
+                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: c.isOverdue ? '#A32D2D' : '#633806' }}>
+                    {c.isOverdue ? `Past due (day ${c.dueDay})` : `Day ${c.dueDay}`}
+                  </td>
+                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{inr(c.billAmt)}</td>
+                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                    <span style={{
+                      fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
+                      background: c.isOverdue ? '#FCEBEB' : '#FAEEDA',
+                      color: c.isOverdue ? '#A32D2D' : '#633806',
+                    }}>
+                      {c.isOverdue ? 'Overdue' : 'Due soon'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                    <button style={{
+                      fontSize: '11px', fontWeight: 500, padding: '4px 12px', borderRadius: '6px',
+                      border: c.isOverdue ? '0.5px solid #F7C1C1' : '0.5px solid #B5D4F4',
+                      background: c.isOverdue ? '#FCEBEB' : '#E6F1FB',
+                      color: c.isOverdue ? '#A32D2D' : '#0C447C',
+                      cursor: 'pointer',
+                    }}>
+                      {c.isOverdue ? 'Pay now' : 'Schedule payment'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  )
 }
