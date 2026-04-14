@@ -23,6 +23,8 @@ interface DashboardNavProps {
   onCAChange: (ca: string) => void;
   onBillCategoryChange: (category: string) => void;
   onPeriodChange: (period: string) => void;
+  analyticsMode: 'basic' | 'advanced';
+  onModeChange: (mode: 'basic' | 'advanced') => void;
 }
 
 export default function DashboardNav({
@@ -36,6 +38,8 @@ export default function DashboardNav({
   onCAChange,
   onBillCategoryChange,
   onPeriodChange,
+  analyticsMode,
+  onModeChange,
 }: DashboardNavProps) {
   const [localState, setLocalState] = useState('');
   const [localBranch, setLocalBranch] = useState('');
@@ -143,6 +147,66 @@ export default function DashboardNav({
 
   return (
     <nav style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderBottom: '1px solid #F3F4F6' }}>
+      {/* Analytics mode toggle */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 24px',
+        background: '#fff',
+        borderBottom: '0.5px solid rgba(0,0,0,0.08)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Mode toggle pill */}
+          <div style={{ display: 'flex', gap: '3px', background: '#f5f5f4', borderRadius: '10px', padding: '3px' }}>
+            {([
+              { id: 'basic', label: 'Basic Analytics', icon: '◎' },
+              { id: 'advanced', label: 'Advanced Analytics', icon: '⬡', badge: 'BILL COPY' },
+            ] as const).map(mode => (
+              <button
+                key={mode.id}
+                onClick={() => onModeChange?.(mode.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '5px 14px', borderRadius: '8px',
+                  fontSize: '12px', fontWeight: 500,
+                  border: 'none', cursor: 'pointer',
+                  background: analyticsMode === mode.id ? '#fff' : 'transparent',
+                  color: analyticsMode === mode.id ? '#192744' : '#9b9b96',
+                  boxShadow: analyticsMode === mode.id ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: '10px', color: analyticsMode === mode.id ? '#2500D7' : '#c4c4c4' }}>{mode.icon}</span>
+                {mode.label}
+                {'badge' in mode && (
+                  <span style={{
+                    fontSize: '9px', fontWeight: 600, padding: '1px 5px', borderRadius: '3px',
+                    background: analyticsMode === mode.id ? '#EBEAFF' : '#f0f0f0',
+                    color: analyticsMode === mode.id ? '#2500D7' : '#b0b0b0',
+                    letterSpacing: '0.04em',
+                  }}>
+                    {mode.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Breadcrumb — only shown in Advanced */}
+          {analyticsMode === 'advanced' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#9b9b96' }}>
+              <span>·</span>
+              <span>Bill copy data connected</span>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#1D9E75', display: 'inline-block', marginLeft: '2px' }} />
+            </div>
+          )}
+        </div>
+
+        {/* Right — data freshness */}
+        <div style={{ fontSize: '11px', color: '#b0b0b0' }}>
+          Updated daily · Apr 2025
+        </div>
+      </div>
+
       {/* Product Navigation - Primary */}
       <div style={{ 
         display: 'flex', 
@@ -190,8 +254,8 @@ export default function DashboardNav({
         ))}
       </div>
 
-      {/* Section Navigation - Secondary (only for Bill Payment) */}
-      {showSectionPills && (
+      {/* Section Navigation - Secondary (only for Bill Payment AND Advanced mode) */}
+      {showSectionPills && analyticsMode === 'advanced' && (
         <div style={{ 
           display: 'flex', 
           gap: '8px', 
