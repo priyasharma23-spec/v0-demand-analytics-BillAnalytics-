@@ -377,12 +377,12 @@ function BasicLocations({ appState }: BasicSectionProps) {
       {/* Heatmap or branches listing based on filter */}
       {!showBranches && (
         <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>State spend heatmap</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px', whiteSpace: 'nowrap' }}>State spend heatmap</div>
               <div style={{ fontSize: '12px', color: '#858ea2' }}>Darker = higher total bill · Apr 2024 – Mar 2025</div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#858ea2' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#858ea2', flexShrink: 0 }}>
               <span>Low</span>
               {['#EBEAFF','#C4BFFF','#9E97FF','#7B6FE8','#2500D7'].map(c => (
                 <div key={c} style={{ width: '16px', height: '16px', borderRadius: '3px', background: c }} />
@@ -396,38 +396,27 @@ function BasicLocations({ appState }: BasicSectionProps) {
               const bg = intensity > 0.8 ? '#2500D7' : intensity > 0.6 ? '#7B6FE8' : intensity > 0.4 ? '#9E97FF' : intensity > 0.2 ? '#C4BFFF' : '#EBEAFF'
               const textColor = intensity > 0.5 ? '#fff' : '#192744'
               return (
-                <div key={s.state} style={{ background: bg, borderRadius: '8px', padding: '12px 14px', position: 'relative' }}>
+                <div key={s.state} style={{ background: bg, borderRadius: '8px', padding: '10px 12px', position: 'relative', minHeight: '80px' }}>
                   {s.isOutlier && (
                     <div style={{ position: 'absolute', top: '6px', right: '6px', width: '6px', height: '6px', borderRadius: '50%', background: s.yoy > 0 ? '#EF9F27' : '#E24B4A' }} />
                   )}
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: textColor, marginBottom: '3px' }}>{s.state}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: textColor }}>{inr(s.total)}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: textColor, marginBottom: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.state}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: textColor }}>{inr(s.total)}</div>
                   <div style={{ fontSize: '10px', color: intensity > 0.5 ? 'rgba(255,255,255,0.75)' : '#858ea2', marginTop: '2px' }}>{s.cas} CAs</div>
                 </div>
               )
             })}
           </div>
-          <div style={{ display: 'flex', gap: '12px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF9F27', display: 'inline-block' }} />
-              Positive YoY change
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF9F27', display: 'inline-block' }} />Spending up &gt;10% YoY
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#E24B4A', display: 'inline-block' }} />
-              Negative YoY change
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#E24B4A', display: 'inline-block' }} />Spending down &gt;10% YoY
             </span>
           </div>
         </div>
       )}
-        <div style={{ display: 'flex', gap: '12px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF9F27', display: 'inline-block' }} />Spending up &gt;10% YoY
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#E24B4A', display: 'inline-block' }} />Spending down &gt;10% YoY
-          </span>
-        </div>
-      </div>
 
       {/* Ranked table */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
