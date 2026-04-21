@@ -119,7 +119,8 @@ function BasicSummary({ appState }: BasicSectionProps) {
   const billsDueAmount = Math.round(avgBill * billsDueCount)
   const paid    = Math.round(totalCAs * 0.60)
   const pending = Math.round(totalCAs * 0.25)
-  const overdue = totalCAs - paid - pending
+  const hold    = Math.round(totalCAs * 0.10)
+  const overdue = totalCAs - paid - pending - hold
   const stateAmounts = STATES.map(st => ({
     state: st,
     total: getStateBills(st, 'monthly').reduce((s, d) => s + d.totalBill, 0),
@@ -292,6 +293,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
           {[
             { label: 'Paid',    count: paid,    pct: Math.round(paid/totalCAs*100),    color: '#36b37e', bg: '#e8f8f1' },
             { label: 'Pending', count: pending, pct: Math.round(pending/totalCAs*100), color: '#f59e0b', bg: '#fef3c7' },
+            { label: 'Hold',    count: hold,    pct: Math.round(hold/totalCAs*100),    color: '#8b5cf6', bg: '#f3e8ff' },
             { label: 'Overdue', count: overdue, pct: Math.round(overdue/totalCAs*100), color: '#ec2127', bg: '#fce8e8' },
           ].map(item => (
             <div key={item.label} style={{ marginBottom: '14px' }}>
