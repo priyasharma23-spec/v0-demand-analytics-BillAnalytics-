@@ -265,14 +265,17 @@ function BasicSummary() {
           <div style={{ position: 'relative', width: '100%', height: '160px' }}>
             <canvas ref={spendTrendRef}></canvas>
           </div>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: '#858ea2' }}>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <span style={{ width: '18px', height: '2px', background: '#1c5af4', display: 'inline-block', borderRadius: '1px' }} />
               Total bill amount (₹)
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ fontSize: '10px', color: '#858ea2', fontWeight: 600 }}>123</span>
-              CA count shown above each point
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#858ea2', display: 'inline-block' }} />
+              CA count above each point · varies monthly
+            </span>
+            <span style={{ marginLeft: 'auto', color: '#858ea2' }}>
+              Range: {Math.min(...caCounts)}–{Math.max(...caCounts)} CAs active per month
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
