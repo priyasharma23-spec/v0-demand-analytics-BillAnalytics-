@@ -369,11 +369,10 @@ function BasicLocations({ appState }: BasicSectionProps) {
 
       {/* Summary chips */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Top location"          value={topItem.name}                  sub={`${inr(topItem.total)} · ${Math.round(topItem.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="Top location"          value={(topItem as any).name ?? (topItem as any).state ?? ''}                  sub={`${inr(topItem.total)} · ${Math.round(topItem.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
         <SummaryCard label="Avg spend per location" value={inr(avgSpend)}                sub={showBranches ? `${appState.stateF} · current period` : "across all states · current period"}                                                          subColor="#858ea2" borderColor="#185FA5" />
         <SummaryCard label="Outlier states"        value={`${outliers.length}`}          sub=">10% YoY change · needs review"                                                              subColor={outliers.length > 2 ? '#A32D2D' : '#854F0B'} borderColor={outliers.length > 2 ? '#E24B4A' : '#EF9F27'} />
-        <SummaryCard label="Highest avg bill"      value={inr(Math.max(...locationRows.map(d => d.total ? Math.round(d.total / d.cas) : 0)))} sub={showBranches ? `${appState.stateF}` : 'across all locations'} subColor="#854F0B" borderColor="#EF9F27" />
-      </div>
+        <SummaryCard label="Highest avg bill"      value={inr(Math.max(...locationRows.map(d => d.total ? Math.round(d.total / d.cas) : 0)))} sub={showBranches ? appState.stateF : 'across all locations'} subColor="#854F0B" borderColor="#EF9F27" />
 
       {/* Heatmap or branches listing based on filter */}
       {!showBranches && (
@@ -420,31 +419,6 @@ function BasicLocations({ appState }: BasicSectionProps) {
           </div>
         </div>
       )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#858ea2' }}>
-            <span>Low</span>
-            {['#EBEAFF','#C4BFFF','#9E97FF','#7B6FE8','#2500D7'].map(c => (
-              <div key={c} style={{ width: '16px', height: '16px', borderRadius: '3px', background: c }} />
-            ))}
-            <span>High</span>
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '8px' }}>
-          {stateData.map((s, i) => {
-            const intensity = s.total / stateData[0].total
-            const bg = intensity > 0.8 ? '#2500D7' : intensity > 0.6 ? '#7B6FE8' : intensity > 0.4 ? '#9E97FF' : intensity > 0.2 ? '#C4BFFF' : '#EBEAFF'
-            const textColor = intensity > 0.5 ? '#fff' : '#192744'
-            return (
-              <div key={s.state} style={{ background: bg, borderRadius: '8px', padding: '12px 14px', position: 'relative' }}>
-                {s.isOutlier && (
-                  <div style={{ position: 'absolute', top: '6px', right: '6px', width: '6px', height: '6px', borderRadius: '50%', background: s.yoy > 0 ? '#EF9F27' : '#E24B4A' }} />
-                )}
-                <div style={{ fontSize: '12px', fontWeight: 600, color: textColor, marginBottom: '3px' }}>{s.state}</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: textColor }}>{inr(s.total)}</div>
-                <div style={{ fontSize: '10px', color: intensity > 0.5 ? 'rgba(255,255,255,0.75)' : '#858ea2', marginTop: '2px' }}>{s.cas} CAs</div>
-              </div>
-            )
-          })}
-        </div>
         <div style={{ display: 'flex', gap: '12px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF9F27', display: 'inline-block' }} />Spending up &gt;10% YoY
@@ -458,7 +432,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
       {/* Ranked table */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
         <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>
-          {showBranches ? `Branch breakdown — ${appState.stateF}` : 'All locations ranked'}
+          {showBranches ? ('Branch breakdown — ' + appState.stateF) : 'All locations ranked'}
         </div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Sorted by total bill · YoY change vs prior year</div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
@@ -495,6 +469,42 @@ function BasicLocations({ appState }: BasicSectionProps) {
                     background: s.isOutlier ? (s.yoy > 0 ? '#FAEEDA' : '#FCEBEB') : '#EAF3DE',
                     color:      s.isOutlier ? (s.yoy > 0 ? '#633806' : '#A32D2D') : '#27500A',
                   }}>
+                    {s.isOutlier ? (s.yoy > 0 ? '⚠ Spike' : '⚠ Drop') : '✓ Normal'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <thead>
+            <tr>
+              {['#', showBranches ? 'Branch' : 'State', 'CAs', 'Total bill', 'Avg per CA', 'vs Prior year', 'Status'].map(h => (
+                <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {locationRows.map((s, idx) => (
+              <tr key={s.name}
+                onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
+                onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
+              >
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: idx < 3 ? '#1c5af4' : '#858ea2', fontWeight: 600 }}>{idx + 1}</td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>
+                  <div>{s.name}</div>
+                  <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '1px' }}>
+                    {s.cas} CAs{!showBranches ? ` · ${(s as any).branches ?? 0} branches` : ''}
+                  </div>
+                </td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{s.cas}</td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{inr(s.total)}</td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{inr(Math.round(s.total / Math.max(s.cas, 1)))}</td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: s.yoy > 10 ? '#FAEEDA' : s.yoy < -10 ? '#FCEBEB' : '#f5f5f4', color: s.yoy > 10 ? '#854F0B' : s.yoy < -10 ? '#A32D2D' : '#6b6b67' }}>
+                    {s.yoy > 0 ? '+' : ''}{s.yoy}%
+                  </span>
+                </td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: s.isOutlier ? (s.yoy > 0 ? '#FAEEDA' : '#FCEBEB') : '#EAF3DE', color: s.isOutlier ? (s.yoy > 0 ? '#633806' : '#A32D2D') : '#27500A' }}>
                     {s.isOutlier ? (s.yoy > 0 ? '⚠ Spike' : '⚠ Drop') : '✓ Normal'}
                   </span>
                 </td>
