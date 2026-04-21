@@ -485,42 +485,6 @@ function BasicLocations({ appState }: BasicSectionProps) {
               </tr>
             ))}
           </tbody>
-          <thead>
-            <tr>
-              {['#', showBranches ? 'Branch' : 'State', 'CAs', 'Total bill', 'Avg per CA', 'vs Prior year', 'Status'].map(h => (
-                <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {locationRows.map((s, idx) => (
-              <tr key={s.name}
-                onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-              >
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: idx < 3 ? '#1c5af4' : '#858ea2', fontWeight: 600 }}>{idx + 1}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>
-                  <div>{s.name}</div>
-                  <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '1px' }}>
-                    {s.cas} CAs{!showBranches ? ` · ${(s as any).branches ?? 0} branches` : ''}
-                  </div>
-                </td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{s.cas}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{inr(s.total)}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{inr(Math.round(s.total / Math.max(s.cas, 1)))}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: s.yoy > 10 ? '#FAEEDA' : s.yoy < -10 ? '#FCEBEB' : '#f5f5f4', color: s.yoy > 10 ? '#854F0B' : s.yoy < -10 ? '#A32D2D' : '#6b6b67' }}>
-                    {s.yoy > 0 ? '+' : ''}{s.yoy}%
-                  </span>
-                </td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: s.isOutlier ? (s.yoy > 0 ? '#FAEEDA' : '#FCEBEB') : '#EAF3DE', color: s.isOutlier ? (s.yoy > 0 ? '#633806' : '#A32D2D') : '#27500A' }}>
-                    {s.isOutlier ? (s.yoy > 0 ? '⚠ Spike' : '⚠ Drop') : '✓ Normal'}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
         </table>
       </div>
 
