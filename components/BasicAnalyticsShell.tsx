@@ -399,8 +399,8 @@ function BasicLocations({ appState }: BasicSectionProps) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
         <SummaryCard label="Top location"          value={(topItem as any).name ?? (topItem as any).state ?? ''}                  sub={`${inr(topItem.total)} · ${Math.round(topItem.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
         <SummaryCard label="Avg spend per location" value={inr(avgSpend)}                sub={showBranches ? `${appState.stateF} · current period` : "across all states · current period"}                                                          subColor="#858ea2" borderColor="#185FA5" />
-        <SummaryCard label="Outlier states"        value={`${outliers.length}`}          sub=">10% YoY change · needs review"                                                              subColor={outliers.length > 2 ? '#A32D2D' : '#854F0B'} borderColor={outliers.length > 2 ? '#E24B4A' : '#EF9F27'} />
-        <SummaryCard label="Highest avg bill"      value={inr(Math.max(...locationRows.map(d => d.total ? Math.round(d.total / d.cas) : 0)))} sub={showBranches ? appState.stateF : 'across all locations'} subColor="#854F0B" borderColor="#EF9F27" />
+        <SummaryCard label="Top branch"   value={branchRows[0]?.name ?? '—'}   sub={`${branchRows[0] ? '₹' + (branchRows[0].total / 100000).toFixed(1) + 'L · ' + branchRows[0].sub : 'No data'}`}   subColor="#185FA5"   borderColor="#185FA5" />
+        <SummaryCard label="Top CA"   value={caRows[0]?.name ?? '—'}   sub={`${caRows[0] ? '₹' + (caRows[0].total / 100000).toFixed(1) + 'L · ' + caRows[0].sub : 'No data'}`}   subColor="#3B6D11"   borderColor="#1A7A45" />
       </div>
 
       {/* Heatmap or branches listing based on filter */}
