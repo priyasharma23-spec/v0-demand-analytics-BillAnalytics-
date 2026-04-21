@@ -136,47 +136,45 @@ function BasicSummary() {
       if (!ctx) return
       if (spendTrendChart.current) spendTrendChart.current.destroy()
       const padding = (maxVal - minVal) * 0.15
-      spendTrendChart.current = new Chart(ctx, {
-        type: 'line',
-        data: {
+    spendTrendChart.current = new Chart(ctx, {
+      type: 'line',
+      plugins: [{
+        id: 'caLabels',
+        afterDatasetsDraw(chart: any) {
+          const { ctx: c } = chart
+          const meta = chart.getDatasetMeta(0)
+          meta.data.forEach((point: any, i: number) => {
+            const count = caCounts[i]
+            if (!count) return
+            c.save()
+            c.fillStyle = '#858ea2'
+            c.font = '600 10px Inter, sans-serif'
+            c.textAlign = 'center'
+            c.fillText(`${count} CAs`, point.x, point.y - 12)
+            c.restore()
+          })
+        }
+      }],
+      data: {
           labels,
-          datasets: [
-            {
-              type: 'bar' as const,
-              label: 'Active CAs',
-              data: caCounts,
-              backgroundColor: 'rgba(28,90,244,0.10)',
-              borderColor: 'rgba(28,90,244,0.25)',
-              borderWidth: 1,
-              borderRadius: 3,
-              barPercentage: 0.6,
-              yAxisID: 'y2',
-              order: 2,
-            },
-            {
-              type: 'line' as const,
-              label: 'Total bill',
-              data: monthlyTotals,
-              borderColor: '#1c5af4',
-              borderWidth: 2,
-              backgroundColor: 'rgba(28,90,244,0.06)',
-              pointBackgroundColor: monthlyTotals.map((_, i) =>
-                i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
-              ),
-              pointBorderColor: monthlyTotals.map((_, i) =>
-                i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#1c5af4'
-              ),
-              pointRadius: monthlyTotals.map((_, i) =>
-                i === maxMonthIdx || i === minMonthIdx ? 5 : 3
-              ),
-              pointHoverRadius: 6,
-              pointBorderWidth: 2,
-              tension: 0.35,
-              fill: true,
-              yAxisID: 'y',
-              order: 1,
-            },
-          ],
+          datasets: [{
+            type: 'line' as const,
+            label: 'Total bill',
+            data: monthlyTotals,
+            borderColor: '#1c5af4',
+            borderWidth: 2,
+            backgroundColor: 'rgba(28,90,244,0.06)',
+            pointBackgroundColor: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
+            ),
+            pointBorderColor: '#1c5af4',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBorderWidth: 2,
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'y',
+          }],
         },
         options: {
           responsive: true,
@@ -195,19 +193,12 @@ function BasicSummary() {
               displayColors: false,
               callbacks: {
                 title: items => items[0].label,
-                label: item => {
-                  if (item.datasetIndex === 0) return `  Active CAs: ${item.raw}`
-                  return `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`
-                },
+                label: item => `  Bill: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
                 afterLabel: item => {
-                  if (item.datasetIndex !== 1) return ''
                   const i = item.dataIndex
-                  if (i === maxMonthIdx) return '  ▲ Peak month'
-                  if (i === minMonthIdx) return '  ▼ Lowest month'
-                  const prev = monthlyTotals[i - 1]
-                  if (!prev) return ''
-                  const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
-                  return `  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`
+                  const count = caCounts[i]
+                  const suffix = i === maxMonthIdx ? '  ▲ Peak month' : i === minMonthIdx ? '  ▼ Lowest month' : ''
+                  return [`  Active CAs: ${count}`, suffix].filter(Boolean).join('\n')
                 }
               }
             }
@@ -229,19 +220,6 @@ function BasicSummary() {
                 color: '#858ea2',
                 font: { size: 11 },
                 callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
-              },
-            },
-            y2: {
-              type: 'linear' as const,
-              position: 'right' as const,
-              border: { display: false },
-              grid: { drawOnChartArea: false },
-              min: 0,
-              max: Math.ceil(Math.max(...caCounts) * 1.5),
-              ticks: {
-                color: '#858ea2',
-                font: { size: 11 },
-                callback: (v: any) => Number.isInteger(Number(v)) ? v + ' CAs' : '',
               },
             },
           },
@@ -290,11 +268,11 @@ function BasicSummary() {
           <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: '#858ea2' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <span style={{ width: '18px', height: '2px', background: '#1c5af4', display: 'inline-block', borderRadius: '1px' }} />
-              Total bill (₹) — left axis
+              Total bill amount (₹)
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: 'rgba(28,90,244,0.20)', display: 'inline-block' }} />
-              Active CAs — right axis
+              <span style={{ fontSize: '10px', color: '#858ea2', fontWeight: 600 }}>123</span>
+              CA count shown above each point
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
