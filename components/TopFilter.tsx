@@ -151,7 +151,6 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
             <option value="3M">Last 3 months</option>
             <option value="6M">Last 6 months</option>
             <option value="1Y">Last 1 year</option>
-            <option value="2Y">Last 2 years</option>
             <option value="Custom">Custom range</option>
           </select>
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
