@@ -257,13 +257,6 @@ function BasicSummary() {
           <div style={{ position: 'relative', width: '100%', height: '160px' }}>
             <canvas ref={spendTrendRef}></canvas>
           </div>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: '#858ea2' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '18px', height: '2px', background: '#1c5af4', display: 'inline-block', borderRadius: '1px' }} />
-              Total bill amount (₹)
-            </span>
-            <span style={{ color: '#858ea2' }}>Hover a point to see active CA count for that month</span>
-          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
             {[
               { label: 'Lowest month', value: inr(minVal), color: '#36b37e' },
