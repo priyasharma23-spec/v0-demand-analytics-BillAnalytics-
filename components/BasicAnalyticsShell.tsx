@@ -118,6 +118,14 @@ function BasicSummary() {
     cas:   (BRANCHES[st] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0),
   })).sort((a, b) => b.total - a.total)
 
+  // Count CAs that have a bill each month
+  const caCounts = data.map((_, mi) =>
+    allCAs.filter(ca => {
+      const bill = getCABills(ca, 'monthly')[mi]
+      return bill && bill.totalBill > 0
+    }).length
+  )
+
   const spendTrendRef   = useRef<HTMLCanvasElement>(null)
   const spendTrendChart = useRef<Chart | null>(null)
 
@@ -132,25 +140,43 @@ function BasicSummary() {
         type: 'line',
         data: {
           labels,
-          datasets: [{
-            data: monthlyTotals,
-            borderColor: '#1c5af4',
-            borderWidth: 2,
-            backgroundColor: 'rgba(28,90,244,0.08)',
-            pointBackgroundColor: monthlyTotals.map((_, i) =>
-              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
-            ),
-            pointBorderColor: monthlyTotals.map((_, i) =>
-              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#1c5af4'
-            ),
-            pointRadius: monthlyTotals.map((_, i) =>
-              i === maxMonthIdx || i === minMonthIdx ? 5 : 3
-            ),
-            pointHoverRadius: 6,
-            pointBorderWidth: 2,
-            tension: 0.35,
-            fill: true,
-          }],
+          datasets: [
+            {
+              type: 'bar' as const,
+              label: 'Active CAs',
+              data: caCounts,
+              backgroundColor: 'rgba(28,90,244,0.10)',
+              borderColor: 'rgba(28,90,244,0.25)',
+              borderWidth: 1,
+              borderRadius: 3,
+              barPercentage: 0.6,
+              yAxisID: 'y2',
+              order: 2,
+            },
+            {
+              type: 'line' as const,
+              label: 'Total bill',
+              data: monthlyTotals,
+              borderColor: '#1c5af4',
+              borderWidth: 2,
+              backgroundColor: 'rgba(28,90,244,0.06)',
+              pointBackgroundColor: monthlyTotals.map((_, i) =>
+                i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
+              ),
+              pointBorderColor: monthlyTotals.map((_, i) =>
+                i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#1c5af4'
+              ),
+              pointRadius: monthlyTotals.map((_, i) =>
+                i === maxMonthIdx || i === minMonthIdx ? 5 : 3
+              ),
+              pointHoverRadius: 6,
+              pointBorderWidth: 2,
+              tension: 0.35,
+              fill: true,
+              yAxisID: 'y',
+              order: 1,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -169,15 +195,19 @@ function BasicSummary() {
               displayColors: false,
               callbacks: {
                 title: items => items[0].label,
-                label: item => `₹${(Number(item.raw) / 100000).toFixed(1)}L`,
+                label: item => {
+                  if (item.datasetIndex === 0) return `  Active CAs: ${item.raw}`
+                  return `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`
+                },
                 afterLabel: item => {
+                  if (item.datasetIndex !== 1) return ''
                   const i = item.dataIndex
-                  if (i === maxMonthIdx) return '▲ Peak month'
-                  if (i === minMonthIdx) return '▼ Lowest month'
+                  if (i === maxMonthIdx) return '  ▲ Peak month'
+                  if (i === minMonthIdx) return '  ▼ Lowest month'
                   const prev = monthlyTotals[i - 1]
                   if (!prev) return ''
                   const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
-                  return `${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`
+                  return `  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`
                 }
               }
             }
@@ -189,6 +219,8 @@ function BasicSummary() {
               ticks: { color: '#858ea2', font: { size: 11 } },
             },
             y: {
+              type: 'linear' as const,
+              position: 'left' as const,
               border: { display: false },
               grid: { color: '#f3f4f6' },
               min: Math.floor((minVal - padding) / 100000) * 100000,
@@ -197,6 +229,19 @@ function BasicSummary() {
                 color: '#858ea2',
                 font: { size: 11 },
                 callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
+              },
+            },
+            y2: {
+              type: 'linear' as const,
+              position: 'right' as const,
+              border: { display: false },
+              grid: { drawOnChartArea: false },
+              min: 0,
+              max: Math.ceil(Math.max(...caCounts) * 1.5),
+              ticks: {
+                color: '#858ea2',
+                font: { size: 11 },
+                callback: (v: any) => Number.isInteger(Number(v)) ? v + ' CAs' : '',
               },
             },
           },
@@ -241,6 +286,16 @@ function BasicSummary() {
           <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
           <div style={{ position: 'relative', width: '100%', height: '160px' }}>
             <canvas ref={spendTrendRef}></canvas>
+          </div>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: '#858ea2' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '18px', height: '2px', background: '#1c5af4', display: 'inline-block', borderRadius: '1px' }} />
+              Total bill (₹) — left axis
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: 'rgba(28,90,244,0.20)', display: 'inline-block' }} />
+              Active CAs — right axis
+            </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
             {[
