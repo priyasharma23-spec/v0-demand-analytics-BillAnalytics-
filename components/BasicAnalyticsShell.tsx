@@ -494,10 +494,8 @@ function BasicLocations({ appState }: BasicSectionProps) {
 
 function BasicTrends({ appState }: BasicSectionProps) {
   const trendRef   = useRef<HTMLCanvasElement>(null)
-  const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
-  const yoyChart   = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
 
   const data        = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
@@ -517,16 +515,20 @@ function BasicTrends({ appState }: BasicSectionProps) {
 
   // CA activity — count of active CAs per month
   const allCAs = Object.values(CAS).flat()
-  const caCounts = data.map((_, mi) =>
-    allCAs.filter(ca => {
-      const bill = getCABills(ca, 'monthly')[mi]
-      return bill && bill.totalBill > 0
-    }).length
-  )
-  // Simulate prior year CA counts — 85-95% of current
-  const priorCACounts = caCounts.map((v, i) => {
-    const seed = (i * 7 + 3) % 15
-    return Math.round(v * (0.85 + seed * 0.007))
+  // Simulate CA additions — start with 70% active, grow to 100% by month 12
+  const totalCAsCount = allCAs.length
+  const caCounts = data.map((_, mi) => {
+    const base = Math.round(totalCAsCount * 0.70)
+    const growth = Math.round((totalCAsCount - base) * (mi / 11))
+    const noise = Math.round((((mi * 13 + 7) % 5) - 2) * 1.5)
+    return Math.min(totalCAsCount, base + growth + noise)
+  })
+  // Prior year — 80-90% of current year counts with similar growth pattern
+  const priorCACounts = data.map((_, mi) => {
+    const base = Math.round(totalCAsCount * 0.60)
+    const growth = Math.round((Math.round(totalCAsCount * 0.85) - base) * (mi / 11))
+    const noise = Math.round((((mi * 11 + 3) % 5) - 2) * 1.5)
+    return Math.max(0, base + growth + noise)
   })
 
   // Insights
@@ -607,48 +609,8 @@ function BasicTrends({ appState }: BasicSectionProps) {
       }
     }
 
-    // YoY % change bar chart
-    if (yoyRef.current) {
-      const ctx = yoyRef.current.getContext('2d')
-      if (ctx) {
-        if (yoyChart.current) yoyChart.current.destroy()
-        yoyChart.current = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [{
-              label: 'YoY change (%)',
-              data: yoyChanges,
-              backgroundColor: yoyChanges.map(v => v > 0 ? 'rgba(239,159,39,0.75)' : 'rgba(29,158,117,0.75)'),
-              borderRadius: 4,
-              barPercentage: 0.65,
-            }],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: '#192744',
-                callbacks: {
-                  label: item => `  YoY: ${(item.raw as number) > 0 ? '+' : ''}${item.raw}%`,
-                }
-              }
-            },
-            scales: {
-              x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-              y: { border: { display: false }, grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
-            },
-          },
-        })
-      }
-    }
-
     return () => {
       if (trendChart.current) trendChart.current.destroy()
-      if (yoyChart.current)   yoyChart.current.destroy()
     }
   }, [])
 
@@ -786,23 +748,6 @@ function BasicTrends({ appState }: BasicSectionProps) {
         </div>
         <div style={{ position: 'relative', width: '100%', height: '220px' }}>
           <canvas ref={caRef}></canvas>
-        </div>
-      </div>
-
-      {/* YoY change bars */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Month-by-month YoY change</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>% change vs same month prior year · amber = increase, green = decrease</div>
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '10px', fontSize: '11px', color: '#6b6b67' }}>
-          <span style={{ display:'flex', alignItems:'center', gap:'4px' }}>
-            <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(239,159,39,0.75)', display:'inline-block' }} />Spend increased vs prior year
-          </span>
-          <span style={{ display:'flex', alignItems:'center', gap:'4px' }}>
-            <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(29,158,117,0.75)', display:'inline-block' }} />Spend decreased vs prior year
-          </span>
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '180px' }}>
-          <canvas ref={yoyRef}></canvas>
         </div>
       </div>
 
