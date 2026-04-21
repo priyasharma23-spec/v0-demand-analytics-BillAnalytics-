@@ -373,48 +373,69 @@ function BasicLocations({ appState }: BasicSectionProps) {
         <SummaryCard label="Avg spend per location" value={inr(avgSpend)}                sub={showBranches ? `${appState.stateF} · current period` : "across all states · current period"}                                                          subColor="#858ea2" borderColor="#185FA5" />
         <SummaryCard label="Outlier states"        value={`${outliers.length}`}          sub=">10% YoY change · needs review"                                                              subColor={outliers.length > 2 ? '#A32D2D' : '#854F0B'} borderColor={outliers.length > 2 ? '#E24B4A' : '#EF9F27'} />
         <SummaryCard label="Highest avg bill"      value={inr(Math.max(...locationRows.map(d => d.total ? Math.round(d.total / d.cas) : 0)))} sub={showBranches ? appState.stateF : 'across all locations'} subColor="#854F0B" borderColor="#EF9F27" />
+      </div>
 
       {/* Heatmap or branches listing based on filter */}
       {!showBranches && (
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '16px', padding: '24px', marginBottom: '12px' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px', whiteSpace: 'nowrap' }}>State spend heatmap</div>
-              <div style={{ fontSize: '12px', color: '#858ea2' }}>Darker = higher total bill · Apr 2024 – Mar 2025</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744', marginBottom: '3px' }}>State wise spend</div>
+              <div style={{ fontSize: '13px', color: '#858ea2' }}>Apr 2024 – Mar 2025</div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#858ea2', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#858ea2' }}>
               <span>Low</span>
-              {['#EBEAFF','#C4BFFF','#9E97FF','#7B6FE8','#2500D7'].map(c => (
-                <div key={c} style={{ width: '16px', height: '16px', borderRadius: '3px', background: c }} />
+              {['#ebebff','#c4bfff','#9e97ff','#5a52d5','#2d2b6b'].map(c => (
+                <div key={c} style={{ width: '28px', height: '28px', borderRadius: '6px', background: c }} />
               ))}
-              <span>High</span>
+              <span style={{ fontWeight: 600, color: '#192744' }}>High</span>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '8px' }}>
+
+          {/* Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
             {stateData.map((s, i) => {
               const intensity = s.total / stateData[0].total
-              const bg = intensity > 0.8 ? '#2500D7' : intensity > 0.6 ? '#7B6FE8' : intensity > 0.4 ? '#9E97FF' : intensity > 0.2 ? '#C4BFFF' : '#EBEAFF'
-              const textColor = intensity > 0.5 ? '#fff' : '#192744'
+              const bg = intensity > 0.90 ? '#2d2b6b'
+                       : intensity > 0.75 ? '#5a52d5'
+                       : intensity > 0.60 ? '#7b74e8'
+                       : intensity > 0.45 ? '#a09aef'
+                       : intensity > 0.30 ? '#c4bfff'
+                       : '#ebebff'
+              const isDark   = intensity > 0.55
+              const textMain = isDark ? '#fff' : '#192744'
+              const textSub  = isDark ? 'rgba(255,255,255,0.65)' : '#858ea2'
+              const avgPerCA = Math.round(s.total / Math.max(s.cas, 1) / 100000 * 10) / 10
               return (
-                <div key={s.state} style={{ background: bg, borderRadius: '8px', padding: '10px 12px', position: 'relative', minHeight: '80px' }}>
-                  {s.isOutlier && (
-                    <div style={{ position: 'absolute', top: '6px', right: '6px', width: '6px', height: '6px', borderRadius: '50%', background: s.yoy > 0 ? '#EF9F27' : '#E24B4A' }} />
-                  )}
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: textColor, marginBottom: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.state}</div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: textColor }}>{inr(s.total)}</div>
-                  <div style={{ fontSize: '10px', color: intensity > 0.5 ? 'rgba(255,255,255,0.75)' : '#858ea2', marginTop: '2px' }}>{s.cas} CAs</div>
+                <div key={s.state}
+                  onClick={() => {}}
+                  style={{ background: bg, borderRadius: '12px', padding: '20px 18px', cursor: 'pointer', transition: 'opacity 0.15s', minHeight: '140px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '0.88'}
+                  onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.opacity = '1'}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 500, color: textMain, marginBottom: '4px' }}>{s.state}</div>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: textMain, letterSpacing: '-0.5px', marginBottom: '10px' }}>
+                      ₹{(s.total / 100000).toFixed(1)}L
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '12px', color: textSub }}>
+                    {s.cas} CAs · ₹{avgPerCA}L/CA
+                  </div>
                 </div>
               )
             })}
           </div>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF9F27', display: 'inline-block' }} />Spending up &gt;10% YoY
+
+          {/* Footer */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #f3f4f6' }}>
+            <span style={{ fontSize: '12px', color: '#858ea2' }}>
+              {stateData.length} states · Total ₹{(portfolioTotal / 100000).toFixed(1)}L
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#E24B4A', display: 'inline-block' }} />Spending down &gt;10% YoY
-            </span>
+            <span style={{ fontSize: '12px', color: '#858ea2' }}>Click any tile to drill down</span>
           </div>
+
         </div>
       )}
 
