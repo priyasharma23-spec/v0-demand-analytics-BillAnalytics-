@@ -21,14 +21,14 @@ const DOT_COLOR: Record<string, string> = {
 };
 
 export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSelectEntity }: TopFilterProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchOpen, setSearchOpen]   = useState(false);
-  const [dateRange, setDateRange]     = useState('1Y');
+  const [searchQuery, setSearchQuery]   = useState('');
+  const [searchOpen, setSearchOpen]     = useState(false);
+  const [dateRange, setDateRange]       = useState('1Y');
   const [customFromDate, setCustomFromDate] = useState('');
   const [customToDate, setCustomToDate]     = useState('');
-  const [selectedState,  setSelectedState]  = useState('all')
-  const [selectedBranch, setSelectedBranch] = useState('all')
-  const [selectedCA,     setSelectedCA]     = useState('all')
+  const [selectedState,  setSelectedState]  = useState('all');
+  const [selectedBranch, setSelectedBranch] = useState('all');
+  const [selectedCA,     setSelectedCA]     = useState('all');
 
   const [pinnedEntities, setPinnedEntities] = useState<Entity[]>([
     { name: 'Maharashtra',  type: 'state'  },
@@ -36,7 +36,6 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
     { name: 'MH-MN-0101',  type: 'ca'     },
     { name: 'DL-DS-4202',  type: 'ca'     },
   ]);
-
   const [recentEntities] = useState<Entity[]>([
     { name: 'Delhi South',    type: 'branch' },
     { name: 'Gujarat',        type: 'state'  },
@@ -47,7 +46,6 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
   ]);
 
   const q = searchQuery.toLowerCase();
-
   const filteredStates = useMemo(() =>
     STATES.filter(s => s.toLowerCase().includes(q)).slice(0, 4).map(s => ({
       name: s, initials: s.substring(0, 2).toUpperCase(),
@@ -78,12 +76,12 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
     .slice(0, MAX_PINS - pinnedEntities.length);
 
   const handleSelectEntity = (name: string, type: string) => {
-    setSearchQuery('')
-    setSearchOpen(false)
-    if (type === 'state')  { setSelectedState(name); setSelectedBranch('all'); setSelectedCA('all') }
-    if (type === 'branch') { setSelectedBranch(name); setSelectedCA('all') }
-    if (type === 'ca')     { setSelectedCA(name) }
-    onSelectEntity?.(name, type)
+    setSearchQuery('');
+    setSearchOpen(false);
+    if (type === 'state')  { setSelectedState(name); setSelectedBranch('all'); setSelectedCA('all'); }
+    if (type === 'branch') { setSelectedBranch(name); setSelectedCA('all'); }
+    if (type === 'ca')     { setSelectedCA(name); }
+    onSelectEntity?.(name, type);
   };
 
   return (
@@ -98,9 +96,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
             <circle cx="5.5" cy="5.5" r="4.5" stroke="#9b9b96" strokeWidth="1.2" fill="none"/>
             <line x1="9" y1="9" x2="12.5" y2="12.5" stroke="#9b9b96" strokeWidth="1.2"/>
           </svg>
-          <input
-            type="text" placeholder="Search state, branch, or CA number…"
-            value={searchQuery}
+          <input type="text" placeholder="Search state, branch, or CA number…" value={searchQuery}
             onChange={e => { setSearchQuery(e.target.value); onSearch?.(e.target.value); }}
             onFocus={() => setSearchOpen(true)}
             onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
@@ -132,8 +128,10 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
           <span style={{ fontSize: '13px', color: '#192744', fontWeight: 500 }}>Apr 2024 – Mar 2025</span>
           <select value={dateRange} onChange={e => { setDateRange(e.target.value); onDateRangeChange?.(e.target.value); }}
             style={{ padding: '6px 10px', border: '0.5px solid rgba(0,0,0,0.15)', borderRadius: '6px', fontSize: '12px', fontWeight: 500, color: '#192744', background: '#fff', cursor: 'pointer' }}>
-            <option value="1M">1M</option><option value="3M">3M</option>
-            <option value="6M">6M</option><option value="1Y">1Y</option>
+            <option value="1M">1M</option>
+            <option value="3M">3M</option>
+            <option value="6M">6M</option>
+            <option value="1Y">1Y</option>
             <option value="custom">Custom</option>
           </select>
         </div>
@@ -146,7 +144,8 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
           </div>
         )}
 
-        <button onClick={() => onApply?.({ stateF: selectedState, branchF: selectedBranch, caF: selectedCA, dateRange })} style={{ padding: '8px 20px', background: '#2500D7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+        <button onClick={() => onApply?.({ stateF: selectedState, branchF: selectedBranch, caF: selectedCA, dateRange })}
+          style={{ padding: '8px 20px', background: '#2500D7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = '#1a00a8'}
           onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = '#2500D7'}>
           Apply
@@ -158,7 +157,6 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
         <span style={{ fontSize: '11px', fontWeight: 600, color: '#9b9b96', letterSpacing: '0.06em', textTransform: 'uppercase', marginRight: '2px', flexShrink: 0 }}>
           Pinned ({pinnedEntities.length}/{MAX_PINS})
         </span>
-
         {pinnedEntities.map((e, idx) => (
           <div key={`${e.name}-${idx}`} onClick={() => handleSelectEntity(e.name, e.type)}
             style={{ display: 'flex', alignItems: 'center', gap: '5px', height: '28px', padding: '0 6px 0 10px', borderRadius: '20px', border: '0.5px solid rgba(0,0,0,0.15)', background: '#fff', fontSize: '12px', fontWeight: 500, color: '#192744', cursor: 'pointer' }}
@@ -168,70 +166,69 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
             <span>{e.name}</span>
             <button onClick={ev => { ev.stopPropagation(); handleUnpin(e.name); }}
               style={{ width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(0,0,0,0.15)', background: '#f5f5f4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, marginLeft: '2px', color: '#6b6b67', fontSize: '13px', lineHeight: 1, flexShrink: 0 }}
-              onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.background='#FCEBEB'; (ev.currentTarget as HTMLButtonElement).style.color='#A32D2D'; }}
-              onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background='#f5f5f4'; (ev.currentTarget as HTMLButtonElement).style.color='#6b6b67'; }}
+              onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.background = '#FCEBEB'; (ev.currentTarget as HTMLButtonElement).style.color = '#A32D2D'; }}
+              onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background = '#f5f5f4'; (ev.currentTarget as HTMLButtonElement).style.color = '#6b6b67'; }}
               title={`Unpin ${e.name}`}>×</button>
           </div>
         ))}
-
         {pinnedEntities.length >= 8 && (
           <span style={{ fontSize: '10px', fontWeight: 500, padding: '2px 6px', borderRadius: '4px', flexShrink: 0, color: pinnedEntities.length >= MAX_PINS ? '#A32D2D' : '#854F0B', background: pinnedEntities.length >= MAX_PINS ? '#FCEBEB' : '#FAEEDA' }}>
             {pinnedEntities.length >= MAX_PINS ? 'Max 10 reached' : `${MAX_PINS - pinnedEntities.length} slots left`}
           </span>
         )}
-
         {visibleRecent.length > 0 && (
           <span style={{ fontSize: '11px', fontWeight: 600, color: '#9b9b96', letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 2px', flexShrink: 0 }}>Recent</span>
         )}
-
         {visibleRecent.map(e => (
           <div key={e.name} onClick={() => handleSelectEntity(e.name, e.type)}
             style={{ display: 'flex', alignItems: 'center', gap: '5px', height: '28px', padding: '0 6px 0 10px', borderRadius: '20px', border: '0.5px dashed rgba(0,0,0,0.20)', background: '#fff', fontSize: '12px', fontWeight: 400, color: '#6b6b67', cursor: 'pointer' }}
-            onMouseEnter={el => { (el.currentTarget as HTMLDivElement).style.borderColor='#2500D7'; (el.currentTarget as HTMLDivElement).style.color='#192744'; }}
-            onMouseLeave={el => { (el.currentTarget as HTMLDivElement).style.borderColor='rgba(0,0,0,0.20)'; (el.currentTarget as HTMLDivElement).style.color='#6b6b67'; }}>
+            onMouseEnter={el => { (el.currentTarget as HTMLDivElement).style.borderColor = '#2500D7'; (el.currentTarget as HTMLDivElement).style.color = '#192744'; }}
+            onMouseLeave={el => { (el.currentTarget as HTMLDivElement).style.borderColor = 'rgba(0,0,0,0.20)'; (el.currentTarget as HTMLDivElement).style.color = '#6b6b67'; }}>
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: DOT_COLOR[e.type], opacity: 0.6, flexShrink: 0 }} />
             <span>{e.name}</span>
             {pinnedEntities.length < MAX_PINS && (
               <button onClick={ev => { ev.stopPropagation(); handlePin(e); }}
                 style={{ width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(0,0,0,0.15)', background: '#f5f5f4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, marginLeft: '2px', color: '#6b6b67', fontSize: '13px', lineHeight: 1, flexShrink: 0 }}
-                onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.background='#EBEAFF'; (ev.currentTarget as HTMLButtonElement).style.color='#2500D7'; }}
-                onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background='#f5f5f4'; (ev.currentTarget as HTMLButtonElement).style.color='#6b6b67'; }}
+                onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.background = '#EBEAFF'; (ev.currentTarget as HTMLButtonElement).style.color = '#2500D7'; }}
+                onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background = '#f5f5f4'; (ev.currentTarget as HTMLButtonElement).style.color = '#6b6b67'; }}
                 title={`Pin ${e.name}`}>+</button>
             )}
           </div>
         ))}
       </div>
 
+      {/* Active filter pills */}
       {(selectedState !== 'all' || selectedBranch !== 'all' || selectedCA !== 'all') && (
         <div style={{ display: 'flex', gap: '6px', paddingBottom: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500, flexShrink: 0 }}>Active filters:</span>
           {selectedState !== 'all' && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', background: '#EBEAFF', fontSize: '11px', color: '#2500D7', fontWeight: 500 }}>
               {selectedState}
-              <button onClick={() => { setSelectedState('all'); setSelectedBranch('all'); setSelectedCA('all') }}
-                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#2500D7', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
+              <button onClick={() => { setSelectedState('all'); setSelectedBranch('all'); setSelectedCA('all'); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#2500D7', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
             </span>
           )}
           {selectedBranch !== 'all' && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', background: '#E6F1FB', fontSize: '11px', color: '#185FA5', fontWeight: 500 }}>
               {selectedBranch}
-              <button onClick={() => { setSelectedBranch('all'); setSelectedCA('all') }}
-                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#185FA5', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
+              <button onClick={() => { setSelectedBranch('all'); setSelectedCA('all'); }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#185FA5', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
             </span>
           )}
           {selectedCA !== 'all' && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', background: '#EAF3DE', fontSize: '11px', color: '#27500A', fontWeight: 500 }}>
               {selectedCA}
-              <button onClick={() => setSelectedCA('all')}
-                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#27500A', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
+              <button onClick={() => setSelectedCA('all')} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#27500A', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
             </span>
           )}
-          <button onClick={() => { setSelectedState('all'); setSelectedBranch('all'); setSelectedCA('all'); onApply?.({ stateF: 'all', branchF: 'all', caF: 'all', dateRange }) }}
+          <button onClick={() => { setSelectedState('all'); setSelectedBranch('all'); setSelectedCA('all'); onApply?.({ stateF: 'all', branchF: 'all', caF: 'all', dateRange }); }}
             style={{ fontSize: '11px', color: '#858ea2', border: 'none', background: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
             Clear all
           </button>
         </div>
       )}
+
+    </div>
+  );
+}
 
 function SearchRow({ icon, iconBg, iconColor, name, meta, onClick }: { icon: string; iconBg: string; iconColor: string; name: string; meta: string; onClick: () => void; }) {
   return (
