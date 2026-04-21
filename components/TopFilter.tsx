@@ -19,6 +19,8 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen]   = useState(false)
   const [dateRange, setDateRange]     = useState('1Y')
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo,   setCustomTo]   = useState('')
   const [pinnedOpen, setPinnedOpen]   = useState(false)
   const [selectedState,  setSelectedState]  = useState('all')
   const [selectedBranch, setSelectedBranch] = useState('all')
@@ -142,13 +144,31 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
           </svg>
           <span style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>Apr 2024 – Mar 2025</span>
           <div style={{ width: '1px', height: '16px', background: '#f3f4f6', margin: '0 4px' }} />
-          {['3M', '6M', '1Y'].map(opt => (
+          {['3M', '6M', '1Y', 'Custom'].map(opt => (
             <button key={opt} onClick={() => { setDateRange(opt); onDateRangeChange?.(opt) }}
               style={{ padding: '3px 8px', borderRadius: '5px', fontSize: '12px', fontWeight: 500, border: 'none', cursor: 'pointer', background: dateRange === opt ? '#2500D7' : 'transparent', color: dateRange === opt ? '#fff' : '#858ea2', transition: 'all 0.15s' }}>
               {opt}
             </button>
           ))}
         </div>
+
+        {dateRange === 'Custom' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <input
+              type="date"
+              value={customFrom}
+              onChange={e => setCustomFrom(e.target.value)}
+              style={{ height: '40px', padding: '0 10px', border: '1px solid #f3f4f6', borderRadius: '8px', fontSize: '12px', color: '#192744', background: '#fff', cursor: 'pointer', outline: 'none' }}
+            />
+            <span style={{ fontSize: '12px', color: '#858ea2' }}>–</span>
+            <input
+              type="date"
+              value={customTo}
+              onChange={e => setCustomTo(e.target.value)}
+              style={{ height: '40px', padding: '0 10px', border: '1px solid #f3f4f6', borderRadius: '8px', fontSize: '12px', color: '#192744', background: '#fff', cursor: 'pointer', outline: 'none' }}
+            />
+          </div>
+        )}
 
         {/* Apply */}
         <button onClick={() => onApply?.({ stateF: selectedState, branchF: selectedBranch, caF: selectedCA, dateRange })}
