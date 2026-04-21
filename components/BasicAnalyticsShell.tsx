@@ -495,7 +495,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
             <tr>
-              {['#', rankTab === 'states' ? 'State' : rankTab === 'branches' ? 'Branch' : 'CA Number', 'CAs', 'Total bill', 'Avg per CA', 'vs Prior year', 'Status'].map(h => (
+              {['#', rankTab === 'states' ? 'State' : rankTab === 'branches' ? 'Branch' : 'CA Number', 'CAs', 'Total bill', 'Avg bill', 'Change', 'Trend'].map(h => (
                 <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid #f3f4f6', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
               ))}
             </tr>
