@@ -87,7 +87,19 @@ export default function AnalyticsPage() {
       <TopFilter
         onSearch={(query) => console.log('Search:', query)}
         onDateRangeChange={(range) => console.log('Date range:', range)}
-        onApply={() => console.log('Apply filters')}
+        onApply={(filters: { stateF: string; branchF: string; caF: string; dateRange: string }) => {
+          setAppState(prev => ({
+            ...prev,
+            stateF:  filters.stateF,
+            branchF: filters.branchF,
+            caF:     filters.caF,
+          }))
+        }}
+        onSelectEntity={(name, type) => {
+          if (type === 'state')  setAppState(prev => ({ ...prev, stateF: name, branchF: 'all', caF: 'all' }))
+          if (type === 'branch') setAppState(prev => ({ ...prev, branchF: name, caF: 'all' }))
+          if (type === 'ca')     setAppState(prev => ({ ...prev, caF: name }))
+        }}
       />
 
       {/* Section content */}

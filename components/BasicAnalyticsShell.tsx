@@ -3,9 +3,13 @@ import { useState, useEffect, useRef } from 'react'
 import '@/lib/chartSetup'
 import { Chart } from 'chart.js'
 import { SummaryCard } from './SummaryCard'
-import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills } from '@/lib/calculations'
+import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills, getCABills } from '@/lib/calculations'
 
 interface BasicAnalyticsShellProps {
+  appState: { view: string; stateF: string; branchF: string; caF: string }
+}
+
+type BasicSectionProps = {
   appState: { view: string; stateF: string; branchF: string; caF: string }
 }
 
@@ -53,10 +57,10 @@ export default function BasicAnalyticsShell({ appState }: BasicAnalyticsShellPro
 
       {/* Section content */}
       <div style={{ padding: '20px' }}>
-        {section === 'summary' && <BasicSummary />}
-        {section === 'locations' && <BasicLocations />}
-        {section === 'trends' && <BasicTrends />}
-        {section === 'duedates' && <BasicDueDates />}
+        {section === 'summary' && <BasicSummary appState={appState} />}
+        {section === 'locations' && <BasicLocations appState={appState} />}
+        {section === 'trends' && <BasicTrends appState={appState} />}
+        {section === 'duedates' && <BasicDueDates appState={appState} />}
       </div>
     </div>
   )
@@ -91,132 +95,206 @@ function PlaceholderSection({ title, desc, bullets }: { title: string; desc: str
   )
 }
 
-function BasicSummary() {
-  const data     = getFilteredBills('monthly', 'all', 'all', 'all')
-  const allCAs   = Object.values(CAS).flat()
-  const totalBill = data.reduce((s, d) => s + d.totalBill, 0)
-  const avgBill   = Math.round(totalBill / allCAs.length)
-  const totalCAs  = allCAs.length
-  const totalStates = STATES.length
-
-  // YoY: compare first 6 months vs last 6 months as a proxy
-  const firstHalf  = data.slice(0, 6).reduce((s, d) => s + d.totalBill, 0)
-  const secondHalf = data.slice(6).reduce((s, d) => s + d.totalBill, 0)
-  const yoyChange  = firstHalf > 0 ? Math.round((secondHalf - firstHalf) / firstHalf * 100) : 0
-
-  // Bills due this month — simulate ~30% of CAs have bills due
-  const billsDueCount  = Math.round(totalCAs * 0.30)
+function BasicSummary({ appState }: BasicSectionProps) {
+  const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
+  const allCAs        = Object.values(CAS).flat()
+  const totalBill     = data.reduce((s, d) => s + d.totalBill, 0)
+  const avgBill       = Math.round(totalBill / allCAs.length)
+  const totalCAs      = allCAs.length
+  const totalStates   = STATES.length
+  const monthlyTotals = data.map(d => d.totalBill)
+  const labels        = data.map(d => d.label)
+  const maxVal        = Math.max(...monthlyTotals)
+  const minVal        = Math.min(...monthlyTotals)
+  const maxMonthIdx   = monthlyTotals.indexOf(maxVal)
+  const minMonthIdx   = monthlyTotals.indexOf(minVal)
+  const lastMonth     = data[data.length - 1]
+  const prevMonth     = data[data.length - 2]
+  const momChange     = prevMonth && prevMonth.totalBill > 0
+    ? Math.round((lastMonth.totalBill - prevMonth.totalBill) / prevMonth.totalBill * 100)
+    : 0
+  const momLabel      = lastMonth?.label ?? ''
+  const momPrevLabel  = prevMonth?.label ?? ''
+  const billsDueCount = Math.round(totalCAs * 0.30)
   const billsDueAmount = Math.round(avgBill * billsDueCount)
-
-  // Payment status breakdown
   const paid    = Math.round(totalCAs * 0.60)
   const pending = Math.round(totalCAs * 0.25)
   const overdue = totalCAs - paid - pending
-
-  // Monthly trend for sparkline
-  const monthlyTotals = data.map(d => d.totalBill)
-  const maxMonth      = Math.max(...monthlyTotals)
-
-  // Top 5 states by bill
   const stateAmounts = STATES.map(st => ({
     state: st,
     total: getStateBills(st, 'monthly').reduce((s, d) => s + d.totalBill, 0),
     cas:   (BRANCHES[st] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0),
   })).sort((a, b) => b.total - a.total)
 
+  // Count CAs that have a bill each month
+  const caCounts = data.map((_, mi) =>
+    allCAs.filter(ca => {
+      const bill = getCABills(ca, 'monthly')[mi]
+      return bill && bill.totalBill > 0
+    }).length
+  )
+
+  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
+  const spendTrendChart = useRef<Chart | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!spendTrendRef.current) return
+      const ctx = spendTrendRef.current.getContext('2d')
+      if (!ctx) return
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+      const padding = (maxVal - minVal) * 0.15
+    spendTrendChart.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+          labels,
+          datasets: [{
+            type: 'line' as const,
+            label: 'Total bill',
+            data: monthlyTotals,
+            borderColor: '#1c5af4',
+            borderWidth: 2,
+            backgroundColor: 'rgba(28,90,244,0.06)',
+            pointBackgroundColor: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
+            ),
+            pointBorderColor: '#1c5af4',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBorderWidth: 2,
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'y',
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#f5f6fa',
+              titleColor: '#192744',
+              bodyColor: '#5e687d',
+              borderColor: '#f3f4f6',
+              borderWidth: 1,
+              padding: 10,
+              cornerRadius: 4,
+              displayColors: false,
+              callbacks: {
+                title: items => items[0].label,
+                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
+                afterLabel: item => {
+                  const i = item.dataIndex
+                  const count = caCounts[i] ?? 0
+                  const lines = [`  Active CAs: ${count}`]
+                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
+                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
+                  else {
+                    const prev = monthlyTotals[i - 1]
+                    if (prev) {
+                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
+                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
+                    }
+                  }
+                  return lines.join('\n')
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#858ea2', font: { size: 11 } },
+            },
+            y: {
+              type: 'linear' as const,
+              position: 'left' as const,
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              min: Math.floor((minVal - padding) / 100000) * 100000,
+              max: Math.ceil((maxVal + padding) / 100000) * 100000,
+              ticks: {
+                color: '#858ea2',
+                font: { size: 11 },
+                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
+              },
+            },
+          },
+        },
+      })
+    }, 50)
+    return () => {
+      clearTimeout(timer)
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+    }
+  }, [])
+
   return (
     <div>
-
       {/* Welcome banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, #2500D7 0%, #7B6FE8 100%)',
-        borderRadius: '12px',
-        padding: '20px 24px',
-        marginBottom: '16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
+      <div style={{ background: 'linear-gradient(135deg, #1c5af4 0%, #7B6FE8 100%)', borderRadius: '8px', padding: '20px 24px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '5px' }}>
-            Bill Payments — Basic Analytics
-          </div>
+          <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '5px' }}>Bill Payments — Basic Analytics</div>
           <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', maxWidth: '480px' }}>
-            Portfolio overview across {totalStates} states · {totalCAs} CAs · Apr 2024 – Mar 2025.
-            Connect bill copy data to unlock leakage detection, excess demand analysis, and savings recommendations.
+            Portfolio overview across {totalStates} states · {totalCAs} CAs · Apr 2024 – Mar 2025. Connect bill copy data to unlock leakage detection and savings recommendations.
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0, marginLeft: '24px' }}>
-          <button style={{
-            padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
-            border: 'none', cursor: 'pointer',
-            background: '#fff', color: '#2500D7',
-          }}>
-            Unlock Advanced →
-          </button>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.55)', textAlign: 'center' }}>
-            Bill copy integration required
-          </div>
-        </div>
+        <button style={{ padding: '8px 18px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, border: 'none', cursor: 'pointer', background: '#fff', color: '#1c5af4', flexShrink: 0, marginLeft: '24px' }}>
+          Unlock Advanced →
+        </button>
       </div>
 
-      {/* Summary metric cards */}
+      {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total portfolio value" value={inr(totalBill)}  sub={`${totalStates} states · ${totalCAs} active CAs`}        subColor="#858ea2" borderColor="#2500D7" />
-        <SummaryCard label="Avg bill per CA"        value={inr(avgBill)}   sub="per billing period · all CAs"                              subColor="#185FA5" borderColor="#185FA5" />
-        <SummaryCard label="H2 vs H1 change"        value={`${yoyChange > 0 ? '+' : ''}${yoyChange}%`} sub="second half vs first half of period" subColor={yoyChange > 0 ? '#854F0B' : '#3B6D11'} borderColor={yoyChange > 0 ? '#EF9F27' : '#1A7A45'} />
+        <SummaryCard label="Total portfolio value" value={inr(totalBill)}  sub={`${totalStates} states · ${totalCAs} active CAs`}        subColor="#858ea2" borderColor="#1c5af4" />
+        <SummaryCard label="Avg bill per CA"        value={inr(avgBill)}   sub="per billing period · all CAs"                              subColor="#858ea2" borderColor="#1c5af4" />
+        <SummaryCard
+          label="MoM trend"
+          value={`${momChange > 0 ? '+' : ''}${momChange}%`}
+          sub={`${momLabel} vs ${momPrevLabel}${appState.stateF !== 'all' ? ` · ${appState.stateF}` : ''}`}
+          subColor={momChange > 5 ? '#A32D2D' : momChange < 0 ? '#3B6D11' : '#854F0B'}
+          borderColor={momChange > 5 ? '#E24B4A' : momChange < 0 ? '#1A7A45' : '#EF9F27'}
+        />
         <SummaryCard label="Bills due this month"   value={`${billsDueCount}`} sub={`${inr(billsDueAmount)} · next 30 days`}              subColor="#A32D2D" borderColor="#E24B4A" />
       </div>
 
-      {/* Two column layout — trend + payment status */}
+      {/* Two column layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
 
-        {/* Monthly spend trend — sparkline bars */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        {/* Monthly spend trend */}
+        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend trend</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '16px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '80px' }}>
-            {data.map((d, i) => {
-              const h = Math.round((d.totalBill / maxMonth) * 80)
-              const isMax = d.totalBill === maxMonth
-              return (
-                <div key={d.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <div style={{ width: '100%', height: `${h}px`, borderRadius: '3px 3px 0 0', background: isMax ? '#2500D7' : '#EBEAFF', transition: 'height 0.3s' }} />
-                </div>
-              )
-            })}
+          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
+          <div style={{ position: 'relative', width: '100%', height: '160px' }}>
+            <canvas ref={spendTrendRef}></canvas>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
-            {data.filter((_, i) => i % 3 === 0).map(d => (
-              <span key={d.label} style={{ fontSize: '10px', color: '#858ea2' }}>{d.label}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
+            {[
+              { label: 'Lowest month', value: inr(minVal), color: '#36b37e' },
+              { label: 'Monthly avg',  value: inr(Math.round(totalBill / data.length)), color: '#192744' },
+              { label: 'Peak month',   value: inr(maxVal), color: '#1c5af4' },
+            ].map(item => (
+              <div key={item.label} style={{ background: '#f5f6fa', borderRadius: '4px', padding: '10px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: item.color }}>{item.value}</div>
+                <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '2px' }}>{item.label}</div>
+              </div>
             ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', padding: '10px 12px', background: '#f9f9f9', borderRadius: '8px' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>{inr(Math.min(...monthlyTotals))}</div>
-              <div style={{ fontSize: '10px', color: '#858ea2' }}>Lowest month</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>{inr(totalBill / data.length)}</div>
-              <div style={{ fontSize: '10px', color: '#858ea2' }}>Monthly avg</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>{inr(maxMonth)}</div>
-              <div style={{ fontSize: '10px', color: '#858ea2' }}>Peak month</div>
-            </div>
           </div>
         </div>
 
         {/* Payment status */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Payment status</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '16px' }}>Current period · {totalCAs} total CAs</div>
           {[
-            { label: 'Paid',    count: paid,    pct: Math.round(paid/totalCAs*100),    color: '#1D9E75', bg: '#EAF3DE' },
-            { label: 'Pending', count: pending, pct: Math.round(pending/totalCAs*100), color: '#EF9F27', bg: '#FAEEDA' },
-            { label: 'Overdue', count: overdue, pct: Math.round(overdue/totalCAs*100), color: '#E24B4A', bg: '#FCEBEB' },
+            { label: 'Paid',    count: paid,    pct: Math.round(paid/totalCAs*100),    color: '#36b37e', bg: '#e8f8f1' },
+            { label: 'Pending', count: pending, pct: Math.round(pending/totalCAs*100), color: '#f59e0b', bg: '#fef3c7' },
+            { label: 'Overdue', count: overdue, pct: Math.round(overdue/totalCAs*100), color: '#ec2127', bg: '#fce8e8' },
           ].map(item => (
-            <div key={item.label} style={{ marginBottom: '12px' }}>
+            <div key={item.label} style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }} />
@@ -227,48 +305,28 @@ function BasicSummary() {
                   <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '4px', background: item.bg, color: item.color, fontWeight: 500 }}>{item.pct}%</span>
                 </div>
               </div>
-              <div style={{ height: '6px', borderRadius: '3px', background: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', borderRadius: '3px', background: item.color, width: `${item.pct}%`, transition: 'width 0.4s ease' }} />
+              <div style={{ height: '6px', borderRadius: '3px', background: '#f3f4f6', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: '3px', background: item.color, width: `${item.pct}%` }} />
               </div>
             </div>
           ))}
-          <div style={{ marginTop: '16px', padding: '10px 12px', background: '#FCEBEB', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '12px', color: '#A32D2D', fontWeight: 500 }}>⚠ {overdue} CAs overdue</div>
-            <div style={{ fontSize: '11px', color: '#A32D2D' }}>Immediate attention needed</div>
+          <div style={{ marginTop: '8px', padding: '10px 12px', background: '#fce8e8', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: '#ec2127', fontWeight: 500 }}>⚠ {overdue} CAs overdue</span>
+            <span style={{ fontSize: '11px', color: '#ec2127' }}>Immediate attention needed</span>
           </div>
         </div>
       </div>
 
-      {/* Top states by bill amount */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Top states by bill amount</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Ranked by total bill · Apr 2024 – Mar 2025</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {stateAmounts.map((s, i) => {
-            const pct = Math.round(s.total / totalBill * 100)
-            const barPct = Math.round(s.total / stateAmounts[0].total * 100)
-            return (
-              <div key={s.state} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '20px', fontSize: '11px', fontWeight: 600, color: i < 3 ? '#2500D7' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
-                <div style={{ width: '110px', fontSize: '12px', fontWeight: 500, color: '#192744', flexShrink: 0 }}>{s.state}</div>
-                <div style={{ flex: 1, height: '8px', borderRadius: '4px', background: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: '4px', background: i === 0 ? '#2500D7' : i < 3 ? '#7B6FE8' : '#EBEAFF', width: `${barPct}%` }} />
-                </div>
-                <div style={{ width: '70px', fontSize: '12px', fontWeight: 600, color: '#192744', textAlign: 'right', flexShrink: 0 }}>{inr(s.total)}</div>
-                <div style={{ width: '32px', fontSize: '11px', color: '#858ea2', textAlign: 'right', flexShrink: 0 }}>{pct}%</div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
+      {/* Top performers ��� tabbed: States / Branches / CAs */}
+      <TopPerformers totalBill={totalBill} appState={appState} />
     </div>
   )
 }
 
-function BasicLocations() {
+function BasicLocations({ appState }: BasicSectionProps) {
   const allCAs    = Object.values(CAS).flat()
   const totalCAs  = allCAs.length
+  const showBranches = appState.stateF !== 'all'
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -284,67 +342,108 @@ function BasicLocations() {
     return { state: st, cas, total, avgBill, priorTotal, yoy, isOutlier }
   }).sort((a, b) => b.total - a.total)
 
-  const portfolioTotal = stateData.reduce((s, d) => s + d.total, 0)
+  // If a state is selected, show branches of that state instead of all states
+  const locationRows = showBranches
+    ? (BRANCHES[appState.stateF] ?? []).map(br => {
+        const cas   = CAS[br]?.length ?? 0
+        const bills = (CAS[br] ?? []).reduce((s, ca) =>
+          s + getCABills(ca, 'monthly').reduce((b, d) => b + d.totalBill, 0), 0)
+        const seed  = br.charCodeAt(0) % 20
+        const prior = Math.round(bills * (0.88 + seed * 0.015))
+        const yoy   = Math.round((bills - prior) / Math.max(prior, 1) * 100)
+        return { name: br, cas, branches: 0, total: bills, priorTotal: prior, yoy, isOutlier: Math.abs(yoy) > 10 }
+      }).sort((a, b) => b.total - a.total)
+    : stateData.map(d => ({ name: d.state, cas: d.cas, branches: (BRANCHES[d.state] ?? []).length, total: d.total, priorTotal: d.priorTotal, yoy: d.yoy, isOutlier: d.isOutlier }))
+
+  const portfolioTotal = showBranches 
+    ? locationRows.reduce((s, d) => s + d.total, 0)
+    : stateData.reduce((s, d) => s + d.total, 0)
   const outliers       = stateData.filter(d => d.isOutlier)
-  const topState       = stateData[0]
-  const avgStateSpend  = Math.round(portfolioTotal / STATES.length)
+  const topItem        = showBranches ? locationRows[0] : stateData[0]
+  const avgSpend       = showBranches 
+    ? Math.round(portfolioTotal / locationRows.length)
+    : Math.round(portfolioTotal / STATES.length)
 
   return (
     <div>
 
       {/* Summary chips */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Top state"            value={topState.state}               sub={`${inr(topState.total)} · ${Math.round(topState.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
-        <SummaryCard label="Avg spend per state"  value={inr(avgStateSpend)}           sub="across all states · current period"                                                          subColor="#858ea2" borderColor="#185FA5" />
-        <SummaryCard label="Outlier states"       value={`${outliers.length}`}         sub=">10% YoY change · needs review"                                                              subColor={outliers.length > 2 ? '#A32D2D' : '#854F0B'} borderColor={outliers.length > 2 ? '#E24B4A' : '#EF9F27'} />
-        <SummaryCard label="Highest avg CA bill"  value={inr(Math.max(...stateData.map(d => d.avgBill)))} sub={stateData.sort((a,b) => b.avgBill - a.avgBill)[0].state + ' �� per CA per period'} subColor="#854F0B" borderColor="#EF9F27" />
+        <SummaryCard label="Top location"          value={(topItem as any).name ?? (topItem as any).state ?? ''}                  sub={`${inr(topItem.total)} · ${Math.round(topItem.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="Avg spend per location" value={inr(avgSpend)}                sub={showBranches ? `${appState.stateF} · current period` : "across all states · current period"}                                                          subColor="#858ea2" borderColor="#185FA5" />
+        <SummaryCard label="Outlier states"        value={`${outliers.length}`}          sub=">10% YoY change · needs review"                                                              subColor={outliers.length > 2 ? '#A32D2D' : '#854F0B'} borderColor={outliers.length > 2 ? '#E24B4A' : '#EF9F27'} />
+        <SummaryCard label="Highest avg bill"      value={inr(Math.max(...locationRows.map(d => d.total ? Math.round(d.total / d.cas) : 0)))} sub={showBranches ? appState.stateF : 'across all locations'} subColor="#854F0B" borderColor="#EF9F27" />
       </div>
 
-      {/* State heatmap — grid of states coloured by spend */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>State spend heatmap</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>Darker = higher total bill · Apr 2024 – Mar 2025</div>
+      {/* Heatmap or branches listing based on filter */}
+      {!showBranches && (
+        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '16px', padding: '24px', marginBottom: '12px' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744', marginBottom: '3px' }}>State wise spend</div>
+              <div style={{ fontSize: '13px', color: '#858ea2' }}>Apr 2024 – Mar 2025</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#858ea2' }}>
+              <span>Low</span>
+              {['#ebebff','#c4bfff','#9e97ff','#5a52d5','#2d2b6b'].map(c => (
+                <div key={c} style={{ width: '28px', height: '28px', borderRadius: '6px', background: c }} />
+              ))}
+              <span style={{ fontWeight: 600, color: '#192744' }}>High</span>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#858ea2' }}>
-            <span>Low</span>
-            {['#EBEAFF','#C4BFFF','#9E97FF','#7B6FE8','#2500D7'].map(c => (
-              <div key={c} style={{ width: '16px', height: '16px', borderRadius: '3px', background: c }} />
-            ))}
-            <span>High</span>
+
+          {/* Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
+            {stateData.map((s, i) => {
+              const intensity = s.total / stateData[0].total
+              const bg = intensity > 0.90 ? '#2d2b6b'
+                       : intensity > 0.75 ? '#5a52d5'
+                       : intensity > 0.60 ? '#7b74e8'
+                       : intensity > 0.45 ? '#a09aef'
+                       : intensity > 0.30 ? '#c4bfff'
+                       : '#ebebff'
+              const isDark   = intensity > 0.55
+              const textMain = isDark ? '#fff' : '#192744'
+              const textSub  = isDark ? 'rgba(255,255,255,0.65)' : '#858ea2'
+              const avgPerCA = Math.round(s.total / Math.max(s.cas, 1) / 100000 * 10) / 10
+              return (
+                <div key={s.state}
+                  onClick={() => {}}
+                  style={{ background: bg, borderRadius: '12px', padding: '20px 18px', cursor: 'pointer', transition: 'opacity 0.15s', minHeight: '140px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '0.88'}
+                  onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.opacity = '1'}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 500, color: textMain, marginBottom: '4px' }}>{s.state}</div>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: textMain, letterSpacing: '-0.5px', marginBottom: '10px' }}>
+                      ₹{(s.total / 100000).toFixed(1)}L
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '12px', color: textSub }}>
+                    {s.cas} CAs · ₹{avgPerCA}L/CA
+                  </div>
+                </div>
+              )
+            })}
           </div>
+
+          {/* Footer */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #f3f4f6' }}>
+            <span style={{ fontSize: '12px', color: '#858ea2' }}>
+              {stateData.length} states · Total ₹{(portfolioTotal / 100000).toFixed(1)}L
+            </span>
+            <span style={{ fontSize: '12px', color: '#858ea2' }}>Click any tile to drill down</span>
+          </div>
+
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '8px' }}>
-          {stateData.map((s, i) => {
-            const intensity = s.total / stateData[0].total
-            const bg = intensity > 0.8 ? '#2500D7' : intensity > 0.6 ? '#7B6FE8' : intensity > 0.4 ? '#9E97FF' : intensity > 0.2 ? '#C4BFFF' : '#EBEAFF'
-            const textColor = intensity > 0.5 ? '#fff' : '#192744'
-            return (
-              <div key={s.state} style={{ background: bg, borderRadius: '8px', padding: '12px 14px', position: 'relative' }}>
-                {s.isOutlier && (
-                  <div style={{ position: 'absolute', top: '6px', right: '6px', width: '6px', height: '6px', borderRadius: '50%', background: s.yoy > 0 ? '#EF9F27' : '#E24B4A' }} />
-                )}
-                <div style={{ fontSize: '12px', fontWeight: 600, color: textColor, marginBottom: '3px' }}>{s.state}</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: textColor }}>{inr(s.total)}</div>
-                <div style={{ fontSize: '10px', color: intensity > 0.5 ? 'rgba(255,255,255,0.75)' : '#858ea2', marginTop: '2px' }}>{s.cas} CAs</div>
-              </div>
-            )
-          })}
-        </div>
-        <div style={{ display: 'flex', gap: '12px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF9F27', display: 'inline-block' }} />Spending up &gt;10% YoY
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#E24B4A', display: 'inline-block' }} />Spending down &gt;10% YoY
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* Ranked table */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>All locations ranked</div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>
+          {showBranches ? ('Branch breakdown — ' + appState.stateF) : 'All locations ranked'}
+        </div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Sorted by total bill · YoY change vs prior year</div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
@@ -355,16 +454,16 @@ function BasicLocations() {
             </tr>
           </thead>
           <tbody>
-            {stateData.map((s, i) => (
-              <tr key={s.state}
+            {locationRows.map((s, i) => (
+              <tr key={s.name}
                 onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
                 onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
               >
                 <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: i < 3 ? '#2500D7' : '#858ea2', fontWeight: 600 }}>{i + 1}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{s.state}</td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{s.name}</td>
                 <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{s.cas}</td>
                 <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{inr(s.total)}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{inr(s.avgBill)}</td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{inr(Math.round(s.total / Math.max(s.cas, 1)))}</td>
                 <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
                   <span style={{
                     fontSize: '12px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
@@ -393,13 +492,13 @@ function BasicLocations() {
   )
 }
 
-function BasicTrends() {
+function BasicTrends({ appState }: BasicSectionProps) {
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
 
-  const data        = getFilteredBills('monthly', 'all', 'all', 'all')
+  const data        = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
   const labels        = data.map(d => d.label)
 
@@ -553,7 +652,11 @@ function BasicTrends() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>Total bill amount · Apr 2024 – Mar 2025 vs Apr 2023 – Mar 2024</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>
+              {appState.stateF !== 'all'
+                ? `${appState.stateF}${appState.branchF !== 'all' ? ` · ${appState.branchF}` : ''} · current vs prior year`
+                : 'All states · current vs prior year · monthly'}
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: '#6b6b67' }}>
             <span style={{ display:'flex', alignItems:'center', gap:'5px' }}>
@@ -590,7 +693,7 @@ function BasicTrends() {
   )
 }
 
-function BasicDueDates() {
+function BasicDueDates({ appState }: BasicSectionProps) {
   const [selectedMonth, setSelectedMonth] = useState(0) // 0 = current month view
 
   const data    = getFilteredBills('monthly', 'all', 'all', 'all')
@@ -781,6 +884,140 @@ function BasicDueDates() {
           </tbody>
         </table>
       </div>
+
+    </div>
+  )
+}
+
+function TopPerformers({ totalBill, appState }: { totalBill: number; appState: BasicSectionProps['appState'] }) {
+  const [tab, setTab] = useState<'states' | 'branches' | 'cas'>('states')
+
+  const stateRows = STATES.map(st => {
+    const branches = BRANCHES[st] ?? []
+    const cas      = branches.reduce((s, br) => s + (CAS[br]?.length ?? 0), 0)
+    const total    = getStateBills(st, 'monthly').reduce((s, d) => s + d.totalBill, 0)
+    return { name: st, branches: branches.length, cas, total }
+  }).sort((a, b) => b.total - a.total)
+
+  const branchRows = Object.entries(BRANCHES)
+    .filter(([st]) => appState.stateF === 'all' || st === appState.stateF)
+    .flatMap(([st, brs]) =>
+      brs.map(br => ({
+        name:  br,
+        state: st,
+        cas:   CAS[br]?.length ?? 0,
+        total: (CAS[br] ?? []).reduce((s, ca) =>
+          s + getCABills(ca, 'monthly').reduce((b, d) => b + d.totalBill, 0), 0),
+      }))
+    ).sort((a, b) => b.total - a.total).slice(0, 8)
+
+  const caRows = Object.entries(CAS)
+    .filter(([br]) => appState.branchF === 'all' || br === appState.branchF)
+    .flatMap(([br, cas]) =>
+      cas
+        .filter(ca => appState.caF === 'all' || ca === appState.caF)
+        .map(ca => ({
+          name:   ca,
+          branch: br,
+          total:  getCABills(ca, 'monthly').reduce((s, d) => s + d.totalBill, 0),
+        }))
+    ).sort((a, b) => b.total - a.total).slice(0, 8)
+
+  const BAR_COLORS = ['#1c5af4', '#1c5af4', '#7B6FE8', '#7B6FE8', '#c4bfff', '#c4bfff', '#c4bfff', '#c4bfff']
+  const maxTotal = tab === 'states'
+    ? (stateRows[0]?.total ?? 1)
+    : tab === 'branches'
+    ? (branchRows[0]?.total ?? 1)
+    : (caRows[0]?.total ?? 1)
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
+
+      {/* Header + tabs */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <div>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Top by bill amount</div>
+          <div style={{ fontSize: '12px', color: '#858ea2' }}>Highest spend · Apr 2024 – Mar 2025</div>
+        </div>
+        <div style={{ display: 'flex', background: '#f5f6fa', borderRadius: '4px', padding: '2px' }}>
+          {([
+            { id: 'states',   label: 'By State'   },
+            { id: 'branches', label: 'By Branch'  },
+            { id: 'cas',      label: 'By CA'      },
+          ] as const).map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              padding: '4px 12px', borderRadius: '3px', fontSize: '12px', fontWeight: 500,
+              border: 'none', cursor: 'pointer',
+              background: tab === t.id ? '#fff' : 'transparent',
+              color: tab === t.id ? '#192744' : '#858ea2',
+              boxShadow: tab === t.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s',
+            }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* State rows */}
+      {tab === 'states' && stateRows.map((r, i) => (
+        <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: '1px solid #f3f4f6' }}
+          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}
+          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
+          <div style={{ width: '18px', fontSize: '11px', fontWeight: 700, color: i < 2 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+          <div style={{ width: '180px', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744' }}>{r.name}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '1px' }}>{r.branches} branches · {r.cas} CAs</div>
+          </div>
+          <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: '2px', background: BAR_COLORS[i] ?? '#c4bfff', width: `${Math.round(r.total / maxTotal * 100)}%`, transition: 'width 0.4s' }} />
+          </div>
+          <div style={{ width: '90px', textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{inr(r.total)}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}% of portfolio</div>
+          </div>
+        </div>
+      ))}
+
+      {/* Branch rows */}
+      {tab === 'branches' && branchRows.map((r, i) => (
+        <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: '1px solid #f3f4f6' }}
+          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}
+          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
+          <div style={{ width: '18px', fontSize: '11px', fontWeight: 700, color: i < 2 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+          <div style={{ width: '180px', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '1px' }}>{r.state} · {r.cas} CAs</div>
+          </div>
+          <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: '2px', background: BAR_COLORS[i] ?? '#c4bfff', width: `${Math.round(r.total / maxTotal * 100)}%`, transition: 'width 0.4s' }} />
+          </div>
+          <div style={{ width: '90px', textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{inr(r.total)}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}% of portfolio</div>
+          </div>
+        </div>
+      ))}
+
+      {/* CA rows */}
+      {tab === 'cas' && caRows.map((r, i) => (
+        <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: '1px solid #f3f4f6' }}
+          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}
+          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
+          <div style={{ width: '18px', fontSize: '11px', fontWeight: 700, color: i < 2 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+          <div style={{ width: '180px', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744', fontFamily: 'monospace' }}>{r.name}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '1px' }}>{r.branch}</div>
+          </div>
+          <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: '2px', background: BAR_COLORS[i] ?? '#c4bfff', width: `${Math.round(r.total / maxTotal * 100)}%`, transition: 'width 0.4s' }} />
+          </div>
+          <div style={{ width: '90px', textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{inr(r.total)}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}% of portfolio</div>
+          </div>
+        </div>
+      ))}
 
     </div>
   )
