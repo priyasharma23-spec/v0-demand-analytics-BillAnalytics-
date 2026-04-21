@@ -142,14 +142,21 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
             <line x1="4" y1="1" x2="4" y2="3" stroke="#858ea2" strokeWidth="1.2" strokeLinecap="round"/>
             <line x1="10" y1="1" x2="10" y2="3" stroke="#858ea2" strokeWidth="1.2" strokeLinecap="round"/>
           </svg>
-          <span style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>Apr 2024 – Mar 2025</span>
-          <div style={{ width: '1px', height: '16px', background: '#f3f4f6', margin: '0 4px' }} />
-          {['3M', '6M', '1Y', 'Custom'].map(opt => (
-            <button key={opt} onClick={() => { setDateRange(opt); onDateRangeChange?.(opt) }}
-              style={{ padding: '3px 8px', borderRadius: '5px', fontSize: '12px', fontWeight: 500, border: 'none', cursor: 'pointer', background: dateRange === opt ? '#2500D7' : 'transparent', color: dateRange === opt ? '#fff' : '#858ea2', transition: 'all 0.15s' }}>
-              {opt}
-            </button>
-          ))}
+          <select
+            value={dateRange}
+            onChange={e => { setDateRange(e.target.value); onDateRangeChange?.(e.target.value) }}
+            style={{ border: 'none', background: 'transparent', fontSize: '13px', fontWeight: 500, color: '#192744', cursor: 'pointer', outline: 'none', fontFamily: 'Inter, sans-serif', appearance: 'none', paddingRight: '4px' }}
+          >
+            <option value="1M">Last 1 month</option>
+            <option value="3M">Last 3 months</option>
+            <option value="6M">Last 6 months</option>
+            <option value="1Y">Last 1 year</option>
+            <option value="2Y">Last 2 years</option>
+            <option value="Custom">Custom range</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="#858ea2" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
 
         {dateRange === 'Custom' && (
