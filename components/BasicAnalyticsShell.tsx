@@ -104,9 +104,11 @@ function BasicSummary() {
   const minVal        = Math.min(...monthlyTotals)
   const maxMonthIdx   = monthlyTotals.indexOf(maxVal)
   const minMonthIdx   = monthlyTotals.indexOf(minVal)
-  const firstHalf     = data.slice(0, 6).reduce((s, d) => s + d.totalBill, 0)
-  const secondHalf    = data.slice(6).reduce((s, d) => s + d.totalBill, 0)
-  const yoyChange     = firstHalf > 0 ? Math.round((secondHalf - firstHalf) / firstHalf * 100) : 0
+  const lastMonth      = monthlyTotals[monthlyTotals.length - 1] ?? 0
+  const prevMonth      = monthlyTotals[monthlyTotals.length - 2] ?? 0
+  const momChange      = prevMonth > 0 ? Math.round((lastMonth - prevMonth) / prevMonth * 100) : 0
+  const momLabel       = data[data.length - 1]?.label ?? ''
+  const momPrevLabel   = data[data.length - 2]?.label ?? ''
   const billsDueCount = Math.round(totalCAs * 0.30)
   const billsDueAmount = Math.round(avgBill * billsDueCount)
   const paid    = Math.round(totalCAs * 0.60)
@@ -243,7 +245,13 @@ function BasicSummary() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
         <SummaryCard label="Total portfolio value" value={inr(totalBill)}  sub={`${totalStates} states · ${totalCAs} active CAs`}        subColor="#858ea2" borderColor="#1c5af4" />
         <SummaryCard label="Avg bill per CA"        value={inr(avgBill)}   sub="per billing period · all CAs"                              subColor="#858ea2" borderColor="#1c5af4" />
-        <SummaryCard label="H2 vs H1 change"        value={`${yoyChange > 0 ? '+' : ''}${yoyChange}%`} sub="second half vs first half of period" subColor={yoyChange > 0 ? '#854F0B' : '#3B6D11'} borderColor={yoyChange > 0 ? '#EF9F27' : '#1A7A45'} />
+        <SummaryCard
+          label="MoM trend"
+          value={`${momChange > 0 ? '+' : ''}${momChange}%`}
+          sub={`${momLabel} vs ${momPrevLabel}`}
+          subColor={momChange > 5 ? '#A32D2D' : momChange < 0 ? '#3B6D11' : '#854F0B'}
+          borderColor={momChange > 5 ? '#E24B4A' : momChange < 0 ? '#1A7A45' : '#EF9F27'}
+        />
         <SummaryCard label="Bills due this month"   value={`${billsDueCount}`} sub={`${inr(billsDueAmount)} · next 30 days`}              subColor="#A32D2D" borderColor="#E24B4A" />
       </div>
 
