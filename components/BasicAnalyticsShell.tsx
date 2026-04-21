@@ -495,8 +495,10 @@ function BasicLocations({ appState }: BasicSectionProps) {
 function BasicTrends({ appState }: BasicSectionProps) {
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
+  const caRef      = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
+  const caChart    = useRef<Chart | null>(null)
 
   const data        = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -512,6 +514,20 @@ function BasicTrends({ appState }: BasicSectionProps) {
   const yoyChanges = monthlyTotals.map((v, i) =>
     Math.round((v - priorYear[i]) / Math.max(priorYear[i], 1) * 100)
   )
+
+  // CA activity — count of active CAs per month
+  const allCAs = Object.values(CAS).flat()
+  const caCounts = data.map((_, mi) =>
+    allCAs.filter(ca => {
+      const bill = getCABills(ca, 'monthly')[mi]
+      return bill && bill.totalBill > 0
+    }).length
+  )
+  // Simulate prior year CA counts — 85-95% of current
+  const priorCACounts = caCounts.map((v, i) => {
+    const seed = (i * 7 + 3) % 15
+    return Math.round(v * (0.85 + seed * 0.007))
+  })
 
   // Insights
   const maxMonthIdx  = monthlyTotals.indexOf(Math.max(...monthlyTotals))
@@ -636,6 +652,85 @@ function BasicTrends({ appState }: BasicSectionProps) {
     }
   }, [])
 
+  useEffect(() => {
+    if (!caRef.current) return
+    const ctx = caRef.current.getContext('2d')
+    if (!ctx) return
+    if (caChart.current) caChart.current.destroy()
+    caChart.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Current year',
+            data: caCounts,
+            borderColor: '#2500D7',
+            backgroundColor: 'rgba(37,0,215,0.06)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#2500D7',
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            tension: 0.35,
+            fill: true,
+          },
+          {
+            label: 'Prior year',
+            data: priorCACounts,
+            borderColor: '#C4BFFF',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            borderDash: [5, 4],
+            pointBackgroundColor: '#C4BFFF',
+            pointRadius: 2,
+            pointHoverRadius: 4,
+            tension: 0.35,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#192744',
+            titleColor: '#fff',
+            bodyColor: 'rgba(255,255,255,0.85)',
+            padding: 12,
+            cornerRadius: 8,
+            callbacks: {
+              label: item => `  ${item.dataset.label}: ${item.raw} CAs`,
+              footer: items => {
+                const curr  = items.find(i => i.datasetIndex === 0)?.raw as number ?? 0
+                const prior = items.find(i => i.datasetIndex === 1)?.raw as number ?? 0
+                const chg   = Math.round((curr - prior) / Math.max(prior, 1) * 100)
+                return `YoY: ${chg > 0 ? '+' : ''}${chg}%`
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+          y: {
+            border: { display: false },
+            grid: { color: '#f3f4f6' },
+            min: Math.floor(Math.min(...priorCACounts) * 0.9),
+            max: Math.ceil(Math.max(...caCounts) * 1.1),
+            ticks: {
+              color: '#858ea2',
+              font: { size: 11 },
+              callback: (v: any) => Number.isInteger(Number(v)) ? v + ' CAs' : '',
+            },
+          },
+        },
+      },
+    })
+    return () => { if (caChart.current) caChart.current.destroy() }
+  }, [])
+
   return (
     <div>
 
@@ -669,6 +764,28 @@ function BasicTrends({ appState }: BasicSectionProps) {
         </div>
         <div style={{ position: 'relative', width: '100%', height: '240px' }}>
           <canvas ref={trendRef}></canvas>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: '1px', background: '#f3f4f6', margin: '20px 0' }} />
+
+        {/* Active CAs chart */}
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Active CAs — current vs prior year</div>
+        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
+          {appState.stateF !== 'all'
+            ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
+            : 'All states · active CAs per month'}
+        </div>
+        <div style={{ display: 'flex', gap: '14px', marginBottom: '10px', fontSize: '12px', color: '#6b6b67' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ width: '18px', height: '2.5px', background: '#2500D7', display: 'inline-block', borderRadius: '1px' }} />Current year
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ width: '18px', height: '1.5px', background: '#C4BFFF', display: 'inline-block', borderRadius: '1px' }} />Prior year
+          </span>
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '220px' }}>
+          <canvas ref={caRef}></canvas>
         </div>
       </div>
 
