@@ -329,6 +329,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
   const allCAs    = Object.values(CAS).flat()
   const totalCAs  = allCAs.length
   const showBranches = appState.stateF !== 'all'
+  const [rankTab, setRankTab] = useState<'states' | 'branches' | 'cas'>('states')
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -356,6 +357,31 @@ function BasicLocations({ appState }: BasicSectionProps) {
         return { name: br, cas, branches: 0, total: bills, priorTotal: prior, yoy, isOutlier: Math.abs(yoy) > 10 }
       }).sort((a, b) => b.total - a.total)
     : stateData.map(d => ({ name: d.state, cas: d.cas, branches: (BRANCHES[d.state] ?? []).length, total: d.total, priorTotal: d.priorTotal, yoy: d.yoy, isOutlier: d.isOutlier }))
+
+  const branchRows = Object.entries(BRANCHES)
+    .filter(([st]) => appState.stateF === 'all' || st === appState.stateF)
+    .flatMap(([st, brs]) => brs.map(br => {
+      const total = (CAS[br] ?? []).reduce((s, ca) =>
+        s + getCABills(ca, 'monthly').reduce((b, d) => b + d.totalBill, 0), 0)
+      const cas = CAS[br]?.length ?? 0
+      const seed = br.charCodeAt(0) % 20
+      const prior = Math.round(total * (0.88 + seed * 0.015))
+      const yoy = Math.round((total - prior) / Math.max(prior, 1) * 100)
+      return { name: br, sub: st, cas, total, yoy, isOutlier: Math.abs(yoy) > 10 }
+    })).sort((a, b) => b.total - a.total)
+
+  const caRows = Object.entries(CAS)
+    .filter(([br]) => appState.branchF === 'all' || br === appState.branchF)
+    .flatMap(([br, cas]) => cas
+      .filter(ca => appState.caF === 'all' || ca === appState.caF)
+      .map(ca => {
+        const total = getCABills(ca, 'monthly').reduce((s, d) => s + d.totalBill, 0)
+        const seed = ca.charCodeAt(0) % 20
+        const prior = Math.round(total * (0.88 + seed * 0.015))
+        const yoy = Math.round((total - prior) / Math.max(prior, 1) * 100)
+        return { name: ca, sub: br, cas: 1, total, yoy, isOutlier: Math.abs(yoy) > 10 }
+      })
+    ).sort((a, b) => b.total - a.total).slice(0, 20)
 
   const portfolioTotal = showBranches 
     ? locationRows.reduce((s, d) => s + d.total, 0)
@@ -442,46 +468,63 @@ function BasicLocations({ appState }: BasicSectionProps) {
       )}
 
       {/* Ranked table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>
-          {showBranches ? ('Branch breakdown — ' + appState.stateF) : 'All locations ranked'}
+      <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>All locations ranked</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>Sorted by total bill · YoY change vs prior year</div>
+          </div>
+          <div style={{ display: 'flex', background: '#f5f6fa', borderRadius: '6px', padding: '2px', gap: '2px' }}>
+            {([
+              { id: 'states',   label: 'By State'   },
+              { id: 'branches', label: 'By Branch'  },
+              { id: 'cas',      label: 'By CA'      },
+            ] as const).map(t => (
+              <button key={t.id} onClick={() => setRankTab(t.id)} style={{
+                padding: '4px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 500,
+                border: 'none', cursor: 'pointer',
+                background: rankTab === t.id ? '#fff' : 'transparent',
+                color: rankTab === t.id ? '#192744' : '#858ea2',
+                boxShadow: rankTab === t.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Sorted by total bill · YoY change vs prior year</div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
             <tr>
-              {['#', 'State', 'CAs', 'Total bill', 'Avg per CA', 'vs Prior year', 'Status'].map(h => (
-                <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+              {['#', rankTab === 'states' ? 'State' : rankTab === 'branches' ? 'Branch' : 'CA Number', 'CAs', 'Total bill', 'Avg per CA', 'vs Prior year', 'Status'].map(h => (
+                <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid #f3f4f6', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {locationRows.map((s, i) => (
-              <tr key={s.name}
-                onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-              >
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: i < 3 ? '#2500D7' : '#858ea2', fontWeight: 600 }}>{i + 1}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{s.name}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{s.cas}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{inr(s.total)}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{inr(Math.round(s.total / Math.max(s.cas, 1)))}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                  <span style={{
-                    fontSize: '12px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
-                    background: s.yoy > 10 ? '#FAEEDA' : s.yoy < -10 ? '#FCEBEB' : '#f5f5f4',
-                    color:      s.yoy > 10 ? '#854F0B' : s.yoy < -10 ? '#A32D2D' : '#6b6b67',
-                  }}>
-                    {s.yoy > 0 ? '+' : ''}{s.yoy}%
+            {(rankTab === 'states' ? locationRows : rankTab === 'branches' ? branchRows : caRows).map((row, i) => (
+              <tr key={row.name}
+                onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f5f6fa'}
+                onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
+                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6', color: i < 3 ? '#1c5af4' : '#858ea2', fontWeight: 700 }}>{i + 1}</td>
+                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6' }}>
+                  <div style={{ fontWeight: 500, color: '#192744', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
+                  <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '1px' }}>{(row as any).sub}</div>
+                </td>
+                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6', color: '#858ea2' }}>{row.cas}</td>
+                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6', fontWeight: 600, color: '#192744' }}>₹{(row.total / 100000).toFixed(1)}L</td>
+                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6', color: '#858ea2' }}>₹{(row.total / Math.max(row.cas, 1) / 100000).toFixed(1)}L</td>
+                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 500, padding: '2px 8px', borderRadius: '4px',
+                    background: row.yoy > 10 ? '#fce8e8' : row.yoy < -10 ? '#fce8e8' : '#f5f5f4',
+                    color: row.yoy > 10 ? '#ec2127' : row.yoy < -10 ? '#ec2127' : '#6b6b67' }}>
+                    {row.yoy > 0 ? '+' : ''}{row.yoy}%
                   </span>
                 </td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                  <span style={{
-                    fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
-                    background: s.isOutlier ? (s.yoy > 0 ? '#FAEEDA' : '#FCEBEB') : '#EAF3DE',
-                    color:      s.isOutlier ? (s.yoy > 0 ? '#633806' : '#A32D2D') : '#27500A',
-                  }}>
-                    {s.isOutlier ? (s.yoy > 0 ? '⚠ Spike' : '⚠ Drop') : '✓ Normal'}
+                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 8px', borderRadius: '4px',
+                    background: row.isOutlier ? (row.yoy > 0 ? '#fce8e8' : '#fce8e8') : '#e8f8f1',
+                    color: row.isOutlier ? '#ec2127' : '#36b37e' }}>
+                    {row.isOutlier ? (row.yoy > 0 ? '⚠ Spike' : '⚠ Drop') : '✓ Normal'}
                   </span>
                 </td>
               </tr>
