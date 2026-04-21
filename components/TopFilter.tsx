@@ -11,7 +11,7 @@ interface Entity {
 interface TopFilterProps {
   onSearch?: (query: string) => void;
   onDateRangeChange?: (range: string) => void;
-  onApply?: () => void;
+  onApply?: (filters: { stateF: string; branchF: string; caF: string; dateRange: string }) => void;
   onSelectEntity?: (name: string, type: string) => void;
 }
 
@@ -26,6 +26,9 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
   const [dateRange, setDateRange]     = useState('1Y');
   const [customFromDate, setCustomFromDate] = useState('');
   const [customToDate, setCustomToDate]     = useState('');
+  const [selectedState,  setSelectedState]  = useState('all')
+  const [selectedBranch, setSelectedBranch] = useState('all')
+  const [selectedCA,     setSelectedCA]     = useState('all')
 
   const [pinnedEntities, setPinnedEntities] = useState<Entity[]>([
     { name: 'Maharashtra',  type: 'state'  },
@@ -75,7 +78,12 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
     .slice(0, MAX_PINS - pinnedEntities.length);
 
   const handleSelectEntity = (name: string, type: string) => {
-    setSearchQuery(''); setSearchOpen(false); onSelectEntity?.(name, type);
+    setSearchQuery('')
+    setSearchOpen(false)
+    if (type === 'state')  { setSelectedState(name); setSelectedBranch('all'); setSelectedCA('all') }
+    if (type === 'branch') { setSelectedBranch(name); setSelectedCA('all') }
+    if (type === 'ca')     { setSelectedCA(name) }
+    onSelectEntity?.(name, type)
   };
 
   return (
@@ -138,7 +146,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
           </div>
         )}
 
-        <button onClick={() => onApply?.()} style={{ padding: '8px 20px', background: '#2500D7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+        <button onClick={() => onApply?.({ stateF: selectedState, branchF: selectedBranch, caF: selectedCA, dateRange })} style={{ padding: '8px 20px', background: '#2500D7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = '#1a00a8'}
           onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = '#2500D7'}>
           Apply
@@ -193,9 +201,37 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
           </div>
         ))}
       </div>
-    </div>
-  );
-}
+
+      {(selectedState !== 'all' || selectedBranch !== 'all' || selectedCA !== 'all') && (
+        <div style={{ display: 'flex', gap: '6px', paddingBottom: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500, flexShrink: 0 }}>Active filters:</span>
+          {selectedState !== 'all' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', background: '#EBEAFF', fontSize: '11px', color: '#2500D7', fontWeight: 500 }}>
+              {selectedState}
+              <button onClick={() => { setSelectedState('all'); setSelectedBranch('all'); setSelectedCA('all') }}
+                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#2500D7', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
+            </span>
+          )}
+          {selectedBranch !== 'all' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', background: '#E6F1FB', fontSize: '11px', color: '#185FA5', fontWeight: 500 }}>
+              {selectedBranch}
+              <button onClick={() => { setSelectedBranch('all'); setSelectedCA('all') }}
+                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#185FA5', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
+            </span>
+          )}
+          {selectedCA !== 'all' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', background: '#EAF3DE', fontSize: '11px', color: '#27500A', fontWeight: 500 }}>
+              {selectedCA}
+              <button onClick={() => setSelectedCA('all')}
+                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#27500A', fontSize: '12px', padding: 0, lineHeight: 1 }}>×</button>
+            </span>
+          )}
+          <button onClick={() => { setSelectedState('all'); setSelectedBranch('all'); setSelectedCA('all'); onApply?.({ stateF: 'all', branchF: 'all', caF: 'all', dateRange }) }}
+            style={{ fontSize: '11px', color: '#858ea2', border: 'none', background: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+            Clear all
+          </button>
+        </div>
+      )}
 
 function SearchRow({ icon, iconBg, iconColor, name, meta, onClick }: { icon: string; iconBg: string; iconColor: string; name: string; meta: string; onClick: () => void; }) {
   return (
