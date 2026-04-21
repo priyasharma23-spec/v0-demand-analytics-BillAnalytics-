@@ -94,7 +94,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
     <div style={{ background: '#fff', borderBottom: '1px solid #f3f4f6', padding: '12px 24px' }}>
 
       {/* Row 1 — Search + date pills + Apply */}
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
 
         {/* Search */}
         <div style={{ flex: 1, position: 'relative', maxWidth: '360px' }}>
@@ -109,7 +109,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
             onChange={e => { setSearchQuery(e.target.value); onSearch?.(e.target.value) }}
             onFocus={() => setSearchOpen(true)}
             onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
-            style={{ width: '100%', height: '38px', border: '1px solid #f3f4f6', borderRadius: '8px', padding: '0 12px 0 36px', fontSize: '13px', background: '#fff', outline: 'none', color: '#192744', fontFamily: 'Inter, sans-serif' }}
+            style={{ width: '100%', height: '40px', border: '1px solid #f3f4f6', borderRadius: '8px', padding: '0 12px 0 36px', fontSize: '13px', background: '#fff', outline: 'none', color: '#192744', fontFamily: 'Inter, sans-serif' }}
           />
           {searchOpen && (searchQuery.length > 0) && (
             <div style={{ position: 'absolute', top: '46px', left: 0, right: 0, background: '#fff', border: '1px solid #f3f4f6', borderRadius: '8px', zIndex: 200, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
@@ -133,7 +133,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
         </div>
 
         {/* Date range */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #f3f4f6', borderRadius: '8px', padding: '0 12px', height: '38px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #f3f4f6', borderRadius: '8px', padding: '0 12px', height: '40px' }}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="#858ea2" strokeWidth="1.2" fill="none"/>
             <line x1="1" y1="5" x2="13" y2="5" stroke="#858ea2" strokeWidth="1.2"/>
@@ -152,7 +152,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
 
         {/* Apply */}
         <button onClick={() => onApply?.({ stateF: selectedState, branchF: selectedBranch, caF: selectedCA, dateRange })}
-          style={{ height: '38px', padding: '0 20px', background: '#2500D7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background 0.15s', alignSelf: 'stretch' }}
+          style={{ height: '40px', padding: '0 20px', background: '#2500D7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background 0.15s' }}
           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = '#1a00a8'}
           onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = '#2500D7'}>
           Apply
