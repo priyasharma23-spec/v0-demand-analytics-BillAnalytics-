@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import '@/lib/chartSetup'
 import { Chart } from 'chart.js'
 import { SummaryCard } from './SummaryCard'
-import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills } from '@/lib/calculations'
+import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills, getCABills } from '@/lib/calculations'
 
 interface BasicAnalyticsShellProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
@@ -288,28 +288,8 @@ function BasicSummary() {
         </div>
       </div>
 
-      {/* Top states */}
-      <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Top states by bill amount</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Ranked by total bill · Apr 2024 – Mar 2025</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {stateAmounts.map((s, i) => {
-            const pct    = Math.round(s.total / totalBill * 100)
-            const barPct = Math.round(s.total / stateAmounts[0].total * 100)
-            return (
-              <div key={s.state} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '20px', fontSize: '11px', fontWeight: 600, color: i < 3 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
-                <div style={{ width: '110px', fontSize: '12px', fontWeight: 500, color: '#192744', flexShrink: 0 }}>{s.state}</div>
-                <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: '2px', background: i === 0 ? '#1c5af4' : i < 3 ? '#7B6FE8' : '#c4bfff', width: `${barPct}%` }} />
-                </div>
-                <div style={{ width: '70px', fontSize: '12px', fontWeight: 600, color: '#192744', textAlign: 'right', flexShrink: 0 }}>{inr(s.total)}</div>
-                <div style={{ width: '32px', fontSize: '11px', color: '#858ea2', textAlign: 'right', flexShrink: 0 }}>{pct}%</div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
+      {/* Top performers — tabbed: States / Branches / CAs */}
+      <TopPerformers totalBill={totalBill} />
     </div>
   )
 }
@@ -830,6 +810,112 @@ function BasicDueDates() {
         </table>
       </div>
 
+    </div>
+  )
+}
+
+function TopPerformers({ totalBill }: { totalBill: number }) {
+  const [tab, setTab] = useState<'states' | 'branches' | 'cas'>('states')
+
+  // States
+  const stateRows = STATES.map(st => ({
+    name:  st,
+    sub:   `${(BRANCHES[st] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0)} CAs`,
+    total: getStateBills(st, 'monthly').reduce((s, d) => s + d.totalBill, 0),
+    type:  'state' as const,
+  })).sort((a, b) => b.total - a.total)
+
+  // Branches — top 8
+  const branchRows = Object.keys(BRANCHES).flatMap(st =>
+    (BRANCHES[st] ?? []).map(br => ({
+      name:  br,
+      sub:   st,
+      total: (CAS[br] ?? []).reduce((s, ca) => {
+        const bills = getCABills(ca, 'monthly')
+        return s + bills.reduce((b, d) => b + d.totalBill, 0)
+      }, 0),
+      type: 'branch' as const,
+    }))
+  ).sort((a, b) => b.total - a.total).slice(0, 8)
+
+  // CAs — top 8
+  const caRows = Object.entries(CAS).flatMap(([br, cas]) =>
+    cas.map(ca => ({
+      name:  ca,
+      sub:   br,
+      total: getCABills(ca, 'monthly').reduce((s, d) => s + d.totalBill, 0),
+      type:  'ca' as const,
+    }))
+  ).sort((a, b) => b.total - a.total).slice(0, 8)
+
+  const rows = tab === 'states' ? stateRows : tab === 'branches' ? branchRows : caRows
+  const maxTotal = rows[0]?.total ?? 1
+
+  const BAR_COLORS = ['#1c5af4', '#1c5af4', '#7B6FE8', '#7B6FE8', '#c4bfff', '#c4bfff', '#c4bfff', '#c4bfff']
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
+
+      {/* Header + tabs */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <div>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Top by bill amount</div>
+          <div style={{ fontSize: '12px', color: '#858ea2' }}>Highest spend · Apr 2024 – Mar 2025</div>
+        </div>
+        <div style={{ display: 'flex', background: '#f5f6fa', borderRadius: '4px', padding: '2px' }}>
+          {([
+            { id: 'states',   label: 'States'   },
+            { id: 'branches', label: 'Branches' },
+            { id: 'cas',      label: 'CAs'      },
+          ] as const).map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              padding: '4px 12px', borderRadius: '3px', fontSize: '12px', fontWeight: 500,
+              border: 'none', cursor: 'pointer',
+              background: tab === t.id ? '#fff' : 'transparent',
+              color: tab === t.id ? '#192744' : '#858ea2',
+              boxShadow: tab === t.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s',
+            }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Rows */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {rows.map((r, i) => {
+          const pct    = Math.round(r.total / totalBill * 100)
+          const barPct = Math.round(r.total / maxTotal * 100)
+          return (
+            <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+
+              {/* Rank */}
+              <div style={{ width: '18px', fontSize: '11px', fontWeight: 700, color: i < 2 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+
+              {/* Name + sub */}
+              <div style={{ width: tab === 'states' ? '120px' : '160px', flexShrink: 0 }}>
+                <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</div>
+                <div style={{ fontSize: '10px', color: '#858ea2' }}>{r.sub}</div>
+              </div>
+
+              {/* Bar */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <div style={{ height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: '2px', background: BAR_COLORS[i] ?? '#c4bfff', width: `${barPct}%`, transition: 'width 0.4s ease' }} />
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{inr(r.total)}</div>
+                <div style={{ fontSize: '10px', color: '#858ea2' }}>{pct}% of portfolio</div>
+              </div>
+
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
