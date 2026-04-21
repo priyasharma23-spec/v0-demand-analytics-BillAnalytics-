@@ -9,6 +9,10 @@ interface BasicAnalyticsShellProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
 }
 
+type BasicSectionProps = {
+  appState: { view: string; stateF: string; branchF: string; caF: string }
+}
+
 const BASIC_SECTIONS = [
   { id: 'summary',   label: 'Summary'    },
   { id: 'locations', label: 'Locations'  },
@@ -53,10 +57,10 @@ export default function BasicAnalyticsShell({ appState }: BasicAnalyticsShellPro
 
       {/* Section content */}
       <div style={{ padding: '20px' }}>
-        {section === 'summary' && <BasicSummary />}
-        {section === 'locations' && <BasicLocations />}
-        {section === 'trends' && <BasicTrends />}
-        {section === 'duedates' && <BasicDueDates />}
+        {section === 'summary' && <BasicSummary appState={appState} />}
+        {section === 'locations' && <BasicLocations appState={appState} />}
+        {section === 'trends' && <BasicTrends appState={appState} />}
+        {section === 'duedates' && <BasicDueDates appState={appState} />}
       </div>
     </div>
   )
@@ -91,8 +95,8 @@ function PlaceholderSection({ title, desc, bullets }: { title: string; desc: str
   )
 }
 
-function BasicSummary() {
-  const data          = getFilteredBills('monthly', 'all', 'all', 'all')
+function BasicSummary({ appState }: BasicSectionProps) {
+  const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const allCAs        = Object.values(CAS).flat()
   const totalBill     = data.reduce((s, d) => s + d.totalBill, 0)
   const avgBill       = Math.round(totalBill / allCAs.length)
@@ -104,11 +108,13 @@ function BasicSummary() {
   const minVal        = Math.min(...monthlyTotals)
   const maxMonthIdx   = monthlyTotals.indexOf(maxVal)
   const minMonthIdx   = monthlyTotals.indexOf(minVal)
-  const lastMonth      = monthlyTotals[monthlyTotals.length - 1] ?? 0
-  const prevMonth      = monthlyTotals[monthlyTotals.length - 2] ?? 0
-  const momChange      = prevMonth > 0 ? Math.round((lastMonth - prevMonth) / prevMonth * 100) : 0
-  const momLabel       = data[data.length - 1]?.label ?? ''
-  const momPrevLabel   = data[data.length - 2]?.label ?? ''
+  const lastMonth     = data[data.length - 1]
+  const prevMonth     = data[data.length - 2]
+  const momChange     = prevMonth && prevMonth.totalBill > 0
+    ? Math.round((lastMonth.totalBill - prevMonth.totalBill) / prevMonth.totalBill * 100)
+    : 0
+  const momLabel      = lastMonth?.label ?? ''
+  const momPrevLabel  = prevMonth?.label ?? ''
   const billsDueCount = Math.round(totalCAs * 0.30)
   const billsDueAmount = Math.round(avgBill * billsDueCount)
   const paid    = Math.round(totalCAs * 0.60)
@@ -248,7 +254,7 @@ function BasicSummary() {
         <SummaryCard
           label="MoM trend"
           value={`${momChange > 0 ? '+' : ''}${momChange}%`}
-          sub={`${momLabel} vs ${momPrevLabel}`}
+          sub={`${momLabel} vs ${momPrevLabel}${appState.stateF !== 'all' ? ` · ${appState.stateF}` : ''}`}
           subColor={momChange > 5 ? '#A32D2D' : momChange < 0 ? '#3B6D11' : '#854F0B'}
           borderColor={momChange > 5 ? '#E24B4A' : momChange < 0 ? '#1A7A45' : '#EF9F27'}
         />
@@ -312,14 +318,15 @@ function BasicSummary() {
       </div>
 
       {/* Top performers ��� tabbed: States / Branches / CAs */}
-      <TopPerformers totalBill={totalBill} />
+      <TopPerformers totalBill={totalBill} appState={appState} />
     </div>
   )
 }
 
-function BasicLocations() {
+function BasicLocations({ appState }: BasicSectionProps) {
   const allCAs    = Object.values(CAS).flat()
   const totalCAs  = allCAs.length
+  const showBranches = appState.stateF !== 'all'
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -335,29 +342,84 @@ function BasicLocations() {
     return { state: st, cas, total, avgBill, priorTotal, yoy, isOutlier }
   }).sort((a, b) => b.total - a.total)
 
-  const portfolioTotal = stateData.reduce((s, d) => s + d.total, 0)
+  // If a state is selected, show branches of that state instead of all states
+  const locationRows = showBranches
+    ? (BRANCHES[appState.stateF] ?? []).map(br => {
+        const cas   = CAS[br]?.length ?? 0
+        const bills = (CAS[br] ?? []).reduce((s, ca) =>
+          s + getCABills(ca, 'monthly').reduce((b, d) => b + d.totalBill, 0), 0)
+        const seed  = br.charCodeAt(0) % 20
+        const prior = Math.round(bills * (0.88 + seed * 0.015))
+        const yoy   = Math.round((bills - prior) / Math.max(prior, 1) * 100)
+        return { name: br, cas, branches: 0, total: bills, priorTotal: prior, yoy, isOutlier: Math.abs(yoy) > 10 }
+      }).sort((a, b) => b.total - a.total)
+    : stateData.map(d => ({ name: d.state, cas: d.cas, branches: (BRANCHES[d.state] ?? []).length, total: d.total, priorTotal: d.priorTotal, yoy: d.yoy, isOutlier: d.isOutlier }))
+
+  const portfolioTotal = showBranches 
+    ? locationRows.reduce((s, d) => s + d.total, 0)
+    : stateData.reduce((s, d) => s + d.total, 0)
   const outliers       = stateData.filter(d => d.isOutlier)
-  const topState       = stateData[0]
-  const avgStateSpend  = Math.round(portfolioTotal / STATES.length)
+  const topItem        = showBranches ? locationRows[0] : stateData[0]
+  const avgSpend       = showBranches 
+    ? Math.round(portfolioTotal / locationRows.length)
+    : Math.round(portfolioTotal / STATES.length)
 
   return (
     <div>
 
       {/* Summary chips */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Top state"            value={topState.state}               sub={`${inr(topState.total)} · ${Math.round(topState.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
-        <SummaryCard label="Avg spend per state"  value={inr(avgStateSpend)}           sub="across all states · current period"                                                          subColor="#858ea2" borderColor="#185FA5" />
-        <SummaryCard label="Outlier states"       value={`${outliers.length}`}         sub=">10% YoY change · needs review"                                                              subColor={outliers.length > 2 ? '#A32D2D' : '#854F0B'} borderColor={outliers.length > 2 ? '#E24B4A' : '#EF9F27'} />
-        <SummaryCard label="Highest avg CA bill"  value={inr(Math.max(...stateData.map(d => d.avgBill)))} sub={stateData.sort((a,b) => b.avgBill - a.avgBill)[0].state + ' �� per CA per period'} subColor="#854F0B" borderColor="#EF9F27" />
+        <SummaryCard label="Top location"          value={topItem.name}                  sub={`${inr(topItem.total)} · ${Math.round(topItem.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="Avg spend per location" value={inr(avgSpend)}                sub={showBranches ? `${appState.stateF} · current period` : "across all states · current period"}                                                          subColor="#858ea2" borderColor="#185FA5" />
+        <SummaryCard label="Outlier states"        value={`${outliers.length}`}          sub=">10% YoY change · needs review"                                                              subColor={outliers.length > 2 ? '#A32D2D' : '#854F0B'} borderColor={outliers.length > 2 ? '#E24B4A' : '#EF9F27'} />
+        <SummaryCard label="Highest avg bill"      value={inr(Math.max(...locationRows.map(d => d.total ? Math.round(d.total / d.cas) : 0)))} sub={showBranches ? `${appState.stateF}` : 'across all locations'} subColor="#854F0B" borderColor="#EF9F27" />
       </div>
 
-      {/* State heatmap — grid of states coloured by spend */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>State spend heatmap</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>Darker = higher total bill · Apr 2024 – Mar 2025</div>
+      {/* Heatmap or branches listing based on filter */}
+      {!showBranches && (
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>State spend heatmap</div>
+              <div style={{ fontSize: '12px', color: '#858ea2' }}>Darker = higher total bill · Apr 2024 – Mar 2025</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#858ea2' }}>
+              <span>Low</span>
+              {['#EBEAFF','#C4BFFF','#9E97FF','#7B6FE8','#2500D7'].map(c => (
+                <div key={c} style={{ width: '16px', height: '16px', borderRadius: '3px', background: c }} />
+              ))}
+              <span>High</span>
+            </div>
           </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '8px' }}>
+            {stateData.map((s, i) => {
+              const intensity = s.total / stateData[0].total
+              const bg = intensity > 0.8 ? '#2500D7' : intensity > 0.6 ? '#7B6FE8' : intensity > 0.4 ? '#9E97FF' : intensity > 0.2 ? '#C4BFFF' : '#EBEAFF'
+              const textColor = intensity > 0.5 ? '#fff' : '#192744'
+              return (
+                <div key={s.state} style={{ background: bg, borderRadius: '8px', padding: '12px 14px', position: 'relative' }}>
+                  {s.isOutlier && (
+                    <div style={{ position: 'absolute', top: '6px', right: '6px', width: '6px', height: '6px', borderRadius: '50%', background: s.yoy > 0 ? '#EF9F27' : '#E24B4A' }} />
+                  )}
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: textColor, marginBottom: '3px' }}>{s.state}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: textColor }}>{inr(s.total)}</div>
+                  <div style={{ fontSize: '10px', color: intensity > 0.5 ? 'rgba(255,255,255,0.75)' : '#858ea2', marginTop: '2px' }}>{s.cas} CAs</div>
+                </div>
+              )
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF9F27', display: 'inline-block' }} />
+              Positive YoY change
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#E24B4A', display: 'inline-block' }} />
+              Negative YoY change
+            </span>
+          </div>
+        </div>
+      )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#858ea2' }}>
             <span>Low</span>
             {['#EBEAFF','#C4BFFF','#9E97FF','#7B6FE8','#2500D7'].map(c => (
@@ -395,7 +457,9 @@ function BasicLocations() {
 
       {/* Ranked table */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>All locations ranked</div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>
+          {showBranches ? `Branch breakdown — ${appState.stateF}` : 'All locations ranked'}
+        </div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Sorted by total bill · YoY change vs prior year</div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
@@ -406,16 +470,16 @@ function BasicLocations() {
             </tr>
           </thead>
           <tbody>
-            {stateData.map((s, i) => (
-              <tr key={s.state}
+            {locationRows.map((s, i) => (
+              <tr key={s.name}
                 onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
                 onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
               >
                 <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: i < 3 ? '#2500D7' : '#858ea2', fontWeight: 600 }}>{i + 1}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{s.state}</td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{s.name}</td>
                 <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{s.cas}</td>
                 <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{inr(s.total)}</td>
-                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{inr(s.avgBill)}</td>
+                <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{inr(Math.round(s.total / Math.max(s.cas, 1)))}</td>
                 <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
                   <span style={{
                     fontSize: '12px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
@@ -444,13 +508,13 @@ function BasicLocations() {
   )
 }
 
-function BasicTrends() {
+function BasicTrends({ appState }: BasicSectionProps) {
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
 
-  const data        = getFilteredBills('monthly', 'all', 'all', 'all')
+  const data        = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
   const labels        = data.map(d => d.label)
 
@@ -604,7 +668,11 @@ function BasicTrends() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>Total bill amount · Apr 2024 – Mar 2025 vs Apr 2023 – Mar 2024</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>
+              {appState.stateF !== 'all'
+                ? `${appState.stateF}${appState.branchF !== 'all' ? ` · ${appState.branchF}` : ''} · current vs prior year`
+                : 'All states · current vs prior year · monthly'}
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: '#6b6b67' }}>
             <span style={{ display:'flex', alignItems:'center', gap:'5px' }}>
@@ -641,7 +709,7 @@ function BasicTrends() {
   )
 }
 
-function BasicDueDates() {
+function BasicDueDates({ appState }: BasicSectionProps) {
   const [selectedMonth, setSelectedMonth] = useState(0) // 0 = current month view
 
   const data    = getFilteredBills('monthly', 'all', 'all', 'all')
@@ -837,7 +905,7 @@ function BasicDueDates() {
   )
 }
 
-function TopPerformers({ totalBill }: { totalBill: number }) {
+function TopPerformers({ totalBill, appState }: { totalBill: number; appState: BasicSectionProps['appState'] }) {
   const [tab, setTab] = useState<'states' | 'branches' | 'cas'>('states')
 
   const stateRows = STATES.map(st => {
@@ -847,23 +915,29 @@ function TopPerformers({ totalBill }: { totalBill: number }) {
     return { name: st, branches: branches.length, cas, total }
   }).sort((a, b) => b.total - a.total)
 
-  const branchRows = Object.entries(BRANCHES).flatMap(([st, brs]) =>
-    brs.map(br => ({
-      name:  br,
-      state: st,
-      cas:   CAS[br]?.length ?? 0,
-      total: (CAS[br] ?? []).reduce((s, ca) =>
-        s + getCABills(ca, 'monthly').reduce((b, d) => b + d.totalBill, 0), 0),
-    }))
-  ).sort((a, b) => b.total - a.total).slice(0, 8)
+  const branchRows = Object.entries(BRANCHES)
+    .filter(([st]) => appState.stateF === 'all' || st === appState.stateF)
+    .flatMap(([st, brs]) =>
+      brs.map(br => ({
+        name:  br,
+        state: st,
+        cas:   CAS[br]?.length ?? 0,
+        total: (CAS[br] ?? []).reduce((s, ca) =>
+          s + getCABills(ca, 'monthly').reduce((b, d) => b + d.totalBill, 0), 0),
+      }))
+    ).sort((a, b) => b.total - a.total).slice(0, 8)
 
-  const caRows = Object.entries(CAS).flatMap(([br, cas]) =>
-    cas.map(ca => ({
-      name:   ca,
-      branch: br,
-      total:  getCABills(ca, 'monthly').reduce((s, d) => s + d.totalBill, 0),
-    }))
-  ).sort((a, b) => b.total - a.total).slice(0, 8)
+  const caRows = Object.entries(CAS)
+    .filter(([br]) => appState.branchF === 'all' || br === appState.branchF)
+    .flatMap(([br, cas]) =>
+      cas
+        .filter(ca => appState.caF === 'all' || ca === appState.caF)
+        .map(ca => ({
+          name:   ca,
+          branch: br,
+          total:  getCABills(ca, 'monthly').reduce((s, d) => s + d.totalBill, 0),
+        }))
+    ).sort((a, b) => b.total - a.total).slice(0, 8)
 
   const BAR_COLORS = ['#1c5af4', '#1c5af4', '#7B6FE8', '#7B6FE8', '#c4bfff', '#c4bfff', '#c4bfff', '#c4bfff']
   const maxTotal = tab === 'states'
