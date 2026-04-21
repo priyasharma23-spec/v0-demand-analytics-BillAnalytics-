@@ -138,23 +138,6 @@ function BasicSummary() {
       const padding = (maxVal - minVal) * 0.15
     spendTrendChart.current = new Chart(ctx, {
       type: 'line',
-      plugins: [{
-        id: 'caLabels',
-        afterDatasetsDraw(chart: any) {
-          const { ctx: c } = chart
-          const meta = chart.getDatasetMeta(0)
-          meta.data.forEach((point: any, i: number) => {
-            const count = caCounts[i]
-            if (!count) return
-            c.save()
-            c.fillStyle = '#858ea2'
-            c.font = '600 10px Inter, sans-serif'
-            c.textAlign = 'center'
-            c.fillText(`${count} CAs`, point.x, point.y - 12)
-            c.restore()
-          })
-        }
-      }],
       data: {
           labels,
           datasets: [{
@@ -193,12 +176,21 @@ function BasicSummary() {
               displayColors: false,
               callbacks: {
                 title: items => items[0].label,
-                label: item => `  Bill: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
+                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
                 afterLabel: item => {
                   const i = item.dataIndex
-                  const count = caCounts[i]
-                  const suffix = i === maxMonthIdx ? '  ▲ Peak month' : i === minMonthIdx ? '  ▼ Lowest month' : ''
-                  return [`  Active CAs: ${count}`, suffix].filter(Boolean).join('\n')
+                  const count = caCounts[i] ?? 0
+                  const lines = [`  Active CAs: ${count}`]
+                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
+                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
+                  else {
+                    const prev = monthlyTotals[i - 1]
+                    if (prev) {
+                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
+                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
+                    }
+                  }
+                  return lines.join('\n')
                 }
               }
             }
@@ -265,18 +257,12 @@ function BasicSummary() {
           <div style={{ position: 'relative', width: '100%', height: '160px' }}>
             <canvas ref={spendTrendRef}></canvas>
           </div>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: '#858ea2' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <span style={{ width: '18px', height: '2px', background: '#1c5af4', display: 'inline-block', borderRadius: '1px' }} />
               Total bill amount (₹)
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#858ea2', display: 'inline-block' }} />
-              CA count above each point · varies monthly
-            </span>
-            <span style={{ marginLeft: 'auto', color: '#858ea2' }}>
-              Range: {Math.min(...caCounts)}–{Math.max(...caCounts)} CAs active per month
-            </span>
+            <span style={{ color: '#858ea2' }}>Hover a point to see active CA count for that month</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
             {[
@@ -324,7 +310,7 @@ function BasicSummary() {
         </div>
       </div>
 
-      {/* Top performers — tabbed: States / Branches / CAs */}
+      {/* Top performers ��� tabbed: States / Branches / CAs */}
       <TopPerformers totalBill={totalBill} />
     </div>
   )
