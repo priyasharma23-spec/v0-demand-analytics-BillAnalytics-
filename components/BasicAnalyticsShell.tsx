@@ -132,6 +132,7 @@ function BasicSummary() {
   })).sort((a, b) => b.total - a.total)
 
   useEffect(() => {
+    const timer = setTimeout(() => {
     if (!spendTrendRef.current) return
     const ctx = spendTrendRef.current.getContext('2d')
     if (!ctx) return
@@ -189,7 +190,6 @@ function BasicSummary() {
             padding: 10,
             cornerRadius: 4,
             displayColors: false,
-            boxShadow: '0px -1px 7.7px rgba(0,0,0,0.12)',
             callbacks: {
               title: items => items[0].label,
               label: item => `₹${(Number(item.raw)/100000).toFixed(1)}L`,
@@ -225,7 +225,11 @@ function BasicSummary() {
         },
       },
     })
-    return () => { if (spendTrendChart.current) spendTrendChart.current.destroy() }
+    }, 0)
+    return () => {
+      clearTimeout(timer)
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+    }
   }, [])
 
   return (
@@ -293,8 +297,8 @@ function BasicSummary() {
             ))}
           </div>
 
-          <div style={{ position: 'relative', width: '100%', height: '120px' }}>
-            <canvas ref={spendTrendRef}></canvas>
+          <div style={{ position: 'relative', width: '100%', height: '160px' }}>
+            <canvas ref={spendTrendRef} style={{ display: 'block' }}></canvas>
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', padding: '10px 12px', background: '#f9f9f9', borderRadius: '8px' }}>
