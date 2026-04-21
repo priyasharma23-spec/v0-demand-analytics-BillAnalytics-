@@ -92,140 +92,117 @@ function PlaceholderSection({ title, desc, bullets }: { title: string; desc: str
 }
 
 function BasicSummary() {
-  const data     = getFilteredBills('monthly', 'all', 'all', 'all')
-  const allCAs   = Object.values(CAS).flat()
-  const totalBill = data.reduce((s, d) => s + d.totalBill, 0)
-  const avgBill   = Math.round(totalBill / allCAs.length)
-  const totalCAs  = allCAs.length
-  const totalStates = STATES.length
-
-  // YoY: compare first 6 months vs last 6 months as a proxy
-  const firstHalf  = data.slice(0, 6).reduce((s, d) => s + d.totalBill, 0)
-  const secondHalf = data.slice(6).reduce((s, d) => s + d.totalBill, 0)
-  const yoyChange  = firstHalf > 0 ? Math.round((secondHalf - firstHalf) / firstHalf * 100) : 0
-
-  // Bills due this month — simulate ~30% of CAs have bills due
-  const billsDueCount  = Math.round(totalCAs * 0.30)
+  const data          = getFilteredBills('monthly', 'all', 'all', 'all')
+  const allCAs        = Object.values(CAS).flat()
+  const totalBill     = data.reduce((s, d) => s + d.totalBill, 0)
+  const avgBill       = Math.round(totalBill / allCAs.length)
+  const totalCAs      = allCAs.length
+  const totalStates   = STATES.length
+  const monthlyTotals = data.map(d => d.totalBill)
+  const labels        = data.map(d => d.label)
+  const maxVal        = Math.max(...monthlyTotals)
+  const minVal        = Math.min(...monthlyTotals)
+  const maxMonthIdx   = monthlyTotals.indexOf(maxVal)
+  const minMonthIdx   = monthlyTotals.indexOf(minVal)
+  const firstHalf     = data.slice(0, 6).reduce((s, d) => s + d.totalBill, 0)
+  const secondHalf    = data.slice(6).reduce((s, d) => s + d.totalBill, 0)
+  const yoyChange     = firstHalf > 0 ? Math.round((secondHalf - firstHalf) / firstHalf * 100) : 0
+  const billsDueCount = Math.round(totalCAs * 0.30)
   const billsDueAmount = Math.round(avgBill * billsDueCount)
-
-  // Payment status breakdown
   const paid    = Math.round(totalCAs * 0.60)
   const pending = Math.round(totalCAs * 0.25)
   const overdue = totalCAs - paid - pending
-
-  // Monthly trend for sparkline
-  const monthlyTotals = data.map(d => d.totalBill)
-  const maxMonth      = Math.max(...monthlyTotals)
-  const minMonth      = Math.min(...monthlyTotals)
-  const labels        = data.map(d => d.label)
-
-  // Chart refs and state
-  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
-  const spendTrendChart = useRef<Chart | null>(null)
-  const [trendFilter, setTrendFilter] = useState<'All' | 'By state' | 'By CA'>('All')
-
-  // Top 5 states by bill
   const stateAmounts = STATES.map(st => ({
     state: st,
     total: getStateBills(st, 'monthly').reduce((s, d) => s + d.totalBill, 0),
     cas:   (BRANCHES[st] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0),
   })).sort((a, b) => b.total - a.total)
 
+  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
+  const spendTrendChart = useRef<Chart | null>(null)
+
   useEffect(() => {
     const timer = setTimeout(() => {
-    if (!spendTrendRef.current) return
-    const ctx = spendTrendRef.current.getContext('2d')
-    if (!ctx) return
-    if (spendTrendChart.current) spendTrendChart.current.destroy()
-
-    const minVal = Math.min(...monthlyTotals)
-    const maxVal = Math.max(...monthlyTotals)
-    const padding = (maxVal - minVal) * 0.15
-
-    spendTrendChart.current = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          data: monthlyTotals,
-          borderColor: '#1c5af4',
-          borderWidth: 2,
-          pointBackgroundColor: monthlyTotals.map((v, i) =>
-            i === monthlyTotals.indexOf(maxVal) ? '#1c5af4' :
-            i === monthlyTotals.indexOf(minVal) ? '#36b37e' : '#fff'
-          ),
-          pointBorderColor: monthlyTotals.map((v, i) =>
-            i === monthlyTotals.indexOf(maxVal) ? '#1c5af4' :
-            i === monthlyTotals.indexOf(minVal) ? '#36b37e' : '#1c5af4'
-          ),
-          pointRadius: monthlyTotals.map((v, i) =>
-            i === monthlyTotals.indexOf(maxVal) || i === monthlyTotals.indexOf(minVal) ? 5 : 3
-          ),
-          pointHoverRadius: 6,
-          pointBorderWidth: 2,
-          tension: 0.35,
-          fill: true,
-          backgroundColor: (context: any) => {
-            const { ctx: c, chartArea } = context.chart
-            if (!chartArea) return 'rgba(28,90,244,0.06)'
-            const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
-            g.addColorStop(0, 'rgba(28,90,244,0.12)')
-            g.addColorStop(1, 'rgba(28,90,244,0.01)')
-            return g
-          },
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#f5f6fa',
-            titleColor: '#192744',
-            bodyColor: '#5e687d',
-            borderColor: '#f3f4f6',
-            borderWidth: 1,
-            padding: 10,
-            cornerRadius: 4,
-            displayColors: false,
-            callbacks: {
-              title: items => items[0].label,
-              label: item => `₹${(Number(item.raw)/100000).toFixed(1)}L`,
-              afterLabel: item => {
-                const idx = item.dataIndex
-                if (idx === monthlyTotals.indexOf(maxVal)) return '▲ Peak month'
-                if (idx === monthlyTotals.indexOf(minVal)) return '▼ Lowest month'
-                const prev = monthlyTotals[idx - 1]
-                if (!prev) return ''
-                const chg = Math.round((monthlyTotals[idx] - prev) / prev * 100)
-                return `${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`
+      if (!spendTrendRef.current) return
+      const ctx = spendTrendRef.current.getContext('2d')
+      if (!ctx) return
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+      const padding = (maxVal - minVal) * 0.15
+      spendTrendChart.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: monthlyTotals,
+            borderColor: '#1c5af4',
+            borderWidth: 2,
+            backgroundColor: 'rgba(28,90,244,0.08)',
+            pointBackgroundColor: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
+            ),
+            pointBorderColor: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#1c5af4'
+            ),
+            pointRadius: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx || i === minMonthIdx ? 5 : 3
+            ),
+            pointHoverRadius: 6,
+            pointBorderWidth: 2,
+            tension: 0.35,
+            fill: true,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#f5f6fa',
+              titleColor: '#192744',
+              bodyColor: '#5e687d',
+              borderColor: '#f3f4f6',
+              borderWidth: 1,
+              padding: 10,
+              cornerRadius: 4,
+              displayColors: false,
+              callbacks: {
+                title: items => items[0].label,
+                label: item => `₹${(Number(item.raw) / 100000).toFixed(1)}L`,
+                afterLabel: item => {
+                  const i = item.dataIndex
+                  if (i === maxMonthIdx) return '▲ Peak month'
+                  if (i === minMonthIdx) return '▼ Lowest month'
+                  const prev = monthlyTotals[i - 1]
+                  if (!prev) return ''
+                  const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
+                  return `${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`
+                }
               }
             }
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            border: { display: false },
-            ticks: { color: '#858ea2', font: { size: 11 } },
           },
-          y: {
-            border: { display: false },
-            grid: { color: '#f3f4f6' },
-            min: Math.floor((minVal - padding) / 100000) * 100000,
-            max: Math.ceil((maxVal + padding) / 100000) * 100000,
-            ticks: {
-              color: '#858ea2',
-              font: { size: 11 },
-              callback: (v: any) => '₹' + (Number(v)/100000).toFixed(0) + 'L',
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#858ea2', font: { size: 11 } },
+            },
+            y: {
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              min: Math.floor((minVal - padding) / 100000) * 100000,
+              max: Math.ceil((maxVal + padding) / 100000) * 100000,
+              ticks: {
+                color: '#858ea2',
+                font: { size: 11 },
+                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
+              },
             },
           },
         },
-      },
-    })
-    }, 0)
+      })
+    }, 50)
     return () => {
       clearTimeout(timer)
       if (spendTrendChart.current) spendTrendChart.current.destroy()
@@ -234,99 +211,61 @@ function BasicSummary() {
 
   return (
     <div>
-
       {/* Welcome banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, #2500D7 0%, #7B6FE8 100%)',
-        borderRadius: '12px',
-        padding: '20px 24px',
-        marginBottom: '16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
+      <div style={{ background: 'linear-gradient(135deg, #1c5af4 0%, #7B6FE8 100%)', borderRadius: '8px', padding: '20px 24px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '5px' }}>
-            Bill Payments — Basic Analytics
-          </div>
+          <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '5px' }}>Bill Payments — Basic Analytics</div>
           <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', maxWidth: '480px' }}>
-            Portfolio overview across {totalStates} states · {totalCAs} CAs · Apr 2024 – Mar 2025.
-            Connect bill copy data to unlock leakage detection, excess demand analysis, and savings recommendations.
+            Portfolio overview across {totalStates} states · {totalCAs} CAs · Apr 2024 – Mar 2025. Connect bill copy data to unlock leakage detection and savings recommendations.
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0, marginLeft: '24px' }}>
-          <button style={{
-            padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
-            border: 'none', cursor: 'pointer',
-            background: '#fff', color: '#2500D7',
-          }}>
-            Unlock Advanced →
-          </button>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.55)', textAlign: 'center' }}>
-            Bill copy integration required
-          </div>
-        </div>
+        <button style={{ padding: '8px 18px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, border: 'none', cursor: 'pointer', background: '#fff', color: '#1c5af4', flexShrink: 0, marginLeft: '24px' }}>
+          Unlock Advanced →
+        </button>
       </div>
 
-      {/* Summary metric cards */}
+      {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total portfolio value" value={inr(totalBill)}  sub={`${totalStates} states · ${totalCAs} active CAs`}        subColor="#858ea2" borderColor="#2500D7" />
-        <SummaryCard label="Avg bill per CA"        value={inr(avgBill)}   sub="per billing period · all CAs"                              subColor="#185FA5" borderColor="#185FA5" />
+        <SummaryCard label="Total portfolio value" value={inr(totalBill)}  sub={`${totalStates} states · ${totalCAs} active CAs`}        subColor="#858ea2" borderColor="#1c5af4" />
+        <SummaryCard label="Avg bill per CA"        value={inr(avgBill)}   sub="per billing period · all CAs"                              subColor="#858ea2" borderColor="#1c5af4" />
         <SummaryCard label="H2 vs H1 change"        value={`${yoyChange > 0 ? '+' : ''}${yoyChange}%`} sub="second half vs first half of period" subColor={yoyChange > 0 ? '#854F0B' : '#3B6D11'} borderColor={yoyChange > 0 ? '#EF9F27' : '#1A7A45'} />
         <SummaryCard label="Bills due this month"   value={`${billsDueCount}`} sub={`${inr(billsDueAmount)} · next 30 days`}              subColor="#A32D2D" borderColor="#E24B4A" />
       </div>
 
-      {/* Two column layout — trend + payment status */}
+      {/* Two column layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
 
-        {/* Monthly spend trend — line chart */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        {/* Monthly spend trend */}
+        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend trend</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
-          
-          {/* Filter toggle */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', marginTop: '8px' }}>
-            {(['All', 'By state', 'By CA'] as const).map(v => (
-              <button key={v} onClick={() => setTrendFilter(v)} style={{
-                padding: '3px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 500,
-                border: '1px solid #f3f4f6', background: v === trendFilter ? '#1c5af4' : '#fff',
-                color: v === trendFilter ? '#fff' : '#858ea2', cursor: 'pointer',
-              }}>
-                {v}
-              </button>
-            ))}
-          </div>
-
           <div style={{ position: 'relative', width: '100%', height: '160px' }}>
-            <canvas ref={spendTrendRef} style={{ display: 'block' }}></canvas>
+            <canvas ref={spendTrendRef}></canvas>
           </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', padding: '10px 12px', background: '#f9f9f9', borderRadius: '8px' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>{inr(minMonth)}</div>
-              <div style={{ fontSize: '10px', color: '#858ea2' }}>Lowest month</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>{inr(totalBill / data.length)}</div>
-              <div style={{ fontSize: '10px', color: '#858ea2' }}>Monthly avg</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>{inr(maxMonth)}</div>
-              <div style={{ fontSize: '10px', color: '#858ea2' }}>Peak month</div>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
+            {[
+              { label: 'Lowest month', value: inr(minVal), color: '#36b37e' },
+              { label: 'Monthly avg',  value: inr(Math.round(totalBill / data.length)), color: '#192744' },
+              { label: 'Peak month',   value: inr(maxVal), color: '#1c5af4' },
+            ].map(item => (
+              <div key={item.label} style={{ background: '#f5f6fa', borderRadius: '4px', padding: '10px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: item.color }}>{item.value}</div>
+                <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '2px' }}>{item.label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Payment status */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Payment status</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '16px' }}>Current period · {totalCAs} total CAs</div>
           {[
-            { label: 'Paid',    count: paid,    pct: Math.round(paid/totalCAs*100),    color: '#1D9E75', bg: '#EAF3DE' },
-            { label: 'Pending', count: pending, pct: Math.round(pending/totalCAs*100), color: '#EF9F27', bg: '#FAEEDA' },
-            { label: 'Overdue', count: overdue, pct: Math.round(overdue/totalCAs*100), color: '#E24B4A', bg: '#FCEBEB' },
+            { label: 'Paid',    count: paid,    pct: Math.round(paid/totalCAs*100),    color: '#36b37e', bg: '#e8f8f1' },
+            { label: 'Pending', count: pending, pct: Math.round(pending/totalCAs*100), color: '#f59e0b', bg: '#fef3c7' },
+            { label: 'Overdue', count: overdue, pct: Math.round(overdue/totalCAs*100), color: '#ec2127', bg: '#fce8e8' },
           ].map(item => (
-            <div key={item.label} style={{ marginBottom: '12px' }}>
+            <div key={item.label} style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }} />
@@ -337,32 +276,32 @@ function BasicSummary() {
                   <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '4px', background: item.bg, color: item.color, fontWeight: 500 }}>{item.pct}%</span>
                 </div>
               </div>
-              <div style={{ height: '6px', borderRadius: '3px', background: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', borderRadius: '3px', background: item.color, width: `${item.pct}%`, transition: 'width 0.4s ease' }} />
+              <div style={{ height: '6px', borderRadius: '3px', background: '#f3f4f6', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: '3px', background: item.color, width: `${item.pct}%` }} />
               </div>
             </div>
           ))}
-          <div style={{ marginTop: '16px', padding: '10px 12px', background: '#FCEBEB', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '12px', color: '#A32D2D', fontWeight: 500 }}>⚠ {overdue} CAs overdue</div>
-            <div style={{ fontSize: '11px', color: '#A32D2D' }}>Immediate attention needed</div>
+          <div style={{ marginTop: '8px', padding: '10px 12px', background: '#fce8e8', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: '#ec2127', fontWeight: 500 }}>⚠ {overdue} CAs overdue</span>
+            <span style={{ fontSize: '11px', color: '#ec2127' }}>Immediate attention needed</span>
           </div>
         </div>
       </div>
 
-      {/* Top states by bill amount */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+      {/* Top states */}
+      <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
         <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Top states by bill amount</div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Ranked by total bill · Apr 2024 – Mar 2025</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {stateAmounts.map((s, i) => {
-            const pct = Math.round(s.total / totalBill * 100)
+            const pct    = Math.round(s.total / totalBill * 100)
             const barPct = Math.round(s.total / stateAmounts[0].total * 100)
             return (
               <div key={s.state} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '20px', fontSize: '11px', fontWeight: 600, color: i < 3 ? '#2500D7' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+                <div style={{ width: '20px', fontSize: '11px', fontWeight: 600, color: i < 3 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
                 <div style={{ width: '110px', fontSize: '12px', fontWeight: 500, color: '#192744', flexShrink: 0 }}>{s.state}</div>
-                <div style={{ flex: 1, height: '8px', borderRadius: '4px', background: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: '4px', background: i === 0 ? '#2500D7' : i < 3 ? '#7B6FE8' : '#EBEAFF', width: `${barPct}%` }} />
+                <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: '2px', background: i === 0 ? '#1c5af4' : i < 3 ? '#7B6FE8' : '#c4bfff', width: `${barPct}%` }} />
                 </div>
                 <div style={{ width: '70px', fontSize: '12px', fontWeight: 600, color: '#192744', textAlign: 'right', flexShrink: 0 }}>{inr(s.total)}</div>
                 <div style={{ width: '32px', fontSize: '11px', color: '#858ea2', textAlign: 'right', flexShrink: 0 }}>{pct}%</div>
@@ -371,7 +310,6 @@ function BasicSummary() {
           })}
         </div>
       </div>
-
     </div>
   )
 }
