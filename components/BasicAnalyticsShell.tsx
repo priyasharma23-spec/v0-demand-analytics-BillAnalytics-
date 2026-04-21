@@ -878,48 +878,22 @@ function TopPerformers({ totalBill }: { totalBill: number }) {
         </div>
       </div>
 
-      {/* Column headers */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #f3f4f6' }}>
-        <div style={{ width: '18px', flexShrink: 0 }} />
-        {tab === 'states' && <>
-          <div style={{ width: '120px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>State</div>
-          <div style={{ width: '70px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Branches</div>
-          <div style={{ width: '50px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>CAs</div>
-        </>}
-        {tab === 'branches' && <>
-          <div style={{ width: '140px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Branch</div>
-          <div style={{ width: '80px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>State</div>
-          <div style={{ width: '40px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>CAs</div>
-        </>}
-        {tab === 'cas' && <>
-          <div style={{ width: '120px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>CA Number</div>
-          <div style={{ width: '140px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Branch</div>
-        </>}
-        <div style={{ flex: 1 }} />
-        <div style={{ width: '90px', flexShrink: 0, fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Amount</div>
-      </div>
-
       {/* State rows */}
       {tab === 'states' && stateRows.map((r, i) => (
         <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 0', borderBottom: '1px solid #f3f4f6' }}
           onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}
           onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
           <div style={{ width: '18px', fontSize: '11px', fontWeight: 700, color: i < 2 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
-          <div style={{ width: '120px', fontSize: '12px', fontWeight: 500, color: '#192744', flexShrink: 0 }}>{r.name}</div>
-          <div style={{ width: '70px', flexShrink: 0 }}>
-            <span style={{ fontSize: '12px', color: '#192744' }}>{r.branches}</span>
-            <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '3px' }}>br</span>
-          </div>
-          <div style={{ width: '50px', flexShrink: 0 }}>
-            <span style={{ fontSize: '12px', color: '#192744' }}>{r.cas}</span>
-            <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '3px' }}>CAs</span>
+          <div style={{ width: '180px', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744' }}>{r.name}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '1px' }}>{r.branches} branches · {r.cas} CAs</div>
           </div>
           <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
             <div style={{ height: '100%', borderRadius: '2px', background: BAR_COLORS[i] ?? '#c4bfff', width: `${Math.round(r.total / maxTotal * 100)}%`, transition: 'width 0.4s' }} />
           </div>
           <div style={{ width: '90px', textAlign: 'right', flexShrink: 0 }}>
             <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{inr(r.total)}</div>
-            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}%</div>
+            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}% of portfolio</div>
           </div>
         </div>
       ))}
@@ -930,18 +904,16 @@ function TopPerformers({ totalBill }: { totalBill: number }) {
           onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}
           onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
           <div style={{ width: '18px', fontSize: '11px', fontWeight: 700, color: i < 2 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
-          <div style={{ width: '140px', fontSize: '12px', fontWeight: 500, color: '#192744', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{r.name}</div>
-          <div style={{ width: '80px', fontSize: '12px', color: '#858ea2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{r.state}</div>
-          <div style={{ width: '40px', flexShrink: 0 }}>
-            <span style={{ fontSize: '12px', color: '#192744' }}>{r.cas}</span>
-            <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '3px' }}>CAs</span>
+          <div style={{ width: '180px', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '1px' }}>{r.state} · {r.cas} CAs</div>
           </div>
           <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
             <div style={{ height: '100%', borderRadius: '2px', background: BAR_COLORS[i] ?? '#c4bfff', width: `${Math.round(r.total / maxTotal * 100)}%`, transition: 'width 0.4s' }} />
           </div>
           <div style={{ width: '90px', textAlign: 'right', flexShrink: 0 }}>
             <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{inr(r.total)}</div>
-            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}%</div>
+            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}% of portfolio</div>
           </div>
         </div>
       ))}
@@ -952,14 +924,16 @@ function TopPerformers({ totalBill }: { totalBill: number }) {
           onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}
           onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
           <div style={{ width: '18px', fontSize: '11px', fontWeight: 700, color: i < 2 ? '#1c5af4' : '#858ea2', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
-          <div style={{ width: '120px', fontSize: '12px', fontWeight: 500, color: '#192744', fontFamily: 'monospace', flexShrink: 0 }}>{r.name}</div>
-          <div style={{ width: '140px', fontSize: '12px', color: '#858ea2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{r.branch}</div>
+          <div style={{ width: '180px', flexShrink: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744', fontFamily: 'monospace' }}>{r.name}</div>
+            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '1px' }}>{r.branch}</div>
+          </div>
           <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#f3f4f6', overflow: 'hidden' }}>
             <div style={{ height: '100%', borderRadius: '2px', background: BAR_COLORS[i] ?? '#c4bfff', width: `${Math.round(r.total / maxTotal * 100)}%`, transition: 'width 0.4s' }} />
           </div>
           <div style={{ width: '90px', textAlign: 'right', flexShrink: 0 }}>
             <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{inr(r.total)}</div>
-            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}%</div>
+            <div style={{ fontSize: '10px', color: '#858ea2' }}>{Math.round(r.total / totalBill * 100)}% of portfolio</div>
           </div>
         </div>
       ))}
