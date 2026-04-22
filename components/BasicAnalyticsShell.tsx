@@ -889,7 +889,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly Spend Comparison - {appState.dateRange === '1M' ? 'Last Month' : appState.dateRange === '3M' ? 'Last 3 Months' : appState.dateRange === '6M' ? 'Last 6 Months' : appState.dateRange === '1Y' ? 'Last Year' : 'Custom'}</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
             <div style={{ fontSize: '12px', color: '#858ea2' }}>
               {appState.stateF !== 'all'
                 ? `${appState.stateF}${appState.branchF !== 'all' ? ` · ${appState.branchF}` : ''} · current vs prior period`
@@ -915,7 +915,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
         {/* Active CAs chart header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Active CAs -{appState.dateRange === '1M' ? 'Last Month' : appState.dateRange === '3M' ? 'Last 3 Months' : appState.dateRange === '6M' ? 'Last 6 Months' : appState.dateRange === '1Y' ? 'Last Year' : 'Custom'}</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
             <div style={{ fontSize: '12px', color: '#858ea2' }}>
               {appState.stateF !== 'all'
                 ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
@@ -937,7 +937,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       </div>
 
       {/* CA addition chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginTop: '12px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginTop: '24px' }}>
         <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
           {appState.stateF !== 'all'
