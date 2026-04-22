@@ -784,11 +784,11 @@ function BasicTrends({ appState }: BasicSectionProps) {
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly Spend Comparison - {appState.dateRange === '1M' ? 'Last Month' : appState.dateRange === '3M' ? 'Last 3 Months' : appState.dateRange === '6M' ? 'Last 6 Months' : appState.dateRange === '1Y' ? 'Last Year' : 'Custom'}</div>
             <div style={{ fontSize: '12px', color: '#858ea2' }}>
               {appState.stateF !== 'all'
-                ? `${appState.stateF}${appState.branchF !== 'all' ? ` · ${appState.branchF}` : ''} · current vs prior year`
-                : 'All states · current vs prior year · monthly'}
+                ? `${appState.stateF}${appState.branchF !== 'all' ? ` · ${appState.branchF}` : ''} · current vs prior period`
+                : 'All states · current vs prior period · monthly'}
             </div>
           </div>
           <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: '#6b6b67' }}>
