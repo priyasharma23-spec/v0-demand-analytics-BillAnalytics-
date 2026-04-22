@@ -807,20 +807,24 @@ function BasicTrends({ appState }: BasicSectionProps) {
         {/* Divider */}
         <div style={{ height: '1px', background: '#f3f4f6', margin: '20px 0' }} />
 
-        {/* Active CAs chart */}
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Active CAs -{appState.dateRange === '1M' ? 'Last Month' : appState.dateRange === '3M' ? 'Last 3 Months' : appState.dateRange === '6M' ? 'Last 6 Months' : appState.dateRange === '1Y' ? 'Last Year' : 'Custom'}</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
-          {appState.stateF !== 'all'
-            ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
-            : 'All states · active CAs per month'}
-        </div>
-        <div style={{ display: 'flex', gap: '14px', marginBottom: '10px', fontSize: '12px', color: '#6b6b67' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '18px', height: '2.5px', background: '#2500D7', display: 'inline-block', borderRadius: '1px' }} />Current year
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '18px', height: '1.5px', background: '#C4BFFF', display: 'inline-block', borderRadius: '1px' }} />Prior year
-          </span>
+        {/* Active CAs chart header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Active CAs -{appState.dateRange === '1M' ? 'Last Month' : appState.dateRange === '3M' ? 'Last 3 Months' : appState.dateRange === '6M' ? 'Last 6 Months' : appState.dateRange === '1Y' ? 'Last Year' : 'Custom'}</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>
+              {appState.stateF !== 'all'
+                ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
+                : 'All states · active CAs per month'}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: '#6b6b67', flexShrink: 0 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '18px', height: '2.5px', background: '#2500D7', display: 'inline-block', borderRadius: '1px' }} />Current year
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '18px', height: '1.5px', background: '#C4BFFF', display: 'inline-block', borderRadius: '1px' }} />Prior year
+            </span>
+          </div>
         </div>
         <div style={{ position: 'relative', width: '100%', height: '220px' }}>
           <canvas ref={caRef}></canvas>
