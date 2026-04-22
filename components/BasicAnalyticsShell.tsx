@@ -610,22 +610,8 @@ function BasicTrends({ appState }: BasicSectionProps) {
   })
 
   // CA growth — cumulative CA count over time
-  const allCAsGrowth = Object.values(CAS).flat()
-  const totalCAsGrowth = allCAsGrowth.length
-  // Cumulative CA count — starts at 60%, grows to full
-  const cumulativeCAs = labels.map((_, mi) => {
-    const base   = Math.round(totalCAsGrowth * 0.60)
-    const growth = Math.round((totalCAsGrowth - base) * (mi / Math.max(labels.length - 1, 1)))
-    const noise  = Math.round((((mi * 13 + 7) % 5) - 2))
-    return Math.min(totalCAsGrowth, base + growth + noise)
-  })
-  // Prior year CA counts — lower baseline
-  const priorCumulativeCAs = labels.map((_, mi) => {
-    const base   = Math.round(totalCAsGrowth * 0.48)
-    const growth = Math.round((Math.round(totalCAsGrowth * 0.88) - base) * (mi / Math.max(labels.length - 1, 1)))
-    const noise  = Math.round((((mi * 11 + 3) % 5) - 2))
-    return Math.max(0, base + growth + noise)
-  })
+  const cumulativeCAs     = [112, 112, 124, 124, 132, 133, 133, 144, 135, 145, 155, 157]
+  const priorCumulativeCAs = [98, 103, 100, 106, 110, 121, 120, 121, 124, 129, 129, 137]
 
   // Insights
   const maxMonthIdx  = monthlyTotals.indexOf(Math.max(...monthlyTotals))
@@ -952,7 +938,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
 
       {/* CA addition chart */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginTop: '12px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Active CAs — current vs prior year</div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
           {appState.stateF !== 'all'
             ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
