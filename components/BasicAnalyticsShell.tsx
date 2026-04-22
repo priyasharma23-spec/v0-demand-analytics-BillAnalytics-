@@ -808,7 +808,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
         <div style={{ height: '1px', background: '#f3f4f6', margin: '20px 0' }} />
 
         {/* Active CAs chart */}
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Active CAs — current vs prior year</div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Active CAs -{appState.dateRange === '1M' ? 'Last Month' : appState.dateRange === '3M' ? 'Last 3 Months' : appState.dateRange === '6M' ? 'Last 6 Months' : appState.dateRange === '1Y' ? 'Last Year' : 'Custom'}</div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
           {appState.stateF !== 'all'
             ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
