@@ -571,8 +571,10 @@ function BasicLocations({ appState }: BasicSectionProps) {
 function BasicTrends({ appState }: BasicSectionProps) {
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
+  const caGrowthRef   = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
+  const caGrowthChart = useRef<Chart | null>(null)
 
   const data        = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -604,6 +606,24 @@ function BasicTrends({ appState }: BasicSectionProps) {
     const base = Math.round(totalCAsCount * 0.60)
     const growth = Math.round((Math.round(totalCAsCount * 0.85) - base) * (mi / 11))
     const noise = Math.round((((mi * 11 + 3) % 5) - 2) * 1.5)
+    return Math.max(0, base + growth + noise)
+  })
+
+  // CA growth — cumulative CA count over time
+  const allCAsGrowth = Object.values(CAS).flat()
+  const totalCAsGrowth = allCAsGrowth.length
+  // Cumulative CA count — starts at 60%, grows to full
+  const cumulativeCAs = labels.map((_, mi) => {
+    const base   = Math.round(totalCAsGrowth * 0.60)
+    const growth = Math.round((totalCAsGrowth - base) * (mi / Math.max(labels.length - 1, 1)))
+    const noise  = Math.round((((mi * 13 + 7) % 5) - 2))
+    return Math.min(totalCAsGrowth, base + growth + noise)
+  })
+  // Prior year CA counts — lower baseline
+  const priorCumulativeCAs = labels.map((_, mi) => {
+    const base   = Math.round(totalCAsGrowth * 0.48)
+    const growth = Math.round((Math.round(totalCAsGrowth * 0.88) - base) * (mi / Math.max(labels.length - 1, 1)))
+    const noise  = Math.round((((mi * 11 + 3) % 5) - 2))
     return Math.max(0, base + growth + noise)
   })
 
@@ -769,6 +789,105 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { if (caChart.current) caChart.current.destroy() }
   }, [])
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!caGrowthRef.current) return
+      const ctx = caGrowthRef.current.getContext('2d')
+      if (!ctx) return
+      if (caGrowthChart.current) caGrowthChart.current.destroy()
+      caGrowthChart.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Current year',
+              data: cumulativeCAs,
+              borderColor: '#2500D7',
+              backgroundColor: 'rgba(37,0,215,0.06)',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#2500D7',
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.35,
+              fill: true,
+            },
+            {
+              label: 'Prior year',
+              data: priorCumulativeCAs,
+              borderColor: '#C4BFFF',
+              backgroundColor: 'transparent',
+              borderWidth: 1.5,
+              borderDash: [5, 4],
+              pointBackgroundColor: '#C4BFFF',
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              tension: 0.35,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top' as const,
+              align: 'end' as const,
+              labels: {
+                boxWidth: 24,
+                boxHeight: 2,
+                color: '#858ea2',
+                font: { size: 12 },
+                usePointStyle: false,
+                padding: 16,
+              },
+            },
+            tooltip: {
+              backgroundColor: '#192744',
+              titleColor: '#fff',
+              bodyColor: 'rgba(255,255,255,0.85)',
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: item => `  ${item.dataset.label}: ${item.raw} CAs`,
+                footer: items => {
+                  const curr  = items.find(i => i.datasetIndex === 0)?.raw as number ?? 0
+                  const prior = items.find(i => i.datasetIndex === 1)?.raw as number ?? 0
+                  const chg   = Math.round((curr - prior) / Math.max(prior, 1) * 100)
+                  return `YoY: ${chg > 0 ? '+' : ''}${chg}%`
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#858ea2', font: { size: 11 } },
+            },
+            y: {
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              min: Math.floor(Math.min(...priorCumulativeCAs) * 0.88),
+              ticks: {
+                color: '#858ea2',
+                font: { size: 11 },
+                callback: (v: any) => v + ' CAs',
+              },
+            },
+          },
+        },
+      })
+    }, 50)
+    return () => {
+      clearTimeout(timer)
+      if (caGrowthChart.current) caGrowthChart.current.destroy()
+    }
+  }, [appState.stateF, appState.branchF, appState.caF])
+
   return (
     <div>
 
@@ -828,6 +947,19 @@ function BasicTrends({ appState }: BasicSectionProps) {
         </div>
         <div style={{ position: 'relative', width: '100%', height: '220px' }}>
           <canvas ref={caRef}></canvas>
+        </div>
+      </div>
+
+      {/* CA addition chart */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginTop: '12px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Active CAs — current vs prior year</div>
+        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
+          {appState.stateF !== 'all'
+            ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
+            : 'All states · active CAs per month'}
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
+          <canvas ref={caGrowthRef}></canvas>
         </div>
       </div>
 
