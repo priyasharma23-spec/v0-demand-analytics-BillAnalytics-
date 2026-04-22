@@ -503,8 +503,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
       <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '12px', padding: '16px 18px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Trend</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>Sorted by total bill · current vs previous period</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Top Contributors (by Total Bill)</div>
           </div>
           <div style={{ display: 'flex', background: '#f5f6fa', borderRadius: '6px', padding: '2px', gap: '2px' }}>
             {([
