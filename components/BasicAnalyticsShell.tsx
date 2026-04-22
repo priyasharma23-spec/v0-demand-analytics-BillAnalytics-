@@ -937,15 +937,17 @@ function BasicTrends({ appState }: BasicSectionProps) {
       </div>
 
       {/* CA addition chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginTop: '24px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
-          {appState.stateF !== 'all'
-            ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
-            : 'All states · active CAs per month'}
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-          <canvas ref={caGrowthRef}></canvas>
+      <div style={{ marginTop: '32px' }}>
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
+            {appState.stateF !== 'all'
+              ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
+              : 'All states · active CAs per month'}
+          </div>
+          <div style={{ position: 'relative', width: '100%', height: '260px' }}>
+            <canvas ref={caGrowthRef}></canvas>
+          </div>
         </div>
       </div>
 
