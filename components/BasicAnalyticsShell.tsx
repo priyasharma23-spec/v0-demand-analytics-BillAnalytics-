@@ -253,7 +253,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
         <SummaryCard label="Total portfolio value" value={inr(totalBill)}  sub={`${totalStates} states · ${totalCAs} active CAs`}        subColor="#858ea2" borderColor="#1c5af4" />
         <SummaryCard label="Avg bill per CA"        value={inr(avgBill)}   sub="per billing period · all CAs"                              subColor="#858ea2" borderColor="#1c5af4" />
         <SummaryCard
-          label="MoM trend"
+          label="Period-over-Period Trend"
           value={`${momChange > 0 ? '+' : ''}${momChange}%`}
           sub={`${momLabel} vs ${momPrevLabel}${appState.stateF !== 'all' ? ` · ${appState.stateF}` : ''}`}
           subColor={momChange > 5 ? '#A32D2D' : momChange < 0 ? '#3B6D11' : '#854F0B'}
