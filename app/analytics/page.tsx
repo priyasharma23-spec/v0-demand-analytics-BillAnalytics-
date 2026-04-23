@@ -19,6 +19,7 @@ export default function AnalyticsPage() {
   const [activeProduct, setActiveProduct] = useState<'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst'>('bill-payment');
   const [activeSection, setActiveSection] = useState<'overview' | 'billers' | 'excess-demand' | 'consumption' | 'leakages' | 'savings'>('overview');
   const [analyticsMode, setAnalyticsMode] = useState<'basic' | 'advanced'>('basic');
+  const [basicSection, setBasicSection] = useState('summary');
 
   const [appState, setAppState] = useState({
     view: 'yearly' as 'yearly' | 'monthly',
@@ -82,6 +83,8 @@ export default function AnalyticsPage() {
         onPeriodChange={handlePeriodChange}
         analyticsMode={analyticsMode}
         onModeChange={setAnalyticsMode}
+        basicSection={basicSection}
+        onBasicSectionChange={setBasicSection}
       />
 
       <TopFilter
@@ -105,7 +108,7 @@ export default function AnalyticsPage() {
       {/* Section content */}
       <div className="content">
         {analyticsMode === 'basic' ? (
-          <BasicAnalyticsShell appState={appState} />
+          <BasicAnalyticsShell appState={appState} section={basicSection} />
         ) : (
           <>
             {multiBillReview ? (

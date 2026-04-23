@@ -7,6 +7,7 @@ import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills, getC
 
 interface BasicAnalyticsShellProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
+  section?: string
 }
 
 type BasicSectionProps = {
@@ -20,49 +21,14 @@ const BASIC_SECTIONS = [
   { id: 'duedates',  label: 'Due Dates'  },
 ]
 
-export default function BasicAnalyticsShell({ appState }: BasicAnalyticsShellProps) {
-  const [section, setSection] = useState('summary')
+export default function BasicAnalyticsShell({ appState, section: sectionProp }: BasicAnalyticsShellProps) {
+  const [sectionState, setSectionState] = useState('summary')
+  const section = sectionProp ?? sectionState
+  const setSection = setSectionState
 
   return (
     <div style={{ background: '#f0f5fa', minHeight: '100vh' }}>
 
-      {/* Section pills */}
-      <div style={{
-        background: '#fff',
-        borderBottom: '1px solid #f3f4f6',
-        padding: '0 20px',
-        display: 'flex',
-        gap: '4px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-        alignItems: 'center',
-      }}>
-        {BASIC_SECTIONS.map(s => (
-          <button key={s.id} onClick={() => setSection(s.id)} style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 14px',
-            fontSize: '13px',
-            fontWeight: section === s.id ? 600 : 400,
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            color: section === s.id ? '#192744' : '#858ea2',
-            background: section === s.id ? '#f5f6fa' : 'transparent',
-            transition: 'all 0.15s',
-            whiteSpace: 'nowrap',
-            margin: '6px 0',
-          }}>
-            {s.id === 'summary'   && <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill={section === s.id ? '#192744' : '#858ea2'}/><rect x="8" y="1" width="5" height="5" rx="1" fill={section === s.id ? '#192744' : '#858ea2'}/><rect x="1" y="8" width="5" height="5" rx="1" fill={section === s.id ? '#192744' : '#858ea2'}/><rect x="8" y="8" width="5" height="5" rx="1" fill={section === s.id ? '#192744' : '#858ea2'}/></svg>}
-            {s.id === 'locations' && <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.79 1 3 2.79 3 5c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4z" stroke={section === s.id ? '#192744' : '#858ea2'} strokeWidth="1.2" fill="none"/><circle cx="7" cy="5" r="1.5" fill={section === s.id ? '#192744' : '#858ea2'}/></svg>}
-            {s.id === 'trends'    && <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="1,10 4,6 7,8 10,3 13,5" stroke={section === s.id ? '#192744' : '#858ea2'} strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-            {s.id === 'duedates'  && <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="1.5" stroke={section === s.id ? '#192744' : '#858ea2'} strokeWidth="1.2" fill="none"/><line x1="1" y1="5" x2="13" y2="5" stroke={section === s.id ? '#192744' : '#858ea2'} strokeWidth="1.2"/><line x1="4" y1="1" x2="4" y2="3" stroke={section === s.id ? '#192744' : '#858ea2'} strokeWidth="1.2" strokeLinecap="round"/><line x1="10" y1="1" x2="10" y2="3" stroke={section === s.id ? '#192744' : '#858ea2'} strokeWidth="1.2" strokeLinecap="round"/></svg>}
-            {s.label}
-          </button>
-        ))}
-      </div>
 
       {/* Section content */}
       <div style={{ padding: '20px' }}>
