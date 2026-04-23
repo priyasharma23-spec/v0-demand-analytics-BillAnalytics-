@@ -7,6 +7,7 @@ import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills, getC
 
 interface BasicAnalyticsShellProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
+  section?: string
 }
 
 type BasicSectionProps = {
@@ -20,40 +21,14 @@ const BASIC_SECTIONS = [
   { id: 'duedates',  label: 'Due Dates'  },
 ]
 
-export default function BasicAnalyticsShell({ appState }: BasicAnalyticsShellProps) {
-  const [section, setSection] = useState('summary')
+export default function BasicAnalyticsShell({ appState, section: sectionProp }: BasicAnalyticsShellProps) {
+  const [sectionState, setSectionState] = useState('summary')
+  const section = sectionProp ?? sectionState
+  const setSection = setSectionState
 
   return (
     <div style={{ background: '#f0f5fa', minHeight: '100vh' }}>
 
-      {/* Section pills */}
-      <div style={{
-        background: '#fff',
-        borderBottom: '0.5px solid rgba(0,0,0,0.08)',
-        padding: '0 20px',
-        display: 'flex',
-        gap: '2px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-      }}>
-        {BASIC_SECTIONS.map(s => (
-          <button key={s.id} onClick={() => setSection(s.id)} style={{
-            padding: '11px 18px',
-            fontSize: '13px',
-            fontWeight: section === s.id ? 600 : 400,
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-            color: section === s.id ? '#2500D7' : '#858ea2',
-            borderBottom: section === s.id ? '2px solid #2500D7' : '2px solid transparent',
-            transition: 'all 0.15s',
-            whiteSpace: 'nowrap',
-          }}>
-            {s.label}
-          </button>
-        ))}
-      </div>
 
       {/* Section content */}
       <div style={{ padding: '20px' }}>
@@ -266,7 +241,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
 
         {/* Monthly spend trend */}
-        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '4px', padding: '16px 18px' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend trend</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
           <div style={{ position: 'relative', width: '100%', height: '160px' }}>
@@ -287,7 +262,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
         </div>
 
         {/* Payment status */}
-        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '4px', padding: '16px 18px' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Payment status</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '16px' }}>Current period · {totalCAs} total CAs</div>
           {[
@@ -399,7 +374,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
         <SummaryCard label="Top location"          value={(topItem as any).name ?? (topItem as any).state ?? ''}                  sub={`${inr(topItem.total)} · ${Math.round(topItem.total/portfolioTotal*100)}% of portfolio`} subColor="#185FA5" borderColor="#2500D7" />
         <SummaryCard label="Avg spend per location" value={inr(avgSpend)}                sub={showBranches ? `${appState.stateF} · current period` : "across all states · current period"}                                                          subColor="#858ea2" borderColor="#185FA5" />
-        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderLeft: '3px solid #185FA5', borderRadius: '4px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderLeft: '3px solid #185FA5', borderRadius: '4px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500 }}>Top branch</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{branchRows[0]?.name ?? '—'}</div>
@@ -416,7 +391,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
             </button>
           )}
         </div>
-        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderLeft: '3px solid #1A7A45', borderRadius: '4px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderLeft: '3px solid #1A7A45', borderRadius: '4px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500 }}>Top CA</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caRows[0]?.name ?? '—'}</div>
@@ -437,7 +412,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
 
       {/* Heatmap or branches listing based on filter */}
       {!showBranches && (
-        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '16px', padding: '24px', marginBottom: '12px' }}>
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '24px', marginBottom: '12px' }}>
 
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -500,7 +475,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
       )}
 
       {/* Ranked table */}
-      <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '12px', padding: '16px 18px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Top Contributors (by Total Bill)</div>
@@ -847,7 +822,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       </div>
 
       {/* Monthly spend trend */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
@@ -864,7 +839,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       </div>
 
       {/* YoY change — line chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Month-by-month YoY change</div>
@@ -881,7 +856,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       </div>
 
       {/* CA additions — line chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
@@ -967,7 +942,7 @@ function BasicDueDates({ appState }: BasicSectionProps) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', alignItems: 'start' }}>
 
         {/* Due date calendar */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Due date calendar</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Bills due per day · current month</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
@@ -1005,7 +980,7 @@ function BasicDueDates({ appState }: BasicSectionProps) {
         </div>
 
         {/* Weekly capital plan — redesigned */}
-        <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.04), 0 8px 32px rgba(28,90,244,.07)' }}>
+        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.04), 0 8px 32px rgba(28,90,244,.07)' }}>
 
           {/* Header */}
           <div style={{ padding: '16px 20px 14px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1100,7 +1075,7 @@ function BasicDueDates({ appState }: BasicSectionProps) {
 
           {/* Selected week detail */}
           {activeWeek !== null && weeklyAmounts[activeWeek] && (
-            <div style={{ margin: '0 12px 14px', background: '#f9f9f9', border: '1px solid #f3f4f6', borderRadius: '10px', padding: '12px 16px' }}>
+            <div style={{ margin: '0 12px 14px', background: '#f9f9f9', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '10px', padding: '12px 16px' }}>
               <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '8px' }}>
                 {weeklyAmounts[activeWeek].label} detail
               </div>
@@ -1171,7 +1146,7 @@ function TopPerformers({ totalBill, appState }: { totalBill: number; appState: B
     : (caRows[0]?.total ?? 1)
 
   return (
-    <div style={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '16px 18px' }}>
+    <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '4px', padding: '16px 18px' }}>
 
       {/* Header + tabs */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>

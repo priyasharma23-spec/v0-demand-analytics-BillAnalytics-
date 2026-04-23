@@ -21,6 +21,21 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
   const [dateRange, setDateRange]     = useState('1Y')
   const [customFrom, setCustomFrom] = useState('')
   const [customTo,   setCustomTo]   = useState('')
+
+  const getDateLabel = (range: string, from: string, to: string): string => {
+    const now = new Date(2025, 2, 31)
+    if (range === 'Custom' && from && to) {
+      const f = new Date(from), t = new Date(to)
+      return f.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) + ' – ' +
+             t.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+    }
+    const months: Record<string, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 }
+    const m = months[range] ?? 12
+    const start = new Date(now.getFullYear(), now.getMonth() - m + 1, 1)
+    return start.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) + ' – ' +
+           now.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+  }
+  const dateLabel = getDateLabel(dateRange, customFrom, customTo)
   const [pinnedOpen, setPinnedOpen]   = useState(false)
   const [selectedState,  setSelectedState]  = useState('all')
   const [selectedBranch, setSelectedBranch] = useState('all')
@@ -142,6 +157,8 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
             <line x1="4" y1="1" x2="4" y2="3" stroke="#858ea2" strokeWidth="1.2" strokeLinecap="round"/>
             <line x1="10" y1="1" x2="10" y2="3" stroke="#858ea2" strokeWidth="1.2" strokeLinecap="round"/>
           </svg>
+          <span style={{ fontSize: '13px', fontWeight: 500, color: '#192744', whiteSpace: 'nowrap' }}>{dateLabel}</span>
+          <div style={{ width: '1px', height: '16px', background: '#f3f4f6' }} />
           <select
             value={dateRange}
             onChange={e => { setDateRange(e.target.value); onDateRangeChange?.(e.target.value) }}

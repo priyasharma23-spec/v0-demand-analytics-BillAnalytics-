@@ -25,6 +25,8 @@ interface DashboardNavProps {
   onPeriodChange: (period: string) => void;
   analyticsMode: 'basic' | 'advanced';
   onModeChange: (mode: 'basic' | 'advanced') => void;
+  basicSection?: string;
+  onBasicSectionChange?: (section: string) => void;
 }
 
 export default function DashboardNav({
@@ -40,6 +42,8 @@ export default function DashboardNav({
   onPeriodChange,
   analyticsMode,
   onModeChange,
+  basicSection = 'summary',
+  onBasicSectionChange,
 }: DashboardNavProps) {
   const [localState, setLocalState] = useState('');
   const [localBranch, setLocalBranch] = useState('');
@@ -255,7 +259,7 @@ export default function DashboardNav({
       </div>
 
       {/* Section Navigation - Secondary (only for Bill Payment AND Advanced mode) */}
-      {showSectionPills && analyticsMode === 'advanced' && (
+      {showSectionPills && (
         <div style={{ 
           display: 'flex', 
           gap: '8px', 
@@ -265,7 +269,37 @@ export default function DashboardNav({
           justifyContent: 'space-between'
         }}>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {sections.map((section) => (
+            {analyticsMode === 'basic' ? (
+              <React.Fragment>
+                {[{id:'summary',label:'Summary'},{id:'locations',label:'Locations'},{id:'trends',label:'Trends'},{id:'duedates',label:'Due Dates'}].map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => onBasicSectionChange?.(s.id)}
+                    style={{
+                      height: '32px',
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      fontFamily: '"Inter", sans-serif',
+                      fontSize: '13px',
+                      fontWeight: basicSection === s.id ? 600 : 500,
+                      color: basicSection === s.id ? '#192744' : '#858EA2',
+                      background: basicSection === s.id ? '#ffffff' : 'transparent',
+                      border: basicSection === s.id ? '1px solid #E5E7EB' : 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                {sections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => onSectionChange(section.id)}
@@ -313,7 +347,9 @@ export default function DashboardNav({
                 </span>
                 {section.label}
               </button>
-            ))}
+                ))}
+              </React.Fragment>
+            )}
           </div>
 
           {/* Bill Category Filter - Right side */}
