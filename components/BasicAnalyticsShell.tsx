@@ -296,6 +296,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
 
       {/* Top performers ��� tabbed: States / Branches / CAs */}
       <TopPerformers totalBill={totalBill} appState={appState} />
+
     </div>
   )
 }
