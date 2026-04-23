@@ -570,9 +570,11 @@ function BasicLocations({ appState }: BasicSectionProps) {
 
 function BasicTrends({ appState }: BasicSectionProps) {
   const trendRef   = useRef<HTMLCanvasElement>(null)
+  const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
   const caGrowthRef   = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
+  const yoyChart   = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
   const caGrowthChart = useRef<Chart | null>(null)
 
@@ -695,6 +697,47 @@ function BasicTrends({ appState }: BasicSectionProps) {
       if (trendChart.current) trendChart.current.destroy()
     }
   }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!yoyRef.current) return
+      const ctx = yoyRef.current.getContext('2d')
+      if (!ctx) return
+      if (yoyChart.current) yoyChart.current.destroy()
+      yoyChart.current = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'YoY change (%)',
+            data: yoyChanges,
+            backgroundColor: yoyChanges.map(v => v > 0 ? 'rgba(239,159,39,0.75)' : 'rgba(29,158,117,0.75)'),
+            borderRadius: 4,
+            barPercentage: 0.65,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#192744',
+              callbacks: {
+                label: item => `  YoY: ${(item.raw as number) > 0 ? '+' : ''}${item.raw}%`,
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: { border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
+          },
+        },
+      })
+    }, 50)
+    return () => { clearTimeout(timer); if (yoyChart.current) yoyChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF])
 
   useEffect(() => {
     if (!caRef.current) return
@@ -908,9 +951,27 @@ function BasicTrends({ appState }: BasicSectionProps) {
         <div style={{ position: 'relative', width: '100%', height: '240px' }}>
           <canvas ref={trendRef}></canvas>
         </div>
+      </div>
+
+      {/* YoY change bars */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Month-by-month YoY change</div>
+        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>% change vs same month prior year · amber = increase · green = decrease</div>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '10px', fontSize: '11px', color: '#6b6b67' }}>
+          <span style={{ display:'flex', alignItems:'center', gap:'4px' }}>
+            <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(239,159,39,0.75)', display:'inline-block' }} />Spend increased vs prior year
+          </span>
+          <span style={{ display:'flex', alignItems:'center', gap:'4px' }}>
+            <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(29,158,117,0.75)', display:'inline-block' }} />Spend decreased vs prior year
+          </span>
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '180px' }}>
+          <canvas ref={yoyRef}></canvas>
+        </div>
+      </div>
 
         {/* Divider */}
-        <div style={{ height: '1px', background: '#f3f4f6', margin: '20px 0' }} />
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
 
         {/* Active CAs chart header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -933,19 +994,6 @@ function BasicTrends({ appState }: BasicSectionProps) {
         </div>
         <div style={{ position: 'relative', width: '100%', height: '220px' }}>
           <canvas ref={caRef}></canvas>
-        </div>
-      </div>
-
-      {/* CA addition chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
-          {appState.stateF !== 'all'
-            ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
-            : 'All states · active CAs per month'}
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-          <canvas ref={caGrowthRef}></canvas>
         </div>
       </div>
 
