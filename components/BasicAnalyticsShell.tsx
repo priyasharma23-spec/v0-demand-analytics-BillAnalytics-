@@ -1099,31 +1099,6 @@ function BasicDueDates({ appState }: BasicSectionProps) {
         </div>
 
       </div>
-
-      {/* Surfaced anomalies */}
-      <div style={{ marginTop: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '14px' }}>
-          <div>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744', marginBottom: '3px' }}>Surfaced anomalies</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>Ranked by avoidable cost · click any card to drill in</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '10px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>Total avoidable</div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#1a00a8', letterSpacing: '-0.5px' }}>₹8.2L / yr</div>
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {[
-            { id: 1, icon: '⚠', iconColor: '#EF4444', iconBg: '#FEF2F2', label: 'Excess demand',    title: '43 CAs exceeded contracted demand',              where: 'MH · DL · KA', amount: '₹4.8L', type: 'avoidable / yr', cta: 'View CAs'      },
-            { id: 2, icon: '◎', iconColor: '#D97706', iconBg: '#FFFBEB', label: 'PF penalty',        title: 'Power factor below 0.90 in 28 branches',         where: 'UP · RJ',      amount: '₹2.1L', type: 'avoidable / yr', cta: 'View branches'  },
-            { id: 3, icon: '⏰', iconColor: '#7C3AED', iconBg: '#F5F3FF', label: 'Late payment',     title: 'Surcharge recurring in 19 CAs — 3+ months',      where: 'WB · GJ',      amount: '₹1.3L', type: 'avoidable / yr', cta: 'View CAs'      },
-            { id: 4, icon: '↘', iconColor: '#16A34A', iconBg: '#F0FDF4', label: 'Under-utilised',   title: '12 CAs drawing below 70% contracted demand',     where: 'TN · RJ',      amount: '₹0.8L', type: 'saveable / yr',  cta: 'View CAs'      },
-          ].map((a) => (
-            <AnomalyCard key={a.id} a={a} />
-          ))}
-        </div>
-      </div>
-
     </div>
   )
 }
