@@ -1099,7 +1099,89 @@ function BasicDueDates({ appState }: BasicSectionProps) {
 
       </div>
 
+      {/* Surfaced anomalies */}
+      <div style={{ marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '14px' }}>
+          <div>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744', marginBottom: '3px' }}>Surfaced anomalies</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>Ranked by avoidable cost · click any card to drill in</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '10px', color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>Total avoidable</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: '#1a00a8', letterSpacing: '-0.5px' }}>₹8.2L / yr</div>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {[
+            { id: 1, icon: '⚠', iconColor: '#EF4444', iconBg: '#FEF2F2', label: 'Excess demand',    title: '43 CAs exceeded contracted demand',              where: 'MH · DL · KA', amount: '₹4.8L', type: 'avoidable / yr', cta: 'View CAs'      },
+            { id: 2, icon: '◎', iconColor: '#D97706', iconBg: '#FFFBEB', label: 'PF penalty',        title: 'Power factor below 0.90 in 28 branches',         where: 'UP · RJ',      amount: '₹2.1L', type: 'avoidable / yr', cta: 'View branches'  },
+            { id: 3, icon: '⏰', iconColor: '#7C3AED', iconBg: '#F5F3FF', label: 'Late payment',     title: 'Surcharge recurring in 19 CAs — 3+ months',      where: 'WB · GJ',      amount: '₹1.3L', type: 'avoidable / yr', cta: 'View CAs'      },
+            { id: 4, icon: '↘', iconColor: '#16A34A', iconBg: '#F0FDF4', label: 'Under-utilised',   title: '12 CAs drawing below 70% contracted demand',     where: 'TN · RJ',      amount: '₹0.8L', type: 'saveable / yr',  cta: 'View CAs'      },
+          ].map((a) => (
+            <AnomalyCard key={a.id} a={a} />
+          ))}
+        </div>
+      </div>
 
+    </div>
+  )
+}
+
+
+function AnomalyCard({ a }: { a: { id: number; icon: string; iconColor: string; iconBg: string; label: string; title: string; where: string; amount: string; type: string; cta: string } }) {
+  const [hov, setHov] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? '#FAFAFA' : '#fff',
+        border: '1.5px solid ' + (hov ? '#D1D5DB' : '#f3f4f6'),
+        borderRadius: '14px',
+        padding: '20px 20px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        cursor: 'pointer',
+        transition: 'all .16s',
+        boxShadow: hov ? '0 4px 16px rgba(0,0,0,.07)' : 'none',
+      }}>
+      {/* Top row: icon + amount */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: a.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', color: a.iconColor }}>
+          {a.icon}
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '22px', fontWeight: 800, color: '#192744', letterSpacing: '-0.5px' }}>{a.amount}</div>
+          <div style={{ fontSize: '10.5px', color: '#858ea2' }}>{a.type}</div>
+        </div>
+      </div>
+      {/* Label + title */}
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>
+          {a.label}
+        </div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', lineHeight: 1.4 }}>
+          {a.title}
+        </div>
+        <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '6px' }}>{a.where}</div>
+      </div>
+      {/* CTA */}
+      <button style={{
+        alignSelf: 'flex-start',
+        background: hov ? '#2500D7' : '#EBEAFF',
+        color: hov ? '#fff' : '#2500D7',
+        border: 'none',
+        borderRadius: '8px',
+        padding: '7px 14px',
+        fontSize: '12.5px',
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'all .16s',
+        fontFamily: 'inherit',
+      }}>
+        {a.cta} →
+      </button>
     </div>
   )
 }
