@@ -569,12 +569,12 @@ function BasicLocations({ appState }: BasicSectionProps) {
 }
 
 function BasicTrends({ appState }: BasicSectionProps) {
-  const trendRef     = useRef<HTMLCanvasElement>(null)
-  const yoyRef       = useRef<HTMLCanvasElement>(null)
-  const caRef        = useRef<HTMLCanvasElement>(null)
-  const trendChart   = useRef<Chart | null>(null)
-  const yoyChart     = useRef<Chart | null>(null)
-  const caChart      = useRef<Chart | null>(null)
+  const trendRef   = useRef<HTMLCanvasElement>(null)
+  const yoyRef     = useRef<HTMLCanvasElement>(null)
+  const caRef      = useRef<HTMLCanvasElement>(null)
+  const trendChart = useRef<Chart | null>(null)
+  const yoyChart   = useRef<Chart | null>(null)
+  const caChart    = useRef<Chart | null>(null)
 
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -595,11 +595,13 @@ function BasicTrends({ appState }: BasicSectionProps) {
   const yoyChanges = monthlyTotals.map((v, i) =>
     Math.round((v - priorYear[i]) / Math.max(priorYear[i], 1) * 100)
   )
+  const priorYoyChanges = yoyChanges.map((v, i) => {
+    const seed = (i * 7 + 3) % 15
+    return Math.round(v * (0.80 + seed * 0.01))
+  })
 
-  const allCAsT = Object.values(CAS).flat()
-  const totalCAsCount = allCAsT.length
-  const caCounts     = [112, 112, 124, 124, 132, 133, 133, 144, 135, 145, 155, 157]
-  const priorCACounts = [98, 103, 100, 106, 110, 121, 120, 121, 124, 129, 129, 137]
+  const caCounts      = [112, 112, 124, 124, 132, 133, 133, 144, 135, 145, 155, 157]
+  const priorCACounts = [98,  103, 100, 106, 110, 121, 120, 121, 124, 129, 129, 137]
 
   // Spend trend chart
   useEffect(() => {
@@ -665,6 +667,239 @@ function BasicTrends({ appState }: BasicSectionProps) {
                   const chg   = Math.round((curr - prior) / Math.max(prior, 1) * 100)
                   return 'YoY: ' + (chg > 0 ? '+' : '') + chg + '%'
                 }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: { border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v)/100000).toFixed(1) + 'L' } },
+          },
+        },
+      })
+    }, 50)
+    return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF])
+
+  // YoY change line chart — same style as spend chart
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!yoyRef.current) return
+      const ctx = yoyRef.current.getContext('2d')
+      if (!ctx) return
+      if (yoyChart.current) yoyChart.current.destroy()
+      yoyChart.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Current year',
+              data: yoyChanges,
+              borderColor: '#2500D7',
+              backgroundColor: 'rgba(37,0,215,0.06)',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#2500D7',
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.35,
+              fill: true,
+            },
+            {
+              label: 'Prior year',
+              data: priorYoyChanges,
+              borderColor: '#C4BFFF',
+              backgroundColor: 'transparent',
+              borderWidth: 1.5,
+              borderDash: [5, 4],
+              pointBackgroundColor: '#C4BFFF',
+              pointRadius: 2,
+              pointHoverRadius: 4,
+              tension: 0.35,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top' as const,
+              align: 'end' as const,
+              labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 12 }, padding: 16 },
+            },
+            tooltip: {
+              backgroundColor: '#192744',
+              titleColor: '#fff',
+              bodyColor: 'rgba(255,255,255,0.85)',
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: item => '  ' + item.dataset.label + ': ' + (item.raw as number > 0 ? '+' : '') + item.raw + '%',
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: { border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
+          },
+        },
+      })
+    }, 50)
+    return () => { clearTimeout(timer); if (yoyChart.current) yoyChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF])
+
+  // CA additions line chart — same style as spend chart
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!caRef.current) return
+      const ctx = caRef.current.getContext('2d')
+      if (!ctx) return
+      if (caChart.current) caChart.current.destroy()
+      caChart.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Current year',
+              data: caCounts,
+              borderColor: '#2500D7',
+              backgroundColor: 'rgba(37,0,215,0.06)',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#2500D7',
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.35,
+              fill: true,
+            },
+            {
+              label: 'Prior year',
+              data: priorCACounts,
+              borderColor: '#C4BFFF',
+              backgroundColor: 'transparent',
+              borderWidth: 1.5,
+              borderDash: [5, 4],
+              pointBackgroundColor: '#C4BFFF',
+              pointRadius: 2,
+              pointHoverRadius: 4,
+              tension: 0.35,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top' as const,
+              align: 'end' as const,
+              labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 12 }, padding: 16 },
+            },
+            tooltip: {
+              backgroundColor: '#192744',
+              titleColor: '#fff',
+              bodyColor: 'rgba(255,255,255,0.85)',
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: item => '  ' + item.dataset.label + ': ' + item.raw + ' CAs',
+                footer: items => {
+                  const curr  = items.find(i => i.datasetIndex === 0)?.raw as number ?? 0
+                  const prior = items.find(i => i.datasetIndex === 1)?.raw as number ?? 0
+                  const chg   = Math.round((curr - prior) / Math.max(prior, 1) * 100)
+                  return 'YoY: ' + (chg > 0 ? '+' : '') + chg + '%'
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: {
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              min: Math.floor(Math.min(...priorCACounts) * 0.88),
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + ' CAs' },
+            },
+          },
+        },
+      })
+    }, 50)
+    return () => { clearTimeout(timer); if (caChart.current) caChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF])
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
+        <SummaryCard label="Overall YoY change" value={(overallYoy > 0 ? '+' : '') + overallYoy + '%'}  sub="avg monthly spend vs prior year"               subColor={overallYoy > 0 ? '#854F0B' : '#3B6D11'} borderColor={overallYoy > 0 ? '#EF9F27' : '#1A7A45'} />
+        <SummaryCard label="Peak month"         value={labels[maxMonthIdx]}                              sub={inr(monthlyTotals[maxMonthIdx]) + ' · highest spend'} subColor="#A32D2D" borderColor="#E24B4A" />
+        <SummaryCard label="Lowest month"       value={labels[minMonthIdx]}                              sub={inr(monthlyTotals[minMonthIdx]) + ' · lowest spend'}  subColor="#3B6D11" borderColor="#1A7A45" />
+        <SummaryCard label="Monthly average"    value={inr(avgCurrent)}                                  sub={'vs ' + inr(avgPrior) + ' prior year'}                subColor="#185FA5" borderColor="#185FA5" />
+      </div>
+
+      {/* Monthly spend trend */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>
+              {appState.stateF !== 'all'
+                ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · current vs prior year · monthly'
+                : 'All states · current vs prior year · monthly'}
+            </div>
+          </div>
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
+          <canvas ref={trendRef}></canvas>
+        </div>
+      </div>
+
+      {/* YoY change — line chart */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Month-by-month YoY change</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>
+              {appState.stateF !== 'all'
+                ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · % change vs prior year'
+                : 'All states · % change vs same month prior year'}
+            </div>
+          </div>
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
+          <canvas ref={yoyRef}></canvas>
+        </div>
+      </div>
+
+      {/* CA additions — line chart */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>
+              {appState.stateF !== 'all'
+                ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
+                : 'All states · active CAs per month'}
+            </div>
+          </div>
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
+          <canvas ref={caRef}></canvas>
+        </div>
+      </div>
+
+    </div>
+  )
+}
               }
             }
           },
@@ -866,432 +1101,6 @@ function BasicTrends({ appState }: BasicSectionProps) {
     </div>
   )
 }
-
-  const data        = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
-  const monthlyTotals = data.map(d => d.totalBill)
-  const labels        = data.map(d => d.label)
-
-  // Simulate prior year — each month 85-95% of current
-  const priorYear = monthlyTotals.map((v, i) => {
-    const seed = (i * 7 + 3) % 15
-    return Math.round(v * (0.85 + seed * 0.007))
-  })
-
-  // YoY % change per month
-  const yoyChanges = monthlyTotals.map((v, i) =>
-    Math.round((v - priorYear[i]) / Math.max(priorYear[i], 1) * 100)
-  )
-
-  // CA activity — count of active CAs per month
-  const allCAs = Object.values(CAS).flat()
-  // Simulate CA additions — start with 70% active, grow to 100% by month 12
-  const totalCAsCount = allCAs.length
-  const caCounts = data.map((_, mi) => {
-    const base = Math.round(totalCAsCount * 0.70)
-    const growth = Math.round((totalCAsCount - base) * (mi / 11))
-    const noise = Math.round((((mi * 13 + 7) % 5) - 2) * 1.5)
-    return Math.min(totalCAsCount, base + growth + noise)
-  })
-  // Prior year — 80-90% of current year counts with similar growth pattern
-  const priorCACounts = data.map((_, mi) => {
-    const base = Math.round(totalCAsCount * 0.60)
-    const growth = Math.round((Math.round(totalCAsCount * 0.85) - base) * (mi / 11))
-    const noise = Math.round((((mi * 11 + 3) % 5) - 2) * 1.5)
-    return Math.max(0, base + growth + noise)
-  })
-
-  // CA growth — cumulative CA count over time
-  const cumulativeCAs     = [112, 112, 124, 124, 132, 133, 133, 144, 135, 145, 155, 157]
-  const priorCumulativeCAs = [98, 103, 100, 106, 110, 121, 120, 121, 124, 129, 129, 137]
-
-  // Insights
-  const maxMonthIdx  = monthlyTotals.indexOf(Math.max(...monthlyTotals))
-  const minMonthIdx  = monthlyTotals.indexOf(Math.min(...monthlyTotals))
-  const avgCurrent   = Math.round(monthlyTotals.reduce((a,b) => a+b,0) / monthlyTotals.length)
-  const avgPrior     = Math.round(priorYear.reduce((a,b) => a+b,0) / priorYear.length)
-  const overallYoy   = Math.round((avgCurrent - avgPrior) / Math.max(avgPrior,1) * 100)
-
-  useEffect(() => {
-    // Trend chart — current vs prior year
-    if (trendRef.current) {
-      const ctx = trendRef.current.getContext('2d')
-      if (ctx) {
-        if (trendChart.current) trendChart.current.destroy()
-        trendChart.current = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [
-              {
-                label: 'Current year',
-                data: monthlyTotals,
-                borderColor: '#2500D7',
-                backgroundColor: 'rgba(37,0,215,0.06)',
-                borderWidth: 2.5,
-                pointBackgroundColor: '#2500D7',
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                tension: 0.35,
-                fill: true,
-              },
-              {
-                label: 'Prior year',
-                data: priorYear,
-                borderColor: '#C4BFFF',
-                backgroundColor: 'transparent',
-                borderWidth: 1.5,
-                borderDash: [5, 4],
-                pointBackgroundColor: '#C4BFFF',
-                pointRadius: 2,
-                pointHoverRadius: 4,
-                tension: 0.35,
-                fill: false,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: '#192744',
-                titleColor: '#fff',
-                bodyColor: 'rgba(255,255,255,0.85)',
-                padding: 12,
-                cornerRadius: 8,
-                callbacks: {
-                  label: item => `  ${item.dataset.label}: ${inrK(item.raw as number)}`,
-                  footer: items => {
-                    const curr = items.find(i => i.datasetIndex === 0)?.raw as number ?? 0
-                    const prior = items.find(i => i.datasetIndex === 1)?.raw as number ?? 0
-                    const chg = Math.round((curr - prior) / Math.max(prior,1) * 100)
-                    return `YoY: ${chg > 0 ? '+' : ''}${chg}%`
-                  }
-                }
-              }
-            },
-            scales: {
-              x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-              y: { border: { display: false }, grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v)/100000).toFixed(1) + 'L' } },
-            },
-          },
-        })
-      }
-    }
-
-    return () => {
-      if (trendChart.current) trendChart.current.destroy()
-    }
-  }, [])
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!yoyRef.current) return
-      const ctx = yoyRef.current.getContext('2d')
-      if (!ctx) return
-      if (yoyChart.current) yoyChart.current.destroy()
-      yoyChart.current = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'YoY change (%)',
-            data: yoyChanges,
-            backgroundColor: yoyChanges.map(v => v > 0 ? 'rgba(239,159,39,0.75)' : 'rgba(29,158,117,0.75)'),
-            borderRadius: 4,
-            barPercentage: 0.65,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#192744',
-              callbacks: {
-                label: item => `  YoY: ${(item.raw as number) > 0 ? '+' : ''}${item.raw}%`,
-              }
-            }
-          },
-          scales: {
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-            y: { border: { display: false }, grid: { color: '#f3f4f6' },
-              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
-          },
-        },
-      })
-    }, 50)
-    return () => { clearTimeout(timer); if (yoyChart.current) yoyChart.current.destroy() }
-  }, [appState.stateF, appState.branchF, appState.caF])
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-    if (!caRef.current) return
-    const ctx = caRef.current.getContext('2d')
-    if (!ctx) return
-    if (caChart.current) caChart.current.destroy()
-    caChart.current = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Current year',
-            data: caCounts,
-            borderColor: '#2500D7',
-            backgroundColor: 'rgba(37,0,215,0.06)',
-            borderWidth: 2.5,
-            pointBackgroundColor: '#2500D7',
-            pointRadius: 3,
-            pointHoverRadius: 5,
-            tension: 0.35,
-            fill: true,
-          },
-          {
-            label: 'Prior year',
-            data: priorCACounts,
-            borderColor: '#C4BFFF',
-            backgroundColor: 'transparent',
-            borderWidth: 1.5,
-            borderDash: [5, 4],
-            pointBackgroundColor: '#C4BFFF',
-            pointRadius: 2,
-            pointHoverRadius: 4,
-            tension: 0.35,
-            fill: false,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#192744',
-            titleColor: '#fff',
-            bodyColor: 'rgba(255,255,255,0.85)',
-            padding: 12,
-            cornerRadius: 8,
-            callbacks: {
-              label: item => `  ${item.dataset.label}: ${item.raw} CAs`,
-              footer: items => {
-                const curr  = items.find(i => i.datasetIndex === 0)?.raw as number ?? 0
-                const prior = items.find(i => i.datasetIndex === 1)?.raw as number ?? 0
-                const chg   = Math.round((curr - prior) / Math.max(prior, 1) * 100)
-                return `YoY: ${chg > 0 ? '+' : ''}${chg}%`
-              }
-            }
-          }
-        },
-        scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-          y: {
-            border: { display: false },
-            grid: { color: '#f3f4f6' },
-            min: Math.floor(Math.min(...priorCACounts) * 0.9),
-            max: Math.ceil(Math.max(...caCounts) * 1.1),
-            ticks: {
-              color: '#858ea2',
-              font: { size: 11 },
-              callback: (v: any) => Number.isInteger(Number(v)) ? v + ' CAs' : '',
-            },
-          },
-        },
-      },
-    })
-    }, 50)
-    return () => { if (caChart.current) caChart.current.destroy() }
-    return () => { clearTimeout(timer); if (caChart.current) caChart.current.destroy() }
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!caGrowthRef.current) return
-      const ctx = caGrowthRef.current.getContext('2d')
-      if (!ctx) return
-      if (caGrowthChart.current) caGrowthChart.current.destroy()
-      caGrowthChart.current = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Current year',
-              data: cumulativeCAs,
-              borderColor: '#2500D7',
-              backgroundColor: 'rgba(37,0,215,0.06)',
-              borderWidth: 2.5,
-              pointBackgroundColor: '#2500D7',
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              tension: 0.35,
-              fill: true,
-            },
-            {
-              label: 'Prior year',
-              data: priorCumulativeCAs,
-              borderColor: '#C4BFFF',
-              backgroundColor: 'transparent',
-              borderWidth: 1.5,
-              borderDash: [5, 4],
-              pointBackgroundColor: '#C4BFFF',
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              tension: 0.35,
-              fill: false,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top' as const,
-              align: 'end' as const,
-              labels: {
-                boxWidth: 24,
-                boxHeight: 2,
-                color: '#858ea2',
-                font: { size: 12 },
-                usePointStyle: false,
-                padding: 16,
-              },
-            },
-            tooltip: {
-              backgroundColor: '#192744',
-              titleColor: '#fff',
-              bodyColor: 'rgba(255,255,255,0.85)',
-              padding: 12,
-              cornerRadius: 8,
-              callbacks: {
-                label: item => `  ${item.dataset.label}: ${item.raw} CAs`,
-                footer: items => {
-                  const curr  = items.find(i => i.datasetIndex === 0)?.raw as number ?? 0
-                  const prior = items.find(i => i.datasetIndex === 1)?.raw as number ?? 0
-                  const chg   = Math.round((curr - prior) / Math.max(prior, 1) * 100)
-                  return `YoY: ${chg > 0 ? '+' : ''}${chg}%`
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              border: { display: false },
-              ticks: { color: '#858ea2', font: { size: 11 } },
-            },
-            y: {
-              border: { display: false },
-              grid: { color: '#f3f4f6' },
-              min: Math.floor(Math.min(...priorCumulativeCAs) * 0.88),
-              ticks: {
-                color: '#858ea2',
-                font: { size: 11 },
-                callback: (v: any) => v + ' CAs',
-              },
-            },
-          },
-        },
-      })
-    }, 50)
-    return () => {
-      clearTimeout(timer)
-      if (caGrowthChart.current) caGrowthChart.current.destroy()
-    }
-  }, [appState.stateF, appState.branchF, appState.caF])
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-      {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
-        <SummaryCard label="Overall YoY change"  value={`${overallYoy > 0 ? '+' : ''}${overallYoy}%`} sub="avg monthly spend vs prior year"          subColor={overallYoy > 0 ? '#854F0B' : '#3B6D11'} borderColor={overallYoy > 0 ? '#EF9F27' : '#1A7A45'} />
-        <SummaryCard label="Peak month"          value={labels[maxMonthIdx]}                           sub={`${inr(monthlyTotals[maxMonthIdx])} · highest spend`} subColor="#A32D2D" borderColor="#E24B4A" />
-        <SummaryCard label="Lowest month"        value={labels[minMonthIdx]}                           sub={`${inr(monthlyTotals[minMonthIdx])} · lowest spend`}  subColor="#3B6D11" borderColor="#1A7A45" />
-        <SummaryCard label="Monthly average"     value={inr(avgCurrent)}                               sub={`vs ${inr(avgPrior)} prior year`}                      subColor="#185FA5" borderColor="#185FA5" />
-      </div>
-
-      {/* Current vs prior year trend */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>
-              {appState.stateF !== 'all'
-                ? `${appState.stateF}${appState.branchF !== 'all' ? ` · ${appState.branchF}` : ''} · current vs prior period`
-                : 'All states · current vs prior period · monthly'}
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: '#6b6b67' }}>
-            <span style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <span style={{ width:'18px', height:'2.5px', background:'#2500D7', display:'inline-block', borderRadius:'1px' }} />Current year
-            </span>
-            <span style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <span style={{ width:'18px', height:'1.5px', background:'#C4BFFF', display:'inline-block', borderRadius:'1px', borderTop: '1px dashed #C4BFFF' }} />Prior year
-            </span>
-          </div>
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '240px' }}>
-          <canvas ref={trendRef}></canvas>
-        </div>
-      </div>
-
-      {/* YoY change bars */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Month-by-month YoY change</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>% change vs same month prior year · amber = increase · green = decrease</div>
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '10px', fontSize: '11px', color: '#6b6b67' }}>
-          <span style={{ display:'flex', alignItems:'center', gap:'4px' }}>
-            <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(239,159,39,0.75)', display:'inline-block' }} />Spend increased vs prior year
-          </span>
-          <span style={{ display:'flex', alignItems:'center', gap:'4px' }}>
-            <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(29,158,117,0.75)', display:'inline-block' }} />Spend decreased vs prior year
-          </span>
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '180px' }}>
-          <canvas ref={yoyRef}></canvas>
-        </div>
-      </div>
-
-        {/* Divider */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-
-        {/* Active CAs chart header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>
-              {appState.stateF !== 'all'
-                ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
-                : 'All states · active CAs per month'}
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: '#6b6b67', flexShrink: 0 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '18px', height: '2.5px', background: '#2500D7', display: 'inline-block', borderRadius: '1px' }} />Current year
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '18px', height: '1.5px', background: '#C4BFFF', display: 'inline-block', borderRadius: '1px' }} />Prior year
-            </span>
-          </div>
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '220px' }}>
-          <canvas ref={caRef}></canvas>
-        </div>
-      </div>
-
-    </div>
-  )
-}
-
 function BasicDueDates({ appState }: BasicSectionProps) {
   const [selectedMonth, setSelectedMonth] = useState(0) // 0 = current month view
 
