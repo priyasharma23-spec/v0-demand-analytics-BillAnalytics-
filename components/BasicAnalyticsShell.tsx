@@ -875,7 +875,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
   }, [appState.stateF, appState.branchF, appState.caF])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
