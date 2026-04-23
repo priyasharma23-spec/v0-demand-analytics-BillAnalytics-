@@ -875,10 +875,10 @@ function BasicTrends({ appState }: BasicSectionProps) {
   }, [appState.stateF, appState.branchF, appState.caF])
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
         <SummaryCard label="Overall YoY change"  value={`${overallYoy > 0 ? '+' : ''}${overallYoy}%`} sub="avg monthly spend vs prior year"          subColor={overallYoy > 0 ? '#854F0B' : '#3B6D11'} borderColor={overallYoy > 0 ? '#EF9F27' : '#1A7A45'} />
         <SummaryCard label="Peak month"          value={labels[maxMonthIdx]}                           sub={`${inr(monthlyTotals[maxMonthIdx])} · highest spend`} subColor="#A32D2D" borderColor="#E24B4A" />
         <SummaryCard label="Lowest month"        value={labels[minMonthIdx]}                           sub={`${inr(monthlyTotals[minMonthIdx])} · lowest spend`}  subColor="#3B6D11" borderColor="#1A7A45" />
@@ -886,7 +886,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       </div>
 
       {/* Current vs prior year trend */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
@@ -937,7 +937,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       </div>
 
       {/* CA addition chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginTop: '24px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
         <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>
           {appState.stateF !== 'all'
