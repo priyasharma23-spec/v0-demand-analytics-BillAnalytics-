@@ -1124,59 +1124,6 @@ function BasicDueDates({ appState }: BasicSectionProps) {
 
       </div>
 
-      {/* Upcoming dues table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Upcoming & overdue bills</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Sorted by urgency — overdue first, then by due date</div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-          <thead>
-            <tr>
-              {['CA Number', 'State', 'Due date', 'Bill amount', 'Status', 'Action'].map(h => (
-                <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {caSchedule
-              .filter(c => !c.isPaid)
-              .sort((a, b) => (a.isOverdue === b.isOverdue ? a.dueDay - b.dueDay : a.isOverdue ? -1 : 1))
-              .slice(0, 10)
-              .map(c => (
-                <tr key={c.ca}
-                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                  onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                >
-                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontFamily: 'monospace', fontSize: '12px', color: '#192744' }}>{c.ca}</td>
-                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{c.state}</td>
-                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: c.isOverdue ? '#A32D2D' : '#633806' }}>
-                    {c.isOverdue ? `Past due (day ${c.dueDay})` : `Day ${c.dueDay}`}
-                  </td>
-                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{inr(c.billAmt)}</td>
-                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                    <span style={{
-                      fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
-                      background: c.isOverdue ? '#FCEBEB' : '#FAEEDA',
-                      color: c.isOverdue ? '#A32D2D' : '#633806',
-                    }}>
-                      {c.isOverdue ? 'Overdue' : 'Due soon'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                    <button style={{
-                      fontSize: '11px', fontWeight: 500, padding: '4px 12px', borderRadius: '6px',
-                      border: c.isOverdue ? '0.5px solid #F7C1C1' : '0.5px solid #B5D4F4',
-                      background: c.isOverdue ? '#FCEBEB' : '#E6F1FB',
-                      color: c.isOverdue ? '#A32D2D' : '#0C447C',
-                      cursor: 'pointer',
-                    }}>
-                      {c.isOverdue ? 'Pay now' : 'Schedule payment'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
 
     </div>
   )
