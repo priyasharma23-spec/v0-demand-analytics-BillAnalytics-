@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CAS, BRANCHES, STATES , inr } from '@/lib/calculations'
+import { CAS, BRANCHES, STATES, inr } from '@/lib/calculations'
 import { KpiCard } from './KpiCard'
 import { SummaryCard } from '@/components/SummaryCard'
 
@@ -10,8 +10,7 @@ interface BillersSectionProps {
   onMultiBillReview?: () => void
 }
 
-// Compute CA counts from calculations.ts data
-const TOTAL_CAS = Object.values(CAS).flat().length  // 187
+const TOTAL_CAS = Object.values(CAS).flat().length
 
 const CAS_PER_STATE: Record<string, number> = {}
 STATES.forEach(state => {
@@ -24,7 +23,6 @@ STATES.forEach(state => {
   BRANCHES_PER_STATE[state] = BRANCHES[state]?.length ?? 0
 })
 
-// Bill generation funnel derived from TOTAL_CAS
 const FUNNEL = {
   activeCAs:     TOTAL_CAS,
   generated:     Math.round(TOTAL_CAS * 0.757),
@@ -39,7 +37,6 @@ const FUNNEL = {
   conversionPct: 60,
 }
 
-// Biller-to-state mapping
 const STATE_BILLERS_LIST: Record<string, string[]> = {
   'Maharashtra':   ['MSEDCL', 'BEST'],
   'Karnataka':     ['BESCOM'],
@@ -51,7 +48,6 @@ const STATE_BILLERS_LIST: Record<string, string[]> = {
   'West Bengal':   ['WBSEDCL'],
 }
 
-// Derive stateData from actual CA counts
 const stateData = STATES.map(state => {
   const total = CAS_PER_STATE[state]
   const generated = Math.round(total * 0.757)
@@ -59,26 +55,14 @@ const stateData = STATES.map(state => {
   const processed = Math.round(total * 0.63)
   const paid      = Math.round(total * 0.60)
   const dropPct   = total > 0 ? Math.round((total - paid) / total * 100) : 0
-  return {
-    state,
-    billers: (STATE_BILLERS_LIST[state] ?? []).length,
-    total,
-    generated,
-    received,
-    processed,
-    paid,
-    dropPct,
-  }
+  return { state, billers: (STATE_BILLERS_LIST[state] ?? []).length, total, generated, received, processed, paid, dropPct }
 })
 
-// Derive billerData from state totals split among billers
 const billerData = STATES.flatMap(state => {
   const billers = STATE_BILLERS_LIST[state] ?? []
   const stateTotal = CAS_PER_STATE[state]
   return billers.map((biller, idx) => {
-    const splitFactor = billers.length === 2
-      ? (idx === 0 ? 0.55 : 0.45)
-      : 1.0
+    const splitFactor = billers.length === 2 ? (idx === 0 ? 0.55 : 0.45) : 1.0
     const total      = Math.round(stateTotal * splitFactor)
     const generated  = Math.round(total * 0.757)
     const received   = Math.round(total * 0.70)
@@ -89,7 +73,6 @@ const billerData = STATES.flatMap(state => {
   })
 })
 
-// Digital bill copy data
 const dbcTableData = billerData.map(b => {
   const opted    = Math.round(b.total * 0.75)
   const received = Math.round(opted * 0.787)
@@ -98,118 +81,74 @@ const dbcTableData = billerData.map(b => {
   return { biller: b.biller, state: b.state, opted, received, pending, failed }
 })
 
-// Aggregate metrics for KPI cards
 const totalBillers = Object.values(STATE_BILLERS_LIST).flat().length
-
-// Billers generating more than 1 bill per month per CA
-// In BBPS, some billers (e.g. MSEDCL, BEST) issue supplementary/revised bills
-// Simulated: ~15% of billers have multi-bill CAs, avg 1.3 bills per CA
 const MULTI_BILL_BILLERS = ['MSEDCL', 'BEST', 'DGVCL', 'TPDDL']
 const multiBillCount = MULTI_BILL_BILLERS.length
-const multiBillCAs   = MULTI_BILL_BILLERS.reduce((s, b) => {
+const multiBillCAs = MULTI_BILL_BILLERS.reduce((s, b) => {
   const stateEntry = Object.entries(STATE_BILLERS_LIST).find(([, billers]) => billers.includes(b))
   if (!stateEntry) return s
   const stateCAs = CAS_PER_STATE[stateEntry[0]] ?? 0
   const billerShare = 1 / (STATE_BILLERS_LIST[stateEntry[0]]?.length ?? 1)
-  return s + Math.round(stateCAs * billerShare * 0.18) // ~18% of CAs get supplementary bill
+  return s + Math.round(stateCAs * billerShare * 0.18)
 }, 0)
-const multiBillExtraBills = Math.round(multiBillCAs * 0.3) // avg 1.3 bills = 0.3 extra per CA
-const totalOpted   = dbcTableData.reduce((s, r) => s + r.opted, 0)
+const multiBillExtraBills = Math.round(multiBillCAs * 0.3)
+const totalOpted    = dbcTableData.reduce((s, r) => s + r.opted, 0)
 const totalReceived = dbcTableData.reduce((s, r) => s + r.received, 0)
 const billCopySuccessPct = totalOpted > 0 ? Math.round(totalReceived / totalOpted * 100) : 0
 const totalFailed  = dbcTableData.reduce((s, r) => s + r.failed, 0)
 const totalPending = dbcTableData.reduce((s, r) => s + r.pending, 0)
-
-// Derived summary metrics
-const totalUnpaid   = stateData.reduce((s, r) => s + (r.generated - r.paid), 0)
-const nearingDue    = Math.round(totalUnpaid * 0.25)
-const overdue       = Math.round(totalUnpaid * 0.30)
-const overdueAmt    = Math.round(totalUnpaid * 0.30 * 185000) // avg bill amt per CA
+const totalUnpaid  = stateData.reduce((s, r) => s + (r.generated - r.paid), 0)
+const overdue      = Math.round(totalUnpaid * 0.30)
+const overdueAmt   = Math.round(totalUnpaid * 0.30 * 185000)
 
 const summaryMetrics = [
-  {
-    label:    'Active billers',
-    value:    `${totalBillers}`,
-    sub:      `across ${STATES.length} states`,
-    subColor: '#185FA5',
-  },
-  {
-    label:    'Avg conversion rate',
-    value:    `${FUNNEL.conversionPct}%`,
-    sub:      'bills generated → paid',
-    subColor: '#185FA5',
-  },
-  {
-    label:    'Approval pending',
-    value:    `${FUNNEL.approvalHold}`,
-    sub:      'bills stuck in approval queue',
-    subColor: '#854F0B',
-    borderColor: '#EF9F27',
-  },
-  {
-    label:    'Overdue',
-    value:    `${overdue} CAs`,
-    sub:      inr(overdueAmt) + ' · not yet paid',
-    subColor: '#A32D2D',
-    borderColor: '#E24B4A',
-  },
+  { label: 'Active billers',    value: `${totalBillers}`,          sub: `across ${STATES.length} states`,          subColor: '#185FA5',  borderColor: '#2500D7' },
+  { label: 'Avg conversion rate', value: `${FUNNEL.conversionPct}%`, sub: 'bills generated → paid',                subColor: '#185FA5',  borderColor: '#2500D7' },
+  { label: 'Approval pending',  value: `${FUNNEL.approvalHold}`,   sub: 'bills stuck in approval queue',           subColor: '#854F0B',  borderColor: '#EF9F27' },
+  { label: 'Overdue',           value: `${overdue} CAs`,           sub: inr(overdueAmt) + ' · not yet paid',       subColor: '#A32D2D',  borderColor: '#E24B4A' },
 ]
 
-// Digital bill copy funnel
 const dbcFunnel = {
-  optedIn:  totalOpted,
-  received: totalReceived,
-  pending:  totalPending,
-  failed:   totalFailed,
-    receivedPct: totalOpted > 0 ? Math.round(totalReceived / totalOpted * 100) : 0,
-    pendingPct:  totalOpted > 0 ? Math.round(totalPending / totalOpted * 100) : 0,
-    failedPct:   totalOpted > 0 ? Math.round(totalFailed / totalOpted * 100) : 0,
+  optedIn:     totalOpted,
+  received:    totalReceived,
+  pending:     totalPending,
+  failed:      totalFailed,
+  receivedPct: totalOpted > 0 ? Math.round(totalReceived / totalOpted * 100) : 0,
+  pendingPct:  totalOpted > 0 ? Math.round(totalPending  / totalOpted * 100) : 0,
+  failedPct:   totalOpted > 0 ? Math.round(totalFailed   / totalOpted * 100) : 0,
 }
 
 export default function BillersSection({ appState, onMultiBillReview }: BillersSectionProps) {
-  const [funnelView, setFunnelView] = useState<'all'|'state'|'biller'>('all')
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
 
   return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
-      {/* Section 1 — Summary metric cards */}
+
+      {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
         {summaryMetrics.map((m) => (
-          <SummaryCard
-            key={m.label}
-            label={m.label}
-            value={m.value}
-            sub={m.sub}
-            subColor={m.subColor}
-            borderColor="#2500D7"
-          />
+          <SummaryCard key={m.label} label={m.label} value={m.value} sub={m.sub} subColor={m.subColor} borderColor={m.borderColor} />
         ))}
       </div>
 
-      {/* Section 4 — Digital bill copy */}
+      {/* Digital bill copy */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
-
-        {/* Header */}
         <div style={{ marginBottom: '16px' }}>
           <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Digital bill copy status</div>
           <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>
             CAs opted for digital bill copy · <code style={{ fontSize: '11px', background: '#f5f6fa', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '1px 5px', fontFamily: 'monospace' }}>bill_copy_enabled</code> flag driven · current month
           </div>
         </div>
-
-        {/* Delivery funnel label */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0 14px' }}>
           <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
           <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Delivery funnel</span>
           <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
         </div>
-
-        {/* Funnel cards */}
         <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '20px' }}>
           {([
-            { label: 'Opted in',  sublabel: 'bill_copy_enabled = true',  count: dbcFunnel.optedIn,  pct: undefined,                                                         tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
-            { label: 'Received',  sublabel: 'Bills fetched from biller',  count: dbcFunnel.received, pct: Math.round(dbcFunnel.received / Math.max(dbcFunnel.optedIn,1)*100), tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
-            { label: 'Pending',   sublabel: 'Fetch in progress',          count: dbcFunnel.pending,  pct: Math.round(dbcFunnel.pending  / Math.max(dbcFunnel.optedIn,1)*100), tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+            { label: 'Opted in',  sublabel: 'bill_copy_enabled = true', count: dbcFunnel.optedIn,  pct: undefined,                                                          tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
+            { label: 'Received',  sublabel: 'Bills fetched from biller', count: dbcFunnel.received, pct: Math.round(dbcFunnel.received / Math.max(dbcFunnel.optedIn,1)*100), tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+            { label: 'Pending',   sublabel: 'Fetch in progress',         count: dbcFunnel.pending,  pct: Math.round(dbcFunnel.pending  / Math.max(dbcFunnel.optedIn,1)*100), tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
             { label: 'Failed',    sublabel: 'Fetch error · needs fix',   count: dbcFunnel.failed,   pct: Math.round(dbcFunnel.failed   / Math.max(dbcFunnel.optedIn,1)*100), tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
           ] as const).map((step, i, arr) => {
             const r = 18, stroke = 4, size = 44
@@ -240,21 +179,17 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
             )
           })}
         </div>
-
-        {/* Attention needed label */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0 14px' }}>
           <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
           <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Attention needed</span>
           <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
         </div>
-
-        {/* Insight cards */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
           {([
-            { tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' }, title: 'Failed bill copies',  value: String(dbcFunnel.failed),   valueLabel: dbcFunnel.failedPct + '% failure rate',  detail: 'Check biller API connectivity. Repeated failures may block payment.',           action: 'View failed CAs'  },
-            { tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' }, title: 'Pending > 48 hrs',   value: String(Math.round(dbcFunnel.pending * 0.44)), valueLabel: 'of ' + dbcFunnel.pending + ' pending', detail: 'Bills waiting over 48 hours — need manual intervention to unblock.',   action: 'Review stalled'   },
-            { tone: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', accent: '#22C55E' }, title: 'Opt-in coverage',    value: (TOTAL_CAS > 0 ? Math.round(dbcFunnel.optedIn / TOTAL_CAS * 100) : 0) + '%', valueLabel: undefined, detail: dbcFunnel.optedIn + ' of ' + TOTAL_CAS + ' CAs opted in. ' + (TOTAL_CAS - dbcFunnel.optedIn) + ' yet to opt.', action: 'View not opted'   },
-            { tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' }, title: 'Multi-bill billers', value: String(multiBillCount),     valueLabel: 'billers',               detail: multiBillCAs + ' CAs received more than 1 bill this month. Review for duplicates.',  action: <span onClick={onMultiBillReview} style={{ cursor: 'pointer' }}>Check duplicates</span> as any },
+            { tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' }, title: 'Failed bill copies',  value: String(dbcFunnel.failed),   valueLabel: dbcFunnel.failedPct + '% failure rate',  detail: 'Check biller API connectivity. Repeated failures may block payment.',          action: 'View failed CAs'  },
+            { tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' }, title: 'Pending > 48 hrs',   value: String(Math.round(dbcFunnel.pending * 0.44)), valueLabel: 'of ' + dbcFunnel.pending + ' pending', detail: 'Bills waiting over 48 hours — need manual intervention to unblock.',  action: 'Review stalled'   },
+            { tone: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', accent: '#22C55E' }, title: 'Opt-in coverage',    value: (TOTAL_CAS > 0 ? Math.round(dbcFunnel.optedIn / TOTAL_CAS * 100) : 0) + '%', valueLabel: undefined, detail: dbcFunnel.optedIn + ' of ' + TOTAL_CAS + ' CAs opted in. ' + (TOTAL_CAS - dbcFunnel.optedIn) + ' yet to opt.', action: 'View not opted' },
+            { tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' }, title: 'Multi-bill billers', value: String(multiBillCount), valueLabel: 'billers', detail: multiBillCAs + ' CAs received more than 1 bill this month. Review for duplicates.', action: 'Check duplicates' },
           ] as const).map((card, ci) => (
             <div key={ci}
               style={{ flex: 1, background: '#fff', border: `1px solid ${card.tone.border}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
@@ -275,8 +210,6 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
             </div>
           ))}
         </div>
-
-        {/* Bill copy by biller table */}
         <div style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Bill copy status by biller</div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
@@ -292,16 +225,11 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
                 const rate = r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0
                 const failRate = r.opted > 0 ? r.failed / r.opted : 0
                 const barColor = rate >= 80 ? '#1D9E75' : rate >= 70 ? '#EF9F27' : '#E24B4A'
-                const badge = failRate > 0.10
-                  ? { bg: '#FCEBEB', color: '#A32D2D', label: 'High failure' }
-                  : failRate > 0.06
-                  ? { bg: '#FAEEDA', color: '#633806', label: 'Check API' }
-                  : { bg: '#EAF3DE', color: '#27500A', label: 'Healthy' }
+                const badge = failRate > 0.10 ? { bg: '#FCEBEB', color: '#A32D2D', label: 'High failure' } : failRate > 0.06 ? { bg: '#FAEEDA', color: '#633806', label: 'Check API' } : { bg: '#EAF3DE', color: '#27500A', label: 'Healthy' }
                 return (
                   <tr key={r.biller}
                     onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                  >
+                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{r.biller}</td>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{r.state}</td>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.opted}</td>
@@ -327,10 +255,8 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
         </div>
       </div>
 
-      {/* Section 3 — Bill status table */}
+      {/* Bill status table */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px', marginTop: '24px' }}>
-
-        {/* Header + toggle */}
         <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
@@ -353,51 +279,36 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
             </div>
           </div>
         </div>
-
-        {/* Table wrapper - horizontal scroll only */}
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
               <tr>
-                {(statusView === 'state'
-                  ? ['State','Billers','Active CAs','Bill available','Paid','Unpaid','Conversion']
-                  : ['Biller','State','Active CAs','Bill available','Paid','Unpaid','Conversion']
-                ).map(h => (
+                {['Name', 'Total', 'Generated', 'Received', 'Processed', 'Paid', 'Drop', 'Status'].map(h => (
                   <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {(statusView === 'state' ? stateData : billerData).map((r: any) => {
-                const convPct = r.total > 0 ? Math.round(r.paid / r.total * 100) : 0
-                const barColor = convPct >= 85 ? '#1D9E75' : convPct >= 75 ? '#EF9F27' : '#E24B4A'
+              {(statusView === 'state' ? stateData : billerData).map((row, idx) => {
+                const name = 'state' in row ? row.state : row.biller
+                const status = row.dropPct > 25 ? 'High drop' : row.dropPct > 15 ? 'Watch' : 'Healthy'
                 return (
-                  <tr key={statusView === 'state' ? r.state : r.biller}
+                  <tr key={name}
                     onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#2500D7' }}>
-                      {statusView === 'state' ? r.state : r.biller}
-                    </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>
-                      {statusView === 'state' ? r.billers : r.state}
-                    </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.total}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
-                      {r.generated}
-                      <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '4px' }}>({r.total > 0 ? Math.round(r.generated/r.total*100) : 0}%)</span>
-                    </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.paid}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
-                      {r.generated - r.paid}
-                    </td>
+                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{name}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{row.total}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{row.generated}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#3B6D11' }}>{row.received}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#854F0B' }}>{row.processed}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{row.paid}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#A32D2D' }}>{row.dropPct}%</td>
                     <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{convPct}%</span>
-                        <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#f0f0f0', overflow: 'hidden', minWidth: '60px' }}>
-                          <div style={{ width: `${convPct}%`, height: '100%', borderRadius: '3px', background: barColor }} />
-                        </div>
-                      </div>
+                      <span style={{
+                        fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
+                        background: status === 'High drop' ? '#FCEBEB' : status === 'Watch' ? '#FAEEDA' : '#EAF3DE',
+                        color: status === 'High drop' ? '#A32D2D' : status === 'Watch' ? '#633806' : '#27500A',
+                      }}>{status}</span>
                     </td>
                   </tr>
                 )
