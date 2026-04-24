@@ -271,7 +271,7 @@ export default function DashboardNav({
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             {analyticsMode === 'basic' ? (
               <React.Fragment>
-                {[{id:'summary',label:'Summary'},{id:'locations',label:'Locations'},{id:'trends',label:'Trends'},{id:'duedates',label:'Due Dates'}].map((s) => (
+                {[{id:'summary',label:'Summary'},{id:'locations',label:'Locations'},{id:'trends',label:'Trends'}].map((s) => (
                   <button
                     key={s.id}
                     onClick={() => onBasicSectionChange?.(s.id)}
