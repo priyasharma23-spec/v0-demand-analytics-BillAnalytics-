@@ -57,121 +57,80 @@ const SortPill = ({ label, active, onClick }: any) => (
   </button>
 );
 
-const AnomalyCard = ({ anomalyKey, title, desc, tags, amount, amountLabel, amountColor, cta, ctaBg, ctaColor, borderColor, iconBg, iconColor, onCTA, onAnomalyClick }: any) => {
+const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta, iconBg, iconColor, onAnomalyClick, where }: any) => {
+  const [hov, setHov] = React.useState(false)
   const getIcon = () => {
-    if (anomalyKey === 'over_contracted_every_month') {
-      return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M9 2.5L1.5 15.5h15L9 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="currentColor" fillOpacity="0.15" />
-          <path d="M9 7v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          <circle cx="9" cy="13" r="0.8" fill="currentColor" />
-        </svg>
-      );
-    } else if (anomalyKey === 'pf_below_threshold') {
-      return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.12" />
-          <path d="M9 5.5v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          <circle cx="9" cy="12" r="0.8" fill="currentColor" />
-        </svg>
-      );
-    } else if (anomalyKey === 'recurring_late_payment') {
-      return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.1" />
-          <path d="M2 7h14" stroke="currentColor" strokeWidth="1.4" />
-          <path d="M6 1.5v3M12 1.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-          <path d="M5.5 11h2M9.5 11h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-        </svg>
-      );
-    } else if (anomalyKey === 'under_utilised') {
-      return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M2 13l4-4 3 2.5 5-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="14" cy="4.5" r="2.5" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.3" />
-          <path d="M13 4.5h2M14 3.5v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-        </svg>
-      );
-    }
-  };
-
+    if (anomalyKey === 'over_contracted_every_month') return (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M9 2.5L1.5 15.5h15L9 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="currentColor" fillOpacity="0.15" />
+        <path d="M9 7v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="9" cy="13" r="0.8" fill="currentColor" />
+      </svg>
+    )
+    if (anomalyKey === 'pf_below_threshold') return (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.12" />
+        <path d="M9 5.5v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="9" cy="12" r="0.8" fill="currentColor" />
+      </svg>
+    )
+    if (anomalyKey === 'recurring_late_payment') return (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.1" />
+        <path d="M2 7h14" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M6 1.5v3M12 1.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      </svg>
+    )
+    return (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M2 13l4-4 3 2.5 5-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    )
+  }
   return (
     <div
       onClick={() => onAnomalyClick?.(anomalyKey)}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
       style={{
-        background: '#fff',
-        border: `0.5px solid ${borderColor}`,
+        background: hov ? '#FAFAFA' : '#fff',
+        border: '1.5px solid ' + (hov ? '#2500D7' : '#f3f4f6'),
         borderRadius: '14px',
-        padding: '14px 16px',
-        cursor: 'pointer',
+        padding: '20px 20px 16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
-        transition: 'border-color 0.12s',
-      }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#2500D7'; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = borderColor; }}
-    >
-      {/* Row 1 — icon + title + amount */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-        {/* Icon */}
-        <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: iconColor }}>
+        gap: '12px',
+        cursor: 'pointer',
+        transition: 'all .16s',
+        boxShadow: hov ? '0 4px 16px rgba(0,0,0,.07)' : 'none',
+      }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: iconColor, flexShrink: 0 }}>
           {getIcon()}
         </div>
-
-        {/* Title */}
-        <div style={{ flex: 1, fontSize: '13px', fontWeight: 600, color: '#192744', lineHeight: 1.4 }}>
-          {title}
-        </div>
-
-        {/* Amount — top right */}
-        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: '18px', fontWeight: 700, color: amountColor, lineHeight: 1 }}>
-            {amount}
-          </div>
-          <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '2px' }}>
-            {amountLabel}
-          </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '22px', fontWeight: 800, color: amountColor, letterSpacing: '-0.5px' }}>{amount}</div>
+          <div style={{ fontSize: '11px', color: '#858ea2' }}>{amountLabel}</div>
         </div>
       </div>
-
-      {/* Row 2 — description */}
-      <div style={{
-        fontSize: '12px', color: '#6b6b67', lineHeight: 1.55,
-        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-      } as any}>
-        {desc}
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', lineHeight: 1.4 }}>{title}</div>
+        {where && <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '6px' }}>{where}</div>}
       </div>
-
-      {/* Row 3 — tags left, CTA right */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-        {/* Tags */}
-        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', flex: 1 }}>
-          {tags.map((tag: any) => (
-            <span key={tag.label} style={{
-              fontSize: '11px', padding: '2px 7px', borderRadius: '20px', fontWeight: 500,
-              background: tag.variant === 'danger' ? '#FCEBEB' : tag.variant === 'warn' ? '#FAEEDA' : tag.variant === 'success' ? '#EAF3DE' : '#E6F1FB',
-              color: tag.variant === 'danger' ? '#A32D2D' : tag.variant === 'warn' ? '#633806' : tag.variant === 'success' ? '#27500A' : '#0C447C',
-            }}>{tag.label}</span>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onAnomalyClick?.(anomalyKey); }}
-          style={{
-            height: '30px', padding: '0 12px', borderRadius: '8px',
-            fontSize: '12px', fontWeight: 600, border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: '4px',
-            background: ctaBg, color: ctaColor,
-            flexShrink: 0, whiteSpace: 'nowrap',
-          }}
-        >
-          {cta}
-        </button>
-      </div>
+      <button
+        onClick={(e) => { e.stopPropagation(); onAnomalyClick?.(anomalyKey) }}
+        style={{
+          alignSelf: 'flex-start',
+          background: hov ? '#2500D7' : '#EBEAFF',
+          color: hov ? '#fff' : '#2500D7',
+          border: 'none', borderRadius: '8px',
+          padding: '7px 14px', fontSize: '12px', fontWeight: 600,
+          cursor: 'pointer', transition: 'all .16s', fontFamily: 'inherit',
+        }}>
+        {cta} →
+      </button>
     </div>
-  );
+  )
 };
 
 export default function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange, onHeatmapCellClick, onAnomalyClick }: OverviewSectionProps) {
@@ -224,6 +183,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
   const anomalies = [
     {
       key: 'over_contracted_every_month' as const,
+      where: 'MH · DL · KA',
       color: 'red',
       title: '43 CAs exceeded contracted demand every single month',
       desc: 'Across Maharashtra, Delhi and Karnataka — these CAs have structurally under-sized contracts. Raising contracted demand to P90 MDI + 15% buffer would eliminate excess charges.',
@@ -241,6 +201,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
     },
     {
       key: 'pf_below_threshold' as const,
+      where: 'UP · RJ',
       color: 'amber',
       title: 'Power factor below 0.90 in 28 branches for 6+ months',
       desc: 'PF penalty triggered consistently in Uttar Pradesh and Rajasthan clusters. Installing capacitor banks at 6 high-impact branches would recover most of this charge.',
@@ -258,6 +219,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
     },
     {
       key: 'recurring_late_payment' as const,
+      where: 'WB · GJ',
       color: 'red',
       title: 'Late payment surcharge recurring in 19 CAs — 3+ consecutive months',
       desc: 'Concentrated in West Bengal and Gujarat. Payment scheduling alignment would eliminate this entirely — no tariff or infrastructure changes needed.',
@@ -275,6 +237,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
     },
     {
       key: 'under_utilised' as const,
+      where: 'TN · RJ',
       color: 'blue',
       title: '12 CAs under-utilising contracted demand below 70% — revision opportunity',
       desc: 'Tamil Nadu and Rajasthan clusters are consistently drawing well below contracted level. Reducing contracted demand for these CAs would lower fixed charges.',
