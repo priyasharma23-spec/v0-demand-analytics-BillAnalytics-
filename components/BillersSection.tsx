@@ -264,39 +264,93 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
       </div>
 
       {/* Section 4 — Digital bill copy */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
 
-        <div style={{ fontSize: '14px', fontWeight: 500, color: '#192744', marginBottom: '3px' }}>Digital bill copy status</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '16px' }}>CAs opted for digital bill copy · bill_copy_enabled flag driven · current month</div>
-
-        {/* Four-stage funnel */}
-        <div style={{ display: 'flex', gap: '3px', alignItems: 'stretch', marginBottom: '16px' }}>
-          {[
-            { num: dbcFunnel.optedIn, label: 'Opted in',  sub: 'bill_copy_enabled = true', bg: '#E6F1FB', numColor: '#0C447C', labelColor: '#0C447C', subColor: '#185FA5' },
-            { num: dbcFunnel.received, label: 'Received',  sub: `${dbcFunnel.receivedPct}% of opted`,           bg: '#EAF3DE', numColor: '#27500A', labelColor: '#27500A', subColor: '#3B6D11' },
-            { num: dbcFunnel.pending,  label: 'Pending',   sub: `${dbcFunnel.pendingPct}% awaiting`,           bg: '#FAEEDA', numColor: '#633806', labelColor: '#633806', subColor: '#854F0B' },
-            { num: dbcFunnel.failed,   label: 'Failed',    sub: `${dbcFunnel.failedPct}% failed fetch`,         bg: '#FCEBEB', numColor: '#791F1F', labelColor: '#791F1F', subColor: '#A32D2D' },
-          ].map((s, i) => (
-            <div key={s.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-              <div style={{ flex: 1, background: s.bg, borderRadius: '8px', padding: '14px 12px' }}>
-                <div style={{ fontSize: '24px', fontWeight: 500, color: s.numColor }}>{s.num}</div>
-                <div style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', color: s.labelColor, marginTop: '2px' }}>{s.label}</div>
-                <div style={{ fontSize: '11px', color: s.subColor, marginTop: '4px' }}>{s.sub}</div>
-              </div>
-              {i < 3 && <div style={{ fontSize: '18px', color: '#c4c4c4', display: 'flex', alignItems: 'center', padding: '0 2px', flexShrink: 0 }}>›</div>}
-            </div>
-          ))}
+        {/* Header */}
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Digital bill copy status</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>
+            CAs opted for digital bill copy · <code style={{ fontSize: '11px', background: '#f5f6fa', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '1px 5px', fontFamily: 'monospace' }}>bill_copy_enabled</code> flag driven · current month
+          </div>
         </div>
 
-        {/* KPI cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
-          <KpiCard variant="danger" label="Failed bill copies"   value={`${dbcFunnel.failed}`}   desc={`${dbcFunnel.failedPct}% fetch failure rate — check biller API connectivity for these CAs`} />
-          <KpiCard variant="warn"   label="Pending >48 hrs"      value={`${Math.round(dbcFunnel.pending * 0.45)}`}   desc={`${Math.round(dbcFunnel.pending * 0.45)} of ${dbcFunnel.pending} pending CAs have been waiting over 48 hours — needs manual intervention`} />
-          <KpiCard variant="good"   label="Opt-in coverage"      value={`${TOTAL_CAS > 0 ? Math.round(totalOpted / TOTAL_CAS * 100) : 0}%`}  desc={`${totalOpted} of ${TOTAL_CAS} CAs opted in — ${TOTAL_CAS - totalOpted} CAs yet to opt in`} />
-          <KpiCard variant="info"   label="Successful delivery"  value={`${dbcFunnel.received}`}  desc={`${billCopySuccessPct}% of opted-in CAs received digital bill copy successfully this month`} />
-          <div onClick={onMultiBillReview} style={{ cursor: 'pointer' }}>
-            <KpiCard variant="warn"   label="Multi-bill billers"   value={`${multiBillCount} billers`} desc={`${multiBillCAs} CAs received >1 bill this month · click to review for duplicates`} />
-          </div>
+        {/* Delivery funnel label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0 14px' }}>
+          <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
+          <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Delivery funnel</span>
+          <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
+        </div>
+
+        {/* Funnel cards */}
+        <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '20px' }}>
+          {([
+            { label: 'Opted in',  sublabel: 'bill_copy_enabled = true',  count: dbcFunnel.optedIn,  pct: undefined,                                                         tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
+            { label: 'Received',  sublabel: 'Bills fetched from biller',  count: dbcFunnel.received, pct: Math.round(dbcFunnel.received / Math.max(dbcFunnel.optedIn,1)*100), tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+            { label: 'Pending',   sublabel: 'Fetch in progress',          count: dbcFunnel.pending,  pct: Math.round(dbcFunnel.pending  / Math.max(dbcFunnel.optedIn,1)*100), tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+            { label: 'Failed',    sublabel: 'Fetch error · needs fix',   count: dbcFunnel.failed,   pct: Math.round(dbcFunnel.failed   / Math.max(dbcFunnel.optedIn,1)*100), tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+          ] as const).map((step, i, arr) => {
+            const r = 18, stroke = 4, size = 44
+            const circ = 2 * Math.PI * r
+            const dash = step.pct !== undefined ? (step.pct / 100) * circ : 0
+            return (
+              <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
+                <div style={{ flex: 1, background: step.tone.bg, border: `1px solid ${step.tone.border}`, borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '36px', fontWeight: 700, color: step.tone.text, lineHeight: 1 }}>{step.count}</div>
+                    {step.pct !== undefined && (
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+                          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
+                          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
+                        </svg>
+                        <div style={{ position: 'absolute', fontSize: '10px', fontWeight: 600, color: step.tone.text }}>{step.pct}%</div>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{step.label}</div>
+                  <div style={{ fontSize: '12px', color: step.tone.text, opacity: 0.6 }}>{step.sublabel}</div>
+                </div>
+                {i < arr.length - 1 && (
+                  <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px', flexShrink: 0, color: '#D1D5DB', fontSize: '16px' }}>→</div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Attention needed label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0 14px' }}>
+          <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
+          <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Attention needed</span>
+          <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
+        </div>
+
+        {/* Insight cards */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+          {([
+            { tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' }, title: 'Failed bill copies',  value: String(dbcFunnel.failed),   valueLabel: dbcFunnel.failedPct + '% failure rate',  detail: 'Check biller API connectivity. Repeated failures may block payment.',           action: 'View failed CAs'  },
+            { tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' }, title: 'Pending > 48 hrs',   value: String(Math.round(dbcFunnel.pending * 0.44)), valueLabel: 'of ' + dbcFunnel.pending + ' pending', detail: 'Bills waiting over 48 hours — need manual intervention to unblock.',   action: 'Review stalled'   },
+            { tone: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', accent: '#22C55E' }, title: 'Opt-in coverage',    value: (TOTAL_CAS > 0 ? Math.round(dbcFunnel.optedIn / TOTAL_CAS * 100) : 0) + '%', valueLabel: undefined, detail: dbcFunnel.optedIn + ' of ' + TOTAL_CAS + ' CAs opted in. ' + (TOTAL_CAS - dbcFunnel.optedIn) + ' yet to opt.', action: 'View not opted'   },
+            { tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' }, title: 'Multi-bill billers', value: String(multiBillCount),     valueLabel: 'billers',               detail: multiBillCAs + ' CAs received more than 1 bill this month. Review for duplicates.',  action: <span onClick={onMultiBillReview} style={{ cursor: 'pointer' }}>Check duplicates</span> as any },
+          ] as const).map((card, ci) => (
+            <div key={ci}
+              style={{ flex: 1, background: '#fff', border: `1px solid ${card.tone.border}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 0 3px ${card.tone.accent}18` }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.tone.accent, flexShrink: 0 }} />
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: card.tone.text, lineHeight: 1 }}>{card.value}</div>
+                {card.valueLabel && <div style={{ fontSize: '12px', color: card.tone.text, opacity: 0.65, fontWeight: 500 }}>{card.valueLabel}</div>}
+              </div>
+              <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5, flex: 1 }}>{card.detail}</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: card.tone.accent, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                {card.action} <span style={{ fontSize: '14px' }}>→</span>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Bill copy by biller table */}
