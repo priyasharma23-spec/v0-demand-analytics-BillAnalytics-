@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CAS, BRANCHES, STATES } from '@/lib/calculations'
+import { CAS, BRANCHES, STATES , inr } from '@/lib/calculations'
 import { KpiCard } from './KpiCard'
 import { SummaryCard } from '@/components/SummaryCard'
 
@@ -124,6 +124,7 @@ const totalPending = dbcTableData.reduce((s, r) => s + r.pending, 0)
 const totalUnpaid   = stateData.reduce((s, r) => s + (r.generated - r.paid), 0)
 const nearingDue    = Math.round(totalUnpaid * 0.25)
 const overdue       = Math.round(totalUnpaid * 0.30)
+const overdueAmt    = Math.round(totalUnpaid * 0.30 * 185000) // avg bill amt per CA
 
 const summaryMetrics = [
   {
@@ -139,16 +140,18 @@ const summaryMetrics = [
     subColor: '#185FA5',
   },
   {
-    label:    'Nearing due',
-    value:    `${nearingDue}`,
-    sub:      'next 3 days',
-    subColor: '#185FA5',
+    label:    'Approval pending',
+    value:    `${FUNNEL.approvalHold}`,
+    sub:      'bills stuck in approval queue',
+    subColor: '#854F0B',
+    borderColor: '#EF9F27',
   },
   {
     label:    'Overdue',
-    value:    `${overdue}`,
-    sub:      'not yet paid',
-    subColor: '#185FA5',
+    value:    `${overdue} CAs`,
+    sub:      inr(overdueAmt) + ' · not yet paid',
+    subColor: '#A32D2D',
+    borderColor: '#E24B4A',
   },
 ]
 
