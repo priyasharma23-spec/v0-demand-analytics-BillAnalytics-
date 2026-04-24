@@ -667,7 +667,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
                             ← All states
                           </button>
                           <div style={{ fontSize: '15px', fontWeight: 600, color: '#192744' }}>{sel}</div>
-                          <div style={{ fontSize: '11px', color: '#858ea2' }}>{cas[sel] || 0} CAs · Apr 2024 – Mar 2025</div>
+                          <div style={{ fontSize: '11px', color: '#858ea2' }}>{cas[sel] || 0} CAs · Apr 2024 �� Mar 2025</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: '20px', fontWeight: 700, color: '#534AB7' }}>₹{totalSpend.toLocaleString()}L</div>
@@ -700,7 +700,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
                             ))}
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#858ea2', marginTop: '3px' }}>
-                            {['A','M','J','J','A','S','O','N','D','J','F','M'].map((m, i) => (
+                            {['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'].map((m, i) => (
                               <span key={i}>{m}</span>
                             ))}
                           </div>
