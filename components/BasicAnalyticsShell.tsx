@@ -296,6 +296,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
 
       {/* Top performers ��� tabbed: States / Branches / CAs */}
       <TopPerformers totalBill={totalBill} appState={appState} />
+
     </div>
   )
 }
@@ -1098,8 +1099,65 @@ function BasicDueDates({ appState }: BasicSectionProps) {
         </div>
 
       </div>
+    </div>
+  )
+}
 
 
+function AnomalyCard({ a }: { a: { id: number; icon: string; iconColor: string; iconBg: string; label: string; title: string; where: string; amount: string; type: string; cta: string } }) {
+  const [hov, setHov] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? '#FAFAFA' : '#fff',
+        border: '1.5px solid ' + (hov ? '#D1D5DB' : '#f3f4f6'),
+        borderRadius: '14px',
+        padding: '20px 20px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        cursor: 'pointer',
+        transition: 'all .16s',
+        boxShadow: hov ? '0 4px 16px rgba(0,0,0,.07)' : 'none',
+      }}>
+      {/* Top row: icon + amount */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: a.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', color: a.iconColor }}>
+          {a.icon}
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '22px', fontWeight: 800, color: '#192744', letterSpacing: '-0.5px' }}>{a.amount}</div>
+          <div style={{ fontSize: '10.5px', color: '#858ea2' }}>{a.type}</div>
+        </div>
+      </div>
+      {/* Label + title */}
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>
+          {a.label}
+        </div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', lineHeight: 1.4 }}>
+          {a.title}
+        </div>
+        <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '6px' }}>{a.where}</div>
+      </div>
+      {/* CTA */}
+      <button style={{
+        alignSelf: 'flex-start',
+        background: hov ? '#2500D7' : '#EBEAFF',
+        color: hov ? '#fff' : '#2500D7',
+        border: 'none',
+        borderRadius: '8px',
+        padding: '7px 14px',
+        fontSize: '12.5px',
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'all .16s',
+        fontFamily: 'inherit',
+      }}>
+        {a.cta} →
+      </button>
     </div>
   )
 }
