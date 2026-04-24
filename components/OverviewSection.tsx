@@ -676,7 +676,7 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
                         <div style={{ background: '#f5f6fa', borderRadius: '8px', padding: '10px 12px' }}>
-                          <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '2px' }}>Avg leakage</div>
+                          <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '2px' }}>Avg leakage % of bill</div>
                           <div style={{ fontSize: '18px', fontWeight: 600, color: info ? getBg(info.pct) === '#EAF3DE' ? '#27500A' : '#A32D2D' : '#192744' }}>{info ? info.pct : 0}%</div>
                         </div>
                         <div style={{ background: '#f5f6fa', borderRadius: '8px', padding: '10px 12px' }}>
@@ -686,14 +686,23 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
                       </div>
                       {info && (
                         <div style={{ marginBottom: '14px' }}>
-                          <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '6px' }}>Monthly leakage %</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <div style={{ fontSize: '11px', color: '#858ea2' }}>Leakage % per month</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#858ea2' }}>
+                              <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#EAF3DE', display: 'inline-block' }} />&lt;5%
+                              <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#EF9F27', display: 'inline-block' }} />10–15%
+                              <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#E24B4A', display: 'inline-block' }} />15%+
+                            </div>
+                          </div>
                           <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '32px' }}>
                             {info.months.map((p, mi) => (
                               <div key={mi} title={MONTHS[mi]+': '+p+'%'} style={{ flex: 1, background: getBg(p), borderRadius: '2px', height: Math.max(4, Math.round(p / 20 * 32))+'px', transition: 'height .2s' }} />
                             ))}
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#858ea2', marginTop: '3px' }}>
-                            <span>Apr</span><span>Mar</span>
+                            {['A','M','J','J','A','S','O','N','D','J','F','M'].map((m, i) => (
+                              <span key={i}>{m}</span>
+                            ))}
                           </div>
                         </div>
                       )}
