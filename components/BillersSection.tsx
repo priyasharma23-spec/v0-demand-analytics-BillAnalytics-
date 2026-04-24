@@ -183,86 +183,6 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
         ))}
       </div>
 
-      {/* Section 3 — Bill status table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px', marginTop: '24px' }}>
-
-        {/* Header + toggle */}
-        <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: '#192744' }}>
-                {statusView === 'state' ? 'Bill status — by state' : 'Bill status — by biller'}
-              </div>
-              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>
-                {statusView === 'state' ? 'Active CA states only · click to expand billers' : 'All registered billers'}
-              </div>
-            </div>
-            <div style={{ display: 'flex', background: '#f5f5f4', borderRadius: '10px', padding: '3px', gap: '2px' }}>
-              {(['state','biller'] as const).map(v => (
-                <button key={v} onClick={() => setStatusView(v)} style={{
-                  padding: '5px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
-                  border: 'none', cursor: 'pointer', textTransform: 'capitalize',
-                  background: statusView === v ? '#fff' : 'transparent',
-                  color: statusView === v ? '#192744' : '#858ea2',
-                }}>By {v}</button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Table wrapper - horizontal scroll only */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
-              <tr>
-                {(statusView === 'state'
-                  ? ['State','Billers','Active CAs','Bill available','Paid','Unpaid','Conversion']
-                  : ['Biller','State','Active CAs','Bill available','Paid','Unpaid','Conversion']
-                ).map(h => (
-                  <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(statusView === 'state' ? stateData : billerData).map((r: any) => {
-                const convPct = r.total > 0 ? Math.round(r.paid / r.total * 100) : 0
-                const barColor = convPct >= 85 ? '#1D9E75' : convPct >= 75 ? '#EF9F27' : '#E24B4A'
-                return (
-                  <tr key={statusView === 'state' ? r.state : r.biller}
-                    onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#2500D7' }}>
-                      {statusView === 'state' ? r.state : r.biller}
-                    </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>
-                      {statusView === 'state' ? r.billers : r.state}
-                    </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.total}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
-                      {r.generated}
-                      <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '4px' }}>({r.total > 0 ? Math.round(r.generated/r.total*100) : 0}%)</span>
-                    </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.paid}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
-                      {r.generated - r.paid}
-                    </td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{convPct}%</span>
-                        <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#f0f0f0', overflow: 'hidden', minWidth: '60px' }}>
-                          <div style={{ width: `${convPct}%`, height: '100%', borderRadius: '3px', background: barColor }} />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       {/* Section 4 — Digital bill copy */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
 
@@ -403,6 +323,87 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
           </table>
         </div>
       </div>
+
+      {/* Section 3 — Bill status table */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px', marginTop: '24px' }}>
+
+        {/* Header + toggle */}
+        <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 500, color: '#192744' }}>
+                {statusView === 'state' ? 'Bill status — by state' : 'Bill status — by biller'}
+              </div>
+              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>
+                {statusView === 'state' ? 'Active CA states only · click to expand billers' : 'All registered billers'}
+              </div>
+            </div>
+            <div style={{ display: 'flex', background: '#f5f5f4', borderRadius: '10px', padding: '3px', gap: '2px' }}>
+              {(['state','biller'] as const).map(v => (
+                <button key={v} onClick={() => setStatusView(v)} style={{
+                  padding: '5px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
+                  border: 'none', cursor: 'pointer', textTransform: 'capitalize',
+                  background: statusView === v ? '#fff' : 'transparent',
+                  color: statusView === v ? '#192744' : '#858ea2',
+                }}>By {v}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Table wrapper - horizontal scroll only */}
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+            <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
+              <tr>
+                {(statusView === 'state'
+                  ? ['State','Billers','Active CAs','Bill available','Paid','Unpaid','Conversion']
+                  : ['Biller','State','Active CAs','Bill available','Paid','Unpaid','Conversion']
+                ).map(h => (
+                  <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(statusView === 'state' ? stateData : billerData).map((r: any) => {
+                const convPct = r.total > 0 ? Math.round(r.paid / r.total * 100) : 0
+                const barColor = convPct >= 85 ? '#1D9E75' : convPct >= 75 ? '#EF9F27' : '#E24B4A'
+                return (
+                  <tr key={statusView === 'state' ? r.state : r.biller}
+                    onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
+                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
+                  >
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#2500D7' }}>
+                      {statusView === 'state' ? r.state : r.biller}
+                    </td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>
+                      {statusView === 'state' ? r.billers : r.state}
+                    </td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.total}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
+                      {r.generated}
+                      <span style={{ fontSize: '11px', color: '#858ea2', marginLeft: '4px' }}>({r.total > 0 ? Math.round(r.generated/r.total*100) : 0}%)</span>
+                    </td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.paid}</td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>
+                      {r.generated - r.paid}
+                    </td>
+                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{convPct}%</span>
+                        <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#f0f0f0', overflow: 'hidden', minWidth: '60px' }}>
+                          <div style={{ width: `${convPct}%`, height: '100%', borderRadius: '3px', background: barColor }} />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   )
 }
