@@ -102,10 +102,10 @@ const overdue      = Math.round(totalUnpaid * 0.30)
 const overdueAmt   = Math.round(totalUnpaid * 0.30 * 185000)
 
 const summaryMetrics = [
-  { label: 'Active billers',    value: `${totalBillers}`,          sub: `across ${STATES.length} states`,          subColor: '#185FA5',  borderColor: '#2500D7' },
-  { label: 'Avg conversion rate', value: `${FUNNEL.conversionPct}%`, sub: 'bills generated → paid',                subColor: '#185FA5',  borderColor: '#2500D7' },
-  { label: 'Approval pending',  value: `${FUNNEL.approvalHold}`,   sub: 'bills stuck in approval queue',           subColor: '#854F0B',  borderColor: '#EF9F27' },
-  { label: 'Overdue',           value: `${overdue} CAs`,           sub: inr(overdueAmt) + ' · not yet paid',       subColor: '#A32D2D',  borderColor: '#E24B4A' },
+  { label: 'Total unpaid',      value: inr(Math.round(totalUnpaid * 185000)),  sub: `${totalUnpaid} CAs · current period`,       subColor: '#185FA5', borderColor: '#2500D7' },
+  { label: 'Overdue',           value: `${overdue} CAs`,                       sub: inr(overdueAmt) + ' · not yet paid',         subColor: '#A32D2D', borderColor: '#E24B4A' },
+  { label: 'Approval pending',  value: `${FUNNEL.approvalHold}`,               sub: 'bills stuck in approval queue',             subColor: '#854F0B', borderColor: '#EF9F27' },
+  { label: 'Paid this period',  value: inr(Math.round(FUNNEL.paid * 185000)),  sub: `${FUNNEL.paid} CAs · ${FUNNEL.conversionPct}% conversion`, subColor: '#3B6D11', borderColor: '#1A7A45' },
 ]
 
 const dbcFunnel = {

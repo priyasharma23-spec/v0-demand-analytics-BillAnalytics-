@@ -1014,9 +1014,9 @@ function BasicDueDates({ appState }: BasicSectionProps) {
 
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total unpaid"     value={inr(totalUnpaid)}   sub={`${totalCAs - caSchedule.filter(c=>c.isPaid).length} CAs · current period`}  subColor="#185FA5" borderColor="#2500D7" />
-        <SummaryCard label="Overdue"          value={inr(totalOverdue)}  sub={`${overdueCount} CAs past due date`}                                           subColor="#A32D2D" borderColor="#E24B4A" />
-        <SummaryCard label="Due within 7 days" value={inr(totalDueSoon)} sub={`${dueSoonCount} CAs · pay to avoid late charges`}                            subColor="#854F0B" borderColor="#EF9F27" />
+        <SummaryCard label="Total unpaid"      value={inr(totalUnpaid)}   sub={`${totalCAs - caSchedule.filter(c=>c.isPaid).length} CAs · current period`}                                                                                         subColor="#185FA5" borderColor="#2500D7" />
+        <SummaryCard label="Overdue"           value={inr(totalOverdue)}  sub={`${overdueCount} CAs past due date`}                                                                                                                                          subColor="#A32D2D" borderColor="#E24B4A" />
+        <SummaryCard label="Approval pending"  value={`${Math.round(totalCAs * 0.068)}`} sub="bills stuck in approval queue"                                                                                                                                 subColor="#854F0B" borderColor="#EF9F27" />
         <SummaryCard label="Paid this period"  value={inr(caSchedule.filter(c=>c.isPaid).reduce((s,c)=>s+c.billAmt,0))} sub={`${caSchedule.filter(c=>c.isPaid).length} CAs · ${Math.round(caSchedule.filter(c=>c.isPaid).length/totalCAs*100)}% conversion`} subColor="#3B6D11" borderColor="#1A7A45" />
       </div>
 
