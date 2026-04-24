@@ -283,6 +283,7 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
       })()}
 
 
+      <div style={{ marginTop: '24px' }} />
       {/* Digital bill copy */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
         <div style={{ marginBottom: '16px' }}>
