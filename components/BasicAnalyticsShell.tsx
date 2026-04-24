@@ -295,6 +295,170 @@ function BasicSummary({ appState }: BasicSectionProps) {
       </div>
 
       {/* Top performers ��� tabbed: States / Branches / CAs */}
+      {/* Bill generation flow */}
+      {(() => {
+        const allCAsArr = Object.values(CAS).flat()
+        const total = allCAsArr.length
+        const generated    = Math.round(total * 0.757)
+        const paid         = Math.round(total * 0.60)
+        const notGenerated = total - generated
+        const unpaid       = generated - paid
+        const approvalHold = Math.round(total * 0.068)
+        const convPct      = 60
+        const genPct       = 75.7
+        const paidPct      = 60.0
+        const rows = [
+          { label: 'Active CAs',      count: total,     pct: 100,     fillColor: '#C47A00', chipColor: '#A05E00', drop: null as number | null },
+          { label: 'Bills generated', count: generated, pct: genPct,  fillColor: '#1755C8', chipColor: '#0d3d8a', drop: notGenerated as number | null },
+          { label: 'Bills paid',      count: paid,      pct: paidPct, fillColor: '#1A7A45', chipColor: '#145c34', drop: unpaid as number | null },
+        ]
+        return (
+          <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '16px' }}>
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill generation flow</div>
+              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Active CAs → Generated → Paid progression</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px', padding: '12px 16px', background: '#f9f9f9', borderRadius: '10px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <span style={{ fontSize: '22px', fontWeight: 700, color: '#C47A00' }}>{total}</span>
+                <span style={{ fontSize: '13px', color: '#858ea2' }}>active CAs</span>
+              </div>
+              <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1755C8' }}>{generated}</span>
+                <span style={{ fontSize: '13px', color: '#858ea2' }}>generated</span>
+                <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−{notGenerated}</span>
+              </div>
+              <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A7A45' }}>{paid}</span>
+                <span style={{ fontSize: '13px', color: '#858ea2' }}>paid</span>
+                <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−{unpaid}</span>
+              </div>
+              <div style={{ marginLeft: 'auto', fontSize: '13px', color: '#858ea2' }}>
+                Overall conversion <span style={{ fontSize: '15px', fontWeight: 700, color: '#1A7A45', marginLeft: '4px' }}>{convPct}%</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '14px' }}>
+              {rows.map(row => (
+                <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500, width: '110px', flexShrink: 0 }}>{row.label}</div>
+                  <div style={{ flex: 1, height: '36px', background: '#e8e8e8', borderRadius: '20px', overflow: 'hidden', position: 'relative' }}>
+                    <div style={{ width: row.pct + '%', height: '100%', background: row.fillColor, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '8px' }}>
+                      <div style={{ height: '26px', padding: '0 12px', borderRadius: '13px', fontSize: '13px', fontWeight: 600, color: '#fff', background: row.chipColor, display: 'flex', alignItems: 'center' }}>
+                        {row.count}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744', minWidth: '36px', textAlign: 'right' }}>{row.pct}%</div>
+                  {row.drop !== null && (
+                    <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500, minWidth: '48px', textAlign: 'right' }}>−{row.drop}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {[
+                  { label: 'Not generated', val: notGenerated, color: '#E24B4A', bg: '#FEF0F0' },
+                  { label: 'Unpaid',        val: unpaid,       color: '#C47A00', bg: '#FFF8ED' },
+                  { label: 'Approval hold', val: approvalHold, color: '#C47A00', bg: '#FFF8ED' },
+                ].map(e => (
+                  <div key={e.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: e.bg, borderRadius: '20px', fontSize: '12px' }}>
+                    <span style={{ fontWeight: 600, color: e.color }}>{e.val}</span>
+                    <span style={{ color: e.color, fontWeight: 500 }}>{e.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#1A7A45' }}>{convPct}% conversion</div>
+            </div>
+          </div>
+        )
+      })()}
+
+            <TopPerformers totalBill={totalBill} appState={appState} />
+
+      {/* Bill generation flow */}
+      {(() => {
+        const allCAsArr = Object.values(CAS).flat()
+        const total = allCAsArr.length
+        const generated    = Math.round(total * 0.757)
+        const paid         = Math.round(total * 0.60)
+        const notGenerated = total - generated
+        const unpaid       = generated - paid
+        const approvalHold = Math.round(total * 0.068)
+        const convPct      = 60
+        const genPct       = 75.7
+        const paidPct      = 60.0
+        const rows = [
+          { label: 'Active CAs',      count: total,     pct: 100,     fillColor: '#C47A00', chipColor: '#A05E00', drop: null as number | null },
+          { label: 'Bills generated', count: generated, pct: genPct,  fillColor: '#1755C8', chipColor: '#0d3d8a', drop: notGenerated as number | null },
+          { label: 'Bills paid',      count: paid,      pct: paidPct, fillColor: '#1A7A45', chipColor: '#145c34', drop: unpaid as number | null },
+        ]
+        return (
+          <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '16px' }}>
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill generation flow</div>
+              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Active CAs → Generated → Paid progression</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px', padding: '12px 16px', background: '#f9f9f9', borderRadius: '10px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <span style={{ fontSize: '22px', fontWeight: 700, color: '#C47A00' }}>{total}</span>
+                <span style={{ fontSize: '13px', color: '#858ea2' }}>active CAs</span>
+              </div>
+              <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1755C8' }}>{generated}</span>
+                <span style={{ fontSize: '13px', color: '#858ea2' }}>generated</span>
+                <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−{notGenerated}</span>
+              </div>
+              <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A7A45' }}>{paid}</span>
+                <span style={{ fontSize: '13px', color: '#858ea2' }}>paid</span>
+                <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−{unpaid}</span>
+              </div>
+              <div style={{ marginLeft: 'auto', fontSize: '13px', color: '#858ea2' }}>
+                Overall conversion <span style={{ fontSize: '15px', fontWeight: 700, color: '#1A7A45', marginLeft: '4px' }}>{convPct}%</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '14px' }}>
+              {rows.map(row => (
+                <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500, width: '110px', flexShrink: 0 }}>{row.label}</div>
+                  <div style={{ flex: 1, height: '36px', background: '#e8e8e8', borderRadius: '20px', overflow: 'hidden', position: 'relative' }}>
+                    <div style={{ width: row.pct + '%', height: '100%', background: row.fillColor, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '8px' }}>
+                      <div style={{ height: '26px', padding: '0 12px', borderRadius: '13px', fontSize: '13px', fontWeight: 600, color: '#fff', background: row.chipColor, display: 'flex', alignItems: 'center' }}>
+                        {row.count}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744', minWidth: '36px', textAlign: 'right' }}>{row.pct}%</div>
+                  {row.drop !== null && (
+                    <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500, minWidth: '48px', textAlign: 'right' }}>−{row.drop}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {[
+                  { label: 'Not generated', val: notGenerated, color: '#E24B4A', bg: '#FEF0F0' },
+                  { label: 'Unpaid',        val: unpaid,       color: '#C47A00', bg: '#FFF8ED' },
+                  { label: 'Approval hold', val: approvalHold, color: '#C47A00', bg: '#FFF8ED' },
+                ].map(e => (
+                  <div key={e.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: e.bg, borderRadius: '20px', fontSize: '12px' }}>
+                    <span style={{ fontWeight: 600, color: e.color }}>{e.val}</span>
+                    <span style={{ color: e.color, fontWeight: 500 }}>{e.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#1A7A45' }}>{convPct}% conversion</div>
+            </div>
+          </div>
+        )
+      })()}
+
       <TopPerformers totalBill={totalBill} appState={appState} />
 
     </div>
