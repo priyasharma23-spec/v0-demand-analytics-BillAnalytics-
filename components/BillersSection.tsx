@@ -289,7 +289,7 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
               </tr>
             </thead>
             <tbody>
-              {(statusView === 'state' ? stateData : billerData).map((row, idx) => {
+              {(statusView === 'state' ? stateData : billerData).map((row: any, idx: number) => {
                 const name = 'state' in row ? row.state : row.biller
                 const status = row.dropPct > 25 ? 'High drop' : row.dropPct > 15 ? 'Watch' : 'Healthy'
                 return (
