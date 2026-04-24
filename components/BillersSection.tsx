@@ -259,7 +259,7 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
       </div>
 
       {/* Section 3 — Bill status table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px' }}>
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px', marginTop: '24px' }}>
 
         {/* Header + toggle */}
         <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
