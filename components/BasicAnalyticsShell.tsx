@@ -360,6 +360,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
                 { pct: 25, color: '#F59E0B' },
                 { pct: 10, color: '#9CA3AF' },
                 { pct: 5,  color: '#EF4444' },
+                { pct: 4,  color: '#4F46E5' },
               ].map((s, i) => <div key={i} style={{ width: s.pct+'%', background: s.color, borderRadius: '99px' }}/>)}
             </div>
             {[
