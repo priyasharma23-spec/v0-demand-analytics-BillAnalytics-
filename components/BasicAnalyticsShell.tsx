@@ -346,7 +346,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
         </div>
 
         {/* Right column — Status panel */}
-        <div style={{ width: '300px', flexShrink: 0, background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ width: '450px', flexShrink: 0, background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
           {/* Payment status */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
