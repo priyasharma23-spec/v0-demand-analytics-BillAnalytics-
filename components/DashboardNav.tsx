@@ -270,29 +270,34 @@ export default function DashboardNav({
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             {analyticsMode === 'basic' ? (
               <React.Fragment>
-                {[{id:'summary',label:'Summary'},{id:'locations',label:'Locations'},{id:'trends',label:'Trends'}].map((s) => (
+                {[
+                  { id: 'summary',   label: 'Summary',   icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><rect x="1" y="1" width="4.5" height="4.5" rx="1"/><rect x="7.5" y="1" width="4.5" height="4.5" rx="1"/><rect x="1" y="7.5" width="4.5" height="4.5" rx="1"/><rect x="7.5" y="7.5" width="4.5" height="4.5" rx="1"/></svg> },
+                  { id: 'locations', label: 'Locations', icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6.5 1C4.5 1 3 2.6 3 4.5c0 2.7 3.5 7.5 3.5 7.5S10 7.2 10 4.5C10 2.6 8.5 1 6.5 1z"/><circle cx="6.5" cy="4.5" r="1.2"/></svg> },
+                  { id: 'trends',    label: 'Trends',    icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M1 10l3.5-3.5 2.5 2L11 3"/></svg> },
+                  { id: 'billers',   label: 'Billers',   icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><rect x="1.5" y="2" width="10" height="9" rx="1.5"/><path d="M4 5.5h5M4 7.5h3"/></svg> },
+                ].map((s) => (
                   <button
                     key={s.id}
                     onClick={() => onBasicSectionChange?.(s.id)}
                     style={{
-                      height: '32px',
-                      padding: '6px 14px',
-                      borderRadius: '20px',
+                      border: 'none',
                       fontFamily: '"Inter", sans-serif',
-                      fontSize: '13px',
+                      padding: '5px 12px',
+                      fontSize: '12.5px',
                       fontWeight: basicSection === s.id ? 600 : 400,
                       color: basicSection === s.id ? '#4F46E5' : '#6B7280',
-                      background: basicSection === s.id ? '#EEF2FF' : 'transparent',
-                      border: basicSection === s.id ? '1.5px solid #C7D2FE' : '1.5px solid transparent',
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
+                      background: basicSection === s.id ? '#EEF2FF' : 'transparent',
+                      borderRadius: '20px',
+                      outline: basicSection === s.id ? '1.5px solid #C7D2FE' : '1.5px solid transparent',
+                      transition: 'all .12s',
+                      display: 'inline-flex',
                       alignItems: 'center',
                       gap: '6px',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {s.label}
+                    {s.icon}{s.label}
                   </button>
                 ))}
               </React.Fragment>
