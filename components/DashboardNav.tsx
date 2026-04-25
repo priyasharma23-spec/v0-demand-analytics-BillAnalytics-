@@ -160,7 +160,7 @@ export default function DashboardNav({
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {/* Mode toggle pill */}
-          <div style={{ display: 'flex', gap: '3px', background: '#f5f5f4', borderRadius: '10px', padding: '3px' }}>
+          <div style={{ display: 'flex', gap: '3px', background: 'transparent', borderRadius: '10px', padding: '3px' }}>
             {([
               { id: 'basic', label: 'Basic Analytics', icon: '◎' },
               { id: 'advanced', label: 'Advanced Analytics', icon: '⬡', badge: 'BILL COPY' },
@@ -170,22 +170,23 @@ export default function DashboardNav({
                 onClick={() => onModeChange?.(mode.id)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '5px 14px', borderRadius: '8px',
-                  fontSize: '12px', fontWeight: 500,
-                  border: 'none', cursor: 'pointer',
-                  background: analyticsMode === mode.id ? '#fff' : 'transparent',
-                  color: analyticsMode === mode.id ? '#192744' : '#9b9b96',
-                  boxShadow: analyticsMode === mode.id ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
+                  padding: '5px 14px', borderRadius: '6px',
+                  fontSize: '12px', fontWeight: analyticsMode === mode.id ? 600 : 400,
+                  border: analyticsMode === mode.id ? '1.5px solid #E5E7EB' : '1.5px solid transparent',
+                  cursor: 'pointer',
+                  background: analyticsMode === mode.id ? '#F3F4F6' : 'transparent',
+                  color: analyticsMode === mode.id ? '#111827' : '#6B7280',
                   transition: 'all 0.15s',
                 }}
               >
-                <span style={{ fontSize: '10px', color: analyticsMode === mode.id ? '#2500D7' : '#c4c4c4' }}>{mode.icon}</span>
+                <span style={{ fontSize: '10px', color: analyticsMode === mode.id ? '#4F46E5' : '#6B7280' }}>{mode.icon}</span>
                 {mode.label}
                 {'badge' in mode && (
                   <span style={{
-                    fontSize: '9px', fontWeight: 600, padding: '1px 5px', borderRadius: '3px',
-                    background: analyticsMode === mode.id ? '#EBEAFF' : '#f0f0f0',
-                    color: analyticsMode === mode.id ? '#2500D7' : '#b0b0b0',
+                    fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px',
+                    background: '#EEF2FF',
+                    border: '1px solid #C7D2FE',
+                    color: '#4F46E5',
                     letterSpacing: '0.04em',
                   }}>
                     {mode.badge}
@@ -217,7 +218,7 @@ export default function DashboardNav({
         gap: '24px', 
         padding: '12px 24px', 
         backgroundColor: '#ffffff',
-        borderBottom: '1px solid #F3F4F6',
+        borderBottom: '1px solid #E5E7EB',
         alignItems: 'center'
       }}>
         {products.map((p) => (
@@ -228,13 +229,11 @@ export default function DashboardNav({
               padding: '8px 0',
               fontFamily: '"Inter", sans-serif',
               fontSize: '14px',
-              fontWeight: activeProduct === p.value ? 600 : 500,
-              color: activeProduct === p.value ? '#2500D7' : '#858EA2',
+              fontWeight: activeProduct === p.value ? 600 : 400,
+              color: activeProduct === p.value ? '#4F46E5' : '#6B7280',
               background: 'transparent',
-              borderTop: 'none',
-              borderLeft: 'none',
-              borderRight: 'none',
-              borderBottom: activeProduct === p.value ? '2px solid #2500D7' : '2px solid transparent',
+              border: 'none',
+              borderBottom: activeProduct === p.value ? '2px solid #4F46E5' : '2px solid transparent',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               display: 'flex',
@@ -244,12 +243,12 @@ export default function DashboardNav({
             }}
             onMouseEnter={(e) => {
               if (activeProduct !== p.value) {
-                (e.target as HTMLButtonElement).style.color = '#192744';
+                (e.target as HTMLButtonElement).style.color = '#374151';
               }
             }}
             onMouseLeave={(e) => {
               if (activeProduct !== p.value) {
-                (e.target as HTMLButtonElement).style.color = '#858EA2';
+                (e.target as HTMLButtonElement).style.color = '#6B7280';
               }
             }}
           >
@@ -264,27 +263,27 @@ export default function DashboardNav({
           display: 'flex', 
           gap: '8px', 
           padding: '10px 24px', 
-          backgroundColor: '#f5f6fa',
+          backgroundColor: '#F3F4F6',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             {analyticsMode === 'basic' ? (
               <React.Fragment>
-                {[{id:'summary',label:'Summary'},{id:'locations',label:'Locations'},{id:'trends',label:'Trends'},{id:'billers',label:'Billers'}].map((s) => (
+                {[{id:'summary',label:'Summary'},{id:'locations',label:'Locations'},{id:'trends',label:'Trends'}].map((s) => (
                   <button
                     key={s.id}
                     onClick={() => onBasicSectionChange?.(s.id)}
                     style={{
                       height: '32px',
-                      padding: '6px 12px',
-                      borderRadius: '4px',
+                      padding: '6px 14px',
+                      borderRadius: '20px',
                       fontFamily: '"Inter", sans-serif',
                       fontSize: '13px',
-                      fontWeight: basicSection === s.id ? 600 : 500,
-                      color: basicSection === s.id ? '#192744' : '#858EA2',
-                      background: basicSection === s.id ? '#ffffff' : 'transparent',
-                      border: basicSection === s.id ? '1px solid #E5E7EB' : 'none',
+                      fontWeight: basicSection === s.id ? 600 : 400,
+                      color: basicSection === s.id ? '#4F46E5' : '#6B7280',
+                      background: basicSection === s.id ? '#EEF2FF' : 'transparent',
+                      border: basicSection === s.id ? '1.5px solid #C7D2FE' : '1.5px solid transparent',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       whiteSpace: 'nowrap',
@@ -305,17 +304,14 @@ export default function DashboardNav({
                 onClick={() => onSectionChange(section.id)}
                 style={{
                   height: '32px',
-                  padding: '6px 12px',
-                  borderRadius: '4px',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
                   fontFamily: '"Inter", sans-serif',
                   fontSize: '13px',
-                  fontWeight: activeSection === section.id ? 600 : 500,
-                  color: activeSection === section.id ? '#192744' : '#858EA2',
-                  background: activeSection === section.id ? '#ffffff' : 'transparent',
-                  borderTop: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
-                  borderRight: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
-                  borderBottom: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
-                  borderLeft: activeSection === section.id ? '1px solid #E5E7EB' : 'none',
+                  fontWeight: activeSection === section.id ? 600 : 400,
+                  color: activeSection === section.id ? '#4F46E5' : '#6B7280',
+                  background: activeSection === section.id ? '#EEF2FF' : 'transparent',
+                  border: activeSection === section.id ? '1.5px solid #C7D2FE' : '1.5px solid transparent',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   whiteSpace: 'nowrap',
@@ -325,20 +321,12 @@ export default function DashboardNav({
                 }}
                 onMouseEnter={(e) => {
                   if (activeSection !== section.id) {
-                    (e.currentTarget as HTMLButtonElement).style.background = '#ffffff';
-                    (e.currentTarget as HTMLButtonElement).style.borderTop = '1px solid #F3F4F6';
-                    (e.currentTarget as HTMLButtonElement).style.borderRight = '1px solid #F3F4F6';
-                    (e.currentTarget as HTMLButtonElement).style.borderBottom = '1px solid #F3F4F6';
-                    (e.currentTarget as HTMLButtonElement).style.borderLeft = '1px solid #F3F4F6';
+                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(79, 70, 229, 0.05)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (activeSection !== section.id) {
                     (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                    (e.currentTarget as HTMLButtonElement).style.borderTop = 'none';
-                    (e.currentTarget as HTMLButtonElement).style.borderRight = 'none';
-                    (e.currentTarget as HTMLButtonElement).style.borderBottom = 'none';
-                    (e.currentTarget as HTMLButtonElement).style.borderLeft = 'none';
                   }
                 }}
               >
@@ -360,37 +348,22 @@ export default function DashboardNav({
               style={{
                 height: '32px',
                 background: '#ffffff',
-                borderTopLeftRadius: '4px',
-                borderTopRightRadius: '4px',
-                borderBottomLeftRadius: '4px',
-                borderBottomRightRadius: '4px',
-                paddingTop: '6px',
-                paddingBottom: '6px',
-                paddingLeft: '10px',
-                paddingRight: '28px',
+                borderRadius: '20px',
+                padding: '6px 12px 6px 14px',
                 fontSize: '13px',
-                color: '#858EA2',
+                color: '#6B7280',
                 fontWeight: 500,
                 appearance: 'none',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 fontFamily: '"Inter", sans-serif',
-                borderTop: '1px solid #E5E7EB',
-                borderRight: '1px solid #E5E7EB',
-                borderBottom: '1px solid #E5E7EB',
-                borderLeft: '1px solid #E5E7EB',
+                border: '1.5px solid #E5E7EB',
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLSelectElement).style.borderTopColor = '#D0D3DB';
-                (e.currentTarget as HTMLSelectElement).style.borderRightColor = '#D0D3DB';
-                (e.currentTarget as HTMLSelectElement).style.borderBottomColor = '#D0D3DB';
-                (e.currentTarget as HTMLSelectElement).style.borderLeftColor = '#D0D3DB';
+                (e.currentTarget as HTMLSelectElement).style.borderColor = '#D1D5DB';
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLSelectElement).style.borderTopColor = '#E5E7EB';
-                (e.currentTarget as HTMLSelectElement).style.borderRightColor = '#E5E7EB';
-                (e.currentTarget as HTMLSelectElement).style.borderBottomColor = '#E5E7EB';
-                (e.currentTarget as HTMLSelectElement).style.borderLeftColor = '#E5E7EB';
+                (e.currentTarget as HTMLSelectElement).style.borderColor = '#E5E7EB';
               }}
             >
               <option value="all">All categories</option>
@@ -407,7 +380,7 @@ export default function DashboardNav({
                 pointerEvents: 'none',
                 width: '12px',
                 height: '12px',
-                color: '#858EA2',
+                color: '#6B7280',
                 flexShrink: 0,
               }}
               fill='none'

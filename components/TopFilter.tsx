@@ -108,7 +108,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
   const overflowCount = pinnedEntities.length - SHOW_MAX
 
   return (
-    <div style={{ background: '#fff', borderBottom: '1px solid #f3f4f6', padding: '12px 24px' }}>
+    <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '12px 24px' }}>
 
       {/* Row 1 — Search + date pills + Apply */}
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
@@ -126,7 +126,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
             onChange={e => { setSearchQuery(e.target.value); onSearch?.(e.target.value) }}
             onFocus={() => setSearchOpen(true)}
             onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
-            style={{ width: '100%', height: '40px', border: '1px solid #f3f4f6', borderRadius: '8px', padding: '0 12px 0 36px', fontSize: '13px', background: '#fff', outline: 'none', color: '#192744', fontFamily: 'Inter, sans-serif' }}
+            style={{ width: '100%', height: '40px', border: '1.5px solid #E5E7EB', borderRadius: '8px', padding: '0 12px 0 36px', fontSize: '13px', background: '#F3F4F6', outline: 'none', color: '#192744', fontFamily: 'Inter, sans-serif' }}
           />
           {searchOpen && (searchQuery.length > 0) && (
             <div style={{ position: 'absolute', top: '46px', left: 0, right: 0, background: '#fff', border: '1px solid #f3f4f6', borderRadius: '8px', zIndex: 200, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
@@ -150,7 +150,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
         </div>
 
         {/* Date range */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #f3f4f6', borderRadius: '8px', padding: '0 12px', height: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1.5px solid #E5E7EB', borderRadius: '8px', padding: '0 12px', height: '40px' }}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="#858ea2" strokeWidth="1.2" fill="none"/>
             <line x1="1" y1="5" x2="13" y2="5" stroke="#858ea2" strokeWidth="1.2"/>
@@ -195,9 +195,9 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
 
         {/* Apply */}
         <button onClick={() => onApply?.({ stateF: selectedState, branchF: selectedBranch, caF: selectedCA, dateRange })}
-          style={{ height: '40px', padding: '0 20px', background: '#2500D7', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background 0.15s' }}
-          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = '#1a00a8'}
-          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = '#2500D7'}>
+          style={{ height: '40px', padding: '0 14px', background: '#4F46E5', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background 0.15s' }}
+          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = '#4338CA'}
+          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = '#4F46E5'}>
           Apply
         </button>
       </div>
@@ -209,26 +209,26 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
         <button onClick={() => setPinnedOpen(p => !p)} style={{
           display: 'flex', alignItems: 'center', gap: '6px',
           height: '32px', padding: '0 12px',
-          background: pinnedOpen ? '#EBEAFF' : '#f5f5f4',
-          border: '1px solid ' + (pinnedOpen ? '#C4BFFF' : '#f3f4f6'),
+          background: pinnedOpen ? '#EEF2FF' : '#F3F4F6',
+          border: '1.5px solid ' + (pinnedOpen ? '#C7D2FE' : '#E5E7EB'),
           borderRadius: '20px', cursor: 'pointer', flexShrink: 0,
           transition: 'all 0.15s',
         }}>
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <line x1="1" y1="3.5" x2="12" y2="3.5" stroke={pinnedOpen ? '#2500D7' : '#858ea2'} strokeWidth="1.3" strokeLinecap="round"/>
-            <line x1="3" y1="6.5" x2="10" y2="6.5" stroke={pinnedOpen ? '#2500D7' : '#858ea2'} strokeWidth="1.3" strokeLinecap="round"/>
-            <line x1="5" y1="9.5" x2="8" y2="9.5" stroke={pinnedOpen ? '#2500D7' : '#858ea2'} strokeWidth="1.3" strokeLinecap="round"/>
+            <line x1="1" y1="3.5" x2="12" y2="3.5" stroke={pinnedOpen ? '#4F46E5' : '#6B7280'} strokeWidth="1.3" strokeLinecap="round"/>
+            <line x1="3" y1="6.5" x2="10" y2="6.5" stroke={pinnedOpen ? '#4F46E5' : '#6B7280'} strokeWidth="1.3" strokeLinecap="round"/>
+            <line x1="5" y1="9.5" x2="8" y2="9.5" stroke={pinnedOpen ? '#4F46E5' : '#6B7280'} strokeWidth="1.3" strokeLinecap="round"/>
           </svg>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: pinnedOpen ? '#2500D7' : '#192744' }}>Pinned</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', borderRadius: '50%', background: '#2500D7', color: '#fff', fontSize: '10px', fontWeight: 700 }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: pinnedOpen ? '#4F46E5' : '#111827' }}>Pinned</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', borderRadius: '50%', background: '#4F46E5', color: '#fff', fontSize: '10px', fontWeight: 700 }}>
             {pinnedEntities.length}
           </span>
-          <span style={{ fontSize: '10px', color: pinnedOpen ? '#2500D7' : '#858ea2' }}>{pinnedOpen ? '▲' : '▾'}</span>
+          <span style={{ fontSize: '10px', color: pinnedOpen ? '#4F46E5' : '#6B7280' }}>{pinnedOpen ? '▲' : '▾'}</span>
         </button>
 
         {/* Inline pinned chips — first 3 */}
         {visiblePinned.map(e => (
-          <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: '5px', height: '32px', padding: '0 10px', borderRadius: '20px', border: '1px solid #f3f4f6', background: '#fff', fontSize: '12px', fontWeight: 500, color: '#192744', cursor: 'pointer' }}
+          <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: '5px', height: '32px', padding: '0 10px', borderRadius: '20px', border: '1.5px solid #E5E7EB', background: '#fff', fontSize: '12px', fontWeight: 500, color: '#111827', cursor: 'pointer' }}
             onClick={() => handleSelectEntity(e.name, e.type)}>
             <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: DOT_COLOR[e.type], flexShrink: 0 }} />
             <span>{e.name}</span>
@@ -244,7 +244,7 @@ export default function TopFilter({ onSearch, onDateRangeChange, onApply, onSele
         {/* +N more overflow */}
         {overflowCount > 0 && (
           <button onClick={() => setPinnedOpen(true)}
-            style={{ height: '32px', padding: '0 12px', borderRadius: '20px', border: '1px solid #f3f4f6', background: '#fff', fontSize: '12px', color: '#858ea2', cursor: 'pointer', fontWeight: 500 }}>
+            style={{ height: '32px', padding: '0 12px', borderRadius: '20px', border: '1.5px solid #E5E7EB', background: '#fff', fontSize: '12px', color: '#6B7280', cursor: 'pointer', fontWeight: 500 }}>
             +{overflowCount} more
           </button>
         )}

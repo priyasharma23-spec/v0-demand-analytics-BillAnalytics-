@@ -69,7 +69,7 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper" style={{ background: '#F3F4F6' }}>
       <DashboardNav
         activeProduct={activeProduct}
         onProductChange={handleProductChange}
