@@ -11,51 +11,50 @@ export function SummaryCard({
   value,
   sub,
   subColor,
-  borderColor = '#2500d7',
+  borderColor = '#4F46E5',
 }: SummaryCardProps) {
   return (
     <div
       style={{
         background: '#ffffff',
-        borderTop: '1px solid #f3f4f6',
-        borderRight: '1px solid #f3f4f6',
-        borderBottom: '1px solid #f3f4f6',
-        borderLeft: `4px solid ${borderColor}`,
-        borderRadius: '8px',
-        padding: '20px',
+        border: '1px solid #E5E7EB',
+        borderRadius: '14px',
+        padding: '20px 24px',
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
         fontFamily: '"Inter", sans-serif',
       }}
     >
       <div
         style={{
-          fontSize: '12px',
-          fontWeight: 600,
-          color: '#858ea2',
+          fontSize: '11px',
+          fontWeight: 500,
+          color: '#6B7280',
           textTransform: 'uppercase',
-          letterSpacing: '0.5px',
+          letterSpacing: '0.07em',
+          marginBottom: '6px',
         }}
       >
         {label}
       </div>
       <div
         style={{
-          fontSize: '24px',
-          fontWeight: 600,
-          color: '#192744',
-          lineHeight: '1.2',
+          fontSize: '26px',
+          fontWeight: 700,
+          color: borderColor || '#111827',
+          lineHeight: '1',
+          letterSpacing: '-0.02em',
         }}
       >
         {value}
       </div>
       <div
         style={{
-          fontSize: '13px',
-          fontWeight: 500,
+          fontSize: '12px',
           color: subColor,
+          marginTop: '4px',
         }}
       >
         {sub}
