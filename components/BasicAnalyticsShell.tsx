@@ -231,7 +231,8 @@ function BasicSummary({ appState }: BasicSectionProps) {
           { label: 'Period over period',     value: `${momChange > 0 ? '+' : ''}${momChange}%`,                                            sub: `${momLabel} vs ${momPrevLabel}${appState.stateF !== 'all' ? ' · ' + appState.stateF : ''}`,   accent: momChange > 0 ? '#15803D' : momChange < 0 ? '#15803D' : '#B45309' },
           { label: 'Due this month',         value: `${billsDueCount}`,                                                                    sub: `${inr(billsDueAmount)} · next 30 days`,                                                          accent: '#B45309' },
         ].map((kpi, i) => (
-          <div key={kpi.label} style={{ flex: i === 0 ? 1.4 : 1, padding: '20px 24px', borderLeft: i > 0 ? '1px solid #E5E7EB' : 'none' }}>
+          <div key={kpi.label} style={{ flex: i === 0 ? 1.4 : 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
             <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{kpi.label}</div>
             <div style={{ fontSize: '26px', fontWeight: 700, color: kpi.accent, letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{kpi.value}</div>
             <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{kpi.sub}</div>
