@@ -257,6 +257,38 @@ export default function DashboardNav({
         ))}
       </div>
 
+      {/* Filter bar — row 1: search + date + apply */}
+      {showSectionPills && (
+        <div style={{ padding: '10px 24px 6px', display: 'flex', gap: '8px', alignItems: 'center', borderBottom: '1px solid #F3F4F6', backgroundColor: '#fff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, background: '#F3F4F6', border: '1.5px solid #E5E7EB', borderRadius: '8px', padding: '7px 12px' }}>
+            <svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="#9CA3AF" strokeWidth="1.7" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l2.5 2.5"/></svg>
+            <input placeholder="Search state, branch, or CA number…" style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '13px', color: '#111827', width: '100%', fontFamily: 'inherit' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, background: '#fff', border: '1.5px solid #E5E7EB', borderRadius: '8px', padding: '7px 12px', fontSize: '12.5px', color: '#6B7280', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round"><rect x="1" y="2" width="12" height="11" rx="2"/><path d="M1 6h12M4 1v2M10 1v2"/></svg>
+            Apr 2024 – Mar 2025
+          </div>
+          <button style={{ background: '#4F46E5', color: '#fff', border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>Apply</button>
+        </div>
+      )}
+
+      {/* Filter bar — row 2: pinned + chips */}
+      {showSectionPills && (
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 24px 8px', backgroundColor: '#fff', borderBottom: '1px solid #F3F4F6' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, background: '#F3F4F6', border: '1.5px solid #E5E7EB', borderRadius: '20px', padding: '4px 10px', cursor: 'pointer' }}>
+            <svg width="12" height="12" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M1 3h11M3.5 6.5h6M5.5 10h2"/></svg>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#6B7280' }}>Pinned</span>
+            <span style={{ background: '#4F46E5', color: '#fff', borderRadius: '8px', minWidth: '16px', height: '16px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, padding: '0 4px' }}>3</span>
+          </div>
+          {['Maharashtra', 'Mumbai North', 'MH-MN-0101'].map(l => (
+            <div key={l} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', flexShrink: 0, background: '#fff', border: '1.5px solid #E5E7EB', borderRadius: '20px', padding: '4px 8px 4px 10px', fontSize: '12px', fontWeight: 500, color: '#111827', whiteSpace: 'nowrap' }}>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22C55E' }}/>
+              {l}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Section Navigation - Secondary (only for Bill Payment AND Advanced mode) */}
       {showSectionPills && (
         <div style={{ 
