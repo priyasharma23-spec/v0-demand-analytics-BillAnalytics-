@@ -934,11 +934,20 @@ function BasicTrends({ appState }: BasicSectionProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
-        <SummaryCard label="Overall YoY change" value={(overallYoy > 0 ? '+' : '') + overallYoy + '%'}  sub="avg monthly spend vs prior year"               subColor={overallYoy > 0 ? '#854F0B' : '#3B6D11'} borderColor={overallYoy > 0 ? '#EF9F27' : '#1A7A45'} />
-        <SummaryCard label="Peak month"         value={labels[maxMonthIdx]}                              sub={inr(monthlyTotals[maxMonthIdx]) + ' · highest spend'} subColor="#A32D2D" borderColor="#E24B4A" />
-        <SummaryCard label="Lowest month"       value={labels[minMonthIdx]}                              sub={inr(monthlyTotals[minMonthIdx]) + ' · lowest spend'}  subColor="#3B6D11" borderColor="#1A7A45" />
-        <SummaryCard label="Monthly average"    value={inr(avgCurrent)}                                  sub={'vs ' + inr(avgPrior) + ' prior year'}                subColor="#185FA5" borderColor="#185FA5" />
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+        {[
+          { label: 'Overall YoY change', value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', sub: 'avg monthly spend vs prior year',               subColor: overallYoy > 0 ? '#B45309' : '#15803D' },
+          { label: 'Peak month',         value: labels[maxMonthIdx],                              sub: inr(monthlyTotals[maxMonthIdx]) + ' · highest spend', subColor: '#B91C1C' },
+          { label: 'Lowest month',       value: labels[minMonthIdx],                              sub: inr(monthlyTotals[minMonthIdx]) + ' · lowest spend',  subColor: '#15803D' },
+          { label: 'Monthly average',    value: inr(avgCurrent),                                  sub: 'vs ' + inr(avgPrior) + ' prior year',           subColor: '#1D4ED8' },
+        ].map((k, i) => (
+          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* Monthly spend trend */}
@@ -1051,11 +1060,20 @@ function BasicDueDates({ appState }: BasicSectionProps) {
     <div>
 
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total unpaid"     value={inr(totalUnpaid)}   sub={`${totalCAs - caSchedule.filter(c=>c.isPaid).length} CAs · current period`}  subColor="#185FA5" borderColor="#2500D7" />
-        <SummaryCard label="Overdue"          value={inr(totalOverdue)}  sub={`${overdueCount} CAs past due date`}                                           subColor="#A32D2D" borderColor="#E24B4A" />
-        <SummaryCard label="Due within 7 days" value={inr(totalDueSoon)} sub={`${dueSoonCount} CAs · pay to avoid late charges`}                            subColor="#854F0B" borderColor="#EF9F27" />
-        <SummaryCard label="Paid this period"  value={inr(caSchedule.filter(c=>c.isPaid).reduce((s,c)=>s+c.billAmt,0))} sub={`${caSchedule.filter(c=>c.isPaid).length} CAs · ${Math.round(caSchedule.filter(c=>c.isPaid).length/totalCAs*100)}% conversion`} subColor="#3B6D11" borderColor="#1A7A45" />
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+        {[
+          { label: 'Total unpaid',      value: inr(totalUnpaid),   sub: `${totalCAs - caSchedule.filter(c=>c.isPaid).length} CAs · current period`,                                                                                                  subColor: '#1D4ED8' },
+          { label: 'Overdue',           value: inr(totalOverdue),  sub: `${overdueCount} CAs past due date`,                                                                                                                                                subColor: '#B91C1C' },
+          { label: 'Due within 7 days', value: inr(totalDueSoon),  sub: `${dueSoonCount} CAs · pay to avoid late charges`,                                                                                                                             subColor: '#B45309' },
+          { label: 'Paid this period',  value: inr(caSchedule.filter(c=>c.isPaid).reduce((s,c)=>s+c.billAmt,0)), sub: `${caSchedule.filter(c=>c.isPaid).length} CAs · ${Math.round(caSchedule.filter(c=>c.isPaid).length/totalCAs*100)}% conversion`, subColor: '#15803D' },
+        ].map((k, i) => (
+          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* Two column — calendar + weekly capital plan */}
@@ -1348,11 +1366,20 @@ function BasicBillers({ appState }: BasicSectionProps) {
   })
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
-        <SummaryCard label="Total unpaid"     value={inr(totalUnpaid)}   sub={`${totalCAs - paidCount} CAs · current period`}                        subColor="#6B7280" borderColor="#4F46E5" />
-        <SummaryCard label="Overdue"          value={inr(totalOverdue)}  sub={`${overdueCount} CAs past due date`}                                          subColor="#B91C1C" borderColor="#EF4444" />
-        <SummaryCard label="Approval pending" value={`${approvalHold}`}  sub="bills stuck in approval queue"                                                subColor="#B45309" borderColor="#F59E0B" />
-        <SummaryCard label="Paid this period" value={inr(paidAmt)}       sub={`${paidCount} CAs · ${Math.round(paidCount/totalCAs*100)}% conversion`}  subColor="#15803D" borderColor="#22C55E" />
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+        {[
+          { label: 'Total unpaid',      value: inr(totalUnpaid),  sub: `${totalCAs - paidCount} CAs · current period`,         subColor: '#1D4ED8' },
+          { label: 'Overdue',           value: inr(totalOverdue), sub: `${overdueCount} CAs past due date`,                          subColor: '#B91C1C' },
+          { label: 'Approval pending',  value: `${approvalHold}`, sub: 'bills stuck in approval queue',                              subColor: '#B45309' },
+          { label: 'Paid this period', value: inr(paidAmt), sub: `${paidCount} CAs · ${Math.round(paidCount/totalCAs*100)}% conversion`, subColor: '#15803D' },
+        ].map((k, i) => (
+          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+          </div>
+        ))}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
         <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px 18px' }}>
