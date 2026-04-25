@@ -366,7 +366,8 @@ function BasicSummary({ appState }: BasicSectionProps) {
               { label: 'Paid',    count: Math.round(totalCAs*0.60), pct: 60, color: '#22C55E', textColor: '#15803D' },
               { label: 'Pending', count: Math.round(totalCAs*0.25), pct: 25, color: '#F59E0B', textColor: '#B45309' },
               { label: 'On hold', count: Math.round(totalCAs*0.10), pct: 10, color: '#9CA3AF', textColor: '#6B7280' },
-              { label: 'Overdue', count: Math.round(totalCAs*0.05), pct: 5,  color: '#EF4444', textColor: '#B91C1C' },
+              { label: 'Overdue',   count: Math.round(totalCAs*0.05), pct: 5,  color: '#EF4444', textColor: '#B91C1C' },
+              { label: 'Adjusted', count: Math.round(totalCAs*0.04), pct: 4,  color: '#4F46E5', textColor: '#4338CA' },
             ].map((s, i, arr) => (
               <div key={s.label}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0' }}>
