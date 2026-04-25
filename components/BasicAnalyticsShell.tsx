@@ -428,7 +428,6 @@ function BasicSummary({ appState }: BasicSectionProps) {
         </div>
       </div>
 
-      <TopPerformers totalBill={totalBill} appState={appState} />
 
     </div>
   )
