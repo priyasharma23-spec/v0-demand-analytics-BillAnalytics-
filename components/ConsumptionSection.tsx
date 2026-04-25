@@ -468,16 +468,14 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
 return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
       {/* Section 1 — Summary metric cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        {summaryMetrics.map((m) => (
-          <SummaryCard
-            key={m.label}
-            label={m.label}
-            value={m.value}
-            sub={m.sub}
-            subColor={m.subColor}
-            borderColor="#2500D7"
-          />
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+        {summaryMetrics.map((m, i) => (
+          <div key={m.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{m.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{m.value}</div>
+            <div style={{ fontSize: '12px', color: m.subColor }}>{m.sub}</div>
+          </div>
         ))}
       </div>
 

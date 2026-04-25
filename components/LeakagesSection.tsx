@@ -279,11 +279,20 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
 
       {/* Summary metric cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total leakages"      value={inr(leakSummary.totalLeak)}   sub={`${Math.round(leakSummary.totalLeak   / Math.max(leakSummary.totalBill, 1) * 100)}% of total bill`}  subColor="#A32D2D" borderColor="#2500D7" />
-        <SummaryCard label="Excess demand"        value={inr(leakSummary.totalExcess)} sub={`${Math.round(leakSummary.totalExcess / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#A32D2D" borderColor="#2500D7" />
-        <SummaryCard label="PF penalty"           value={inr(leakSummary.totalPF)}     sub={`${Math.round(leakSummary.totalPF     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#854F0B" borderColor="#2500D7" />
-        <SummaryCard label="Late payment charges" value={inr(leakSummary.totalLP)}     sub={`${Math.round(leakSummary.totalLP     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`}    subColor="#854F0B" borderColor="#2500D7" />
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+        {[
+          { label: 'Total leakages',      value: inr(leakSummary.totalLeak),   sub: `${Math.round(leakSummary.totalLeak   / Math.max(leakSummary.totalBill, 1) * 100)}% of total bill`,  subColor: '#B91C1C' },
+          { label: 'Excess demand',        value: inr(leakSummary.totalExcess), sub: `${Math.round(leakSummary.totalExcess / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`,    subColor: '#B91C1C' },
+          { label: 'PF penalty',           value: inr(leakSummary.totalPF),     sub: `${Math.round(leakSummary.totalPF     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`,    subColor: '#B45309' },
+          { label: 'Late payment charges', value: inr(leakSummary.totalLP),     sub: `${Math.round(leakSummary.totalLP     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`,    subColor: '#B45309' },
+        ].map((k, i) => (
+          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* Stacked leakage chart */}

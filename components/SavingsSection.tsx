@@ -263,11 +263,20 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
 
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total bill generated"    value={inr(summary.totalBillGenerated)}    sub={`across ${summary.totalPeriods ?? 12} billing periods`}           subColor="#858ea2" borderColor="#2500D7" />
-        <SummaryCard label="Paid via platform"        value={inr(summary.paidViaPlatform)}        sub={`${summary.paidViaPlatformPct}% of total bill`}                   subColor="#185FA5" borderColor="#185FA5" />
-        <SummaryCard label="Early payment benefit"    value={inr(summary.earnedEarlyBenefit)}     sub={`earned across ${summary.earlyBenefitBills} billing periods`}      subColor="#3B6D11" borderColor="#1A7A45" />
-        <SummaryCard label="Missed digital discount"  value={inr(summary.missedDigitalDiscount)}  sub="bills paid outside platform · 0.75% discount foregone"            subColor="#A32D2D" borderColor="#E24B4A" />
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+        {[
+          { label: 'Total bill generated',   value: inr(summary.totalBillGenerated),   sub: `across ${summary.totalPeriods ?? 12} billing periods`,          subColor: '#6B7280' },
+          { label: 'Paid via platform',       value: inr(summary.paidViaPlatform),       sub: `${summary.paidViaPlatformPct}% of total bill`,                  subColor: '#1D4ED8' },
+          { label: 'Early payment benefit',   value: inr(summary.earnedEarlyBenefit),    sub: `earned across ${summary.earlyBenefitBills} billing periods`,     subColor: '#15803D' },
+          { label: 'Missed digital discount', value: inr(summary.missedDigitalDiscount), sub: 'bills paid outside platform · 0.75% discount foregone',    subColor: '#B91C1C' },
+        ].map((k, i) => (
+          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* Charts */}

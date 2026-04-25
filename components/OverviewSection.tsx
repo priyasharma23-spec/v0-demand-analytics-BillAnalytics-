@@ -423,16 +423,14 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
   return (
     <div style={{ padding: '20px', background: '#f5f6fa', minHeight: '100vh' }}>
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
         {summaryCards.map((card, i) => (
-          <SummaryCard
-            key={i}
-            label={card.label}
-            value={card.value}
-            sub={card.sub}
-            subColor={card.subColor}
-            borderColor="#2500D7"
-          />
+          <div key={i} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{card.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{card.value}</div>
+            <div style={{ fontSize: '12px', color: card.subColor }}>{card.sub}</div>
+          </div>
         ))}
       </div>
       <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>

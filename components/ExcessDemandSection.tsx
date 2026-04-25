@@ -249,11 +249,20 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
   return (
     <div>
       {/* Excess Demand Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '20px', paddingLeft: '24px', paddingRight: '24px', paddingTop: '16px', paddingBottom: '16px' }}>
-        <SummaryCard label="Contracted demand" value={`${edMetrics.avgCont} kVA`} sub="Current level" subColor="#185FA5" borderColor="#2500D7" />
-        <SummaryCard label="Avg max demand (MDI)" value={`${edMetrics.avgMDI} kVA`} sub={edMetrics.avgMDI > edMetrics.avgCont ? 'Over contract' : 'within contract'} subColor={edMetrics.avgMDI > edMetrics.avgCont ? '#A32D2D' : '#3B6D11'} borderColor="#2500D7" />
-        <SummaryCard label="Peak recorded" value={`${edMetrics.peakMDI} kVA`} sub="Aug 2024" subColor="#A32D2D" borderColor="#2500D7" />
-        <SummaryCard label="Excess charges (YTD)" value={inr(edMetrics.totalExcess)} sub={`${edMetrics.overN} of 12 months billed`} subColor={edMetrics.overPct > 50 ? '#A32D2D' : '#633806'} borderColor="#2500D7" />
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '20px' }}>
+        {[
+          { label: 'Contracted demand',    value: `${edMetrics.avgCont} kVA`,    sub: 'Current level',                                                                             subColor: '#1D4ED8' },
+          { label: 'Avg max demand (MDI)', value: `${edMetrics.avgMDI} kVA`,    sub: edMetrics.avgMDI > edMetrics.avgCont ? 'Over contract' : 'Within contract',                  subColor: edMetrics.avgMDI > edMetrics.avgCont ? '#B91C1C' : '#15803D' },
+          { label: 'Peak recorded',        value: `${edMetrics.peakMDI} kVA`,   sub: 'Aug 2024',                                                                                   subColor: '#B91C1C' },
+          { label: 'Excess charges (YTD)', value: inr(edMetrics.totalExcess),   sub: `${edMetrics.overN} of 12 months billed`,                                                     subColor: edMetrics.overPct > 50 ? '#B91C1C' : '#B45309' },
+        ].map((k, i) => (
+          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+          </div>
+        ))}
       </div>
 
       <div className="chart-card px-6 py-6 mb-6">
