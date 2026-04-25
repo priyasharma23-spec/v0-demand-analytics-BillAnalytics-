@@ -27,7 +27,7 @@ export default function BasicAnalyticsShell({ appState, section: sectionProp }: 
   const setSection = setSectionState
 
   return (
-    <div style={{ background: '#f0f5fa', minHeight: '100vh' }}>
+    <div style={{ background: '#F3F4F6', minHeight: '100vh' }}>
 
 
       {/* Section content */}
@@ -223,18 +223,20 @@ function BasicSummary({ appState }: BasicSectionProps) {
         </button>
       </div>
 
-      {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
-        <SummaryCard label="Total portfolio value" value={inr(totalBill)}  sub={`${totalStates} states · ${totalCAs} active CAs`}        subColor="#858ea2" borderColor="#1c5af4" />
-        <SummaryCard label="Avg bill per CA"        value={inr(avgBill)}   sub="per billing period · all CAs"                              subColor="#858ea2" borderColor="#1c5af4" />
-        <SummaryCard
-          label="Period-over-Period Trend"
-          value={`${momChange > 0 ? '+' : ''}${momChange}%`}
-          sub={`${momLabel} vs ${momPrevLabel}${appState.stateF !== 'all' ? ` · ${appState.stateF}` : ''}`}
-          subColor={momChange > 5 ? '#A32D2D' : momChange < 0 ? '#3B6D11' : '#854F0B'}
-          borderColor={momChange > 5 ? '#E24B4A' : momChange < 0 ? '#1A7A45' : '#EF9F27'}
-        />
-        <SummaryCard label="Bills due this month"   value={`${billsDueCount}`} sub={`${inr(billsDueAmount)} · next 30 days`}              subColor="#A32D2D" borderColor="#E24B4A" />
+      {/* KPI bar — single unified card with dividers */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)', display: 'flex', marginBottom: '16px' }}>
+        {[
+          { label: 'Portfolio value',       value: inr(totalBill),                                                                          sub: `${totalStates} states · ${totalCAs} active CAs`,                                                 accent: '#4F46E5' },
+          { label: 'Avg bill per CA',        value: inr(avgBill),                                                                            sub: 'per billing period',                                                                               accent: '#111827' },
+          { label: 'Period over period',     value: `${momChange > 0 ? '+' : ''}${momChange}%`,                                            sub: `${momLabel} vs ${momPrevLabel}${appState.stateF !== 'all' ? ' · ' + appState.stateF : ''}`,   accent: momChange > 0 ? '#15803D' : momChange < 0 ? '#15803D' : '#B45309' },
+          { label: 'Due this month',         value: `${billsDueCount}`,                                                                    sub: `${inr(billsDueAmount)} · next 30 days`,                                                          accent: '#B45309' },
+        ].map((kpi, i) => (
+          <div key={kpi.label} style={{ flex: i === 0 ? 1.4 : 1, padding: '20px 24px', borderLeft: i > 0 ? '1px solid #E5E7EB' : 'none' }}>
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{kpi.label}</div>
+            <div style={{ fontSize: '26px', fontWeight: 700, color: kpi.accent, letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{kpi.value}</div>
+            <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{kpi.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* Two column layout */}
