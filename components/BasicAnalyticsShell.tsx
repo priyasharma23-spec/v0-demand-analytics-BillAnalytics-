@@ -212,12 +212,12 @@ function BasicSummary({ appState }: BasicSectionProps) {
           },
         },
       })
-    }, 50)
+    }, 100)
     return () => {
       clearTimeout(timer)
       if (spendTrendChart.current) spendTrendChart.current.destroy()
     }
-  }, [])
+  }, [appState, labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx, caCounts])
 
   return (
     <div>
