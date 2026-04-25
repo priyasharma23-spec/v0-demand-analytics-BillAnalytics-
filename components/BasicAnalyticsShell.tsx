@@ -510,17 +510,20 @@ function BasicLocations({ appState }: BasicSectionProps) {
           <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(topItem as any).name ?? (topItem as any).state ?? '—'}</div>
           <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{inr(topItem.total)} · {Math.round(topItem.total/portfolioTotal*100)}% of portfolio</div>
         </div>
-        <div style={{ flex: 1, padding: '20px 24px', borderLeft: '1px solid #F3F4F6' }}>
+        <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
           <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Avg spend per location</div>
           <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{inr(avgSpend)}</div>
           <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{showBranches ? appState.stateF + ' · current period' : 'across all states · current period'}</div>
         </div>
-        <div style={{ flex: 1, padding: '20px 24px', borderLeft: '1px solid #F3F4F6' }}>
+        <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
           <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top branch</div>
           <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{branchRows[0]?.name ?? '—'}</div>
           <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{branchRows[0] ? '₹' + (branchRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
         </div>
-        <div style={{ flex: 1, padding: '20px 24px', borderLeft: '1px solid #F3F4F6' }}>
+        <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
           <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top CA</div>
           <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caRows[0]?.name ?? '—'}</div>
           <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{caRows[0] ? '₹' + (caRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
