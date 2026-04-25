@@ -50,6 +50,9 @@ export default function DashboardNav({
   const [localCA, setLocalCA] = useState('');
   const [localBillCategory, setLocalBillCategory] = useState('all');
   const [period, setPeriod] = useState('1Y');
+  const [dateRange, setDateRange] = useState('1Y');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
   const sections = [
     { id: 'overview', label: 'Overview' },
@@ -265,26 +268,30 @@ export default function DashboardNav({
             <input placeholder="Search state, branch, or CA number…" style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '13px', color: '#111827', width: '100%', fontFamily: 'inherit' }} />
           </div>
           {(() => {
-            const [dateRange, setDateRange] = React.useState('1Y')
-            const dateLabel = dateRange === '1M' ? 'Last 1 month' : dateRange === '3M' ? 'Last 3 months' : dateRange === '1Y' ? 'Apr 2024 – Mar 2025' : 'Custom'
+            const dateLabel = dateRange === '1M' ? 'Last 1 month' : dateRange === '3M' ? 'Last 3 months' : dateRange === 'Custom' ? (customFrom && customTo ? `${customFrom} – ${customTo}` : 'Custom range') : 'Apr 2024 – Mar 2025'
             return (
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', border: '1.5px solid #E5E7EB', borderRadius: '8px', padding: '7px 12px', fontSize: '12.5px', color: '#6B7280', whiteSpace: 'nowrap' }}>
-                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round"><rect x="1" y="2" width="12" height="11" rx="2"/><path d="M1 6h12M4 1v2M10 1v2"/></svg>
-                  <span>{dateLabel}</span>
-                  <svg width="10" height="10" viewBox="0 0 13 13" fill="none" stroke="#6B7280" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
+              <>
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', border: '1.5px solid #E5E7EB', borderRadius: '8px', padding: '7px 12px', fontSize: '12.5px', color: '#6B7280', whiteSpace: 'nowrap' }}>
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round"><rect x="1" y="2" width="12" height="11" rx="2"/><path d="M1 6h12M4 1v2M10 1v2"/></svg>
+                    <span>{dateLabel}</span>
+                    <svg width="10" height="10" viewBox="0 0 13 13" fill="none" stroke="#6B7280" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
+                  </div>
+                  <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%' }}>
+                    <option value="1M">Last 1 month</option>
+                    <option value="3M">Last 3 months</option>
+                    <option value="1Y">Last 1 year</option>
+                    <option value="Custom">Custom</option>
+                  </select>
                 </div>
-                <select
-                  value={dateRange}
-                  onChange={e => setDateRange(e.target.value)}
-                  style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%' }}
-                >
-                  <option value="1M">Last 1 month</option>
-                  <option value="3M">Last 3 months</option>
-                  <option value="1Y">Last 1 year</option>
-                  <option value="Custom">Custom</option>
-                </select>
-              </div>
+                {dateRange === 'Custom' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, background: '#fff', border: '1.5px solid #E5E7EB', borderRadius: '8px', padding: '7px 12px', fontSize: '12.5px', color: '#6B7280' }}>
+                    <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} style={{ border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: '12.5px', color: '#6B7280', background: 'transparent', cursor: 'pointer' }}/>
+                    <span style={{ color: '#9CA3AF' }}>–</span>
+                    <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} style={{ border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: '12.5px', color: '#6B7280', background: 'transparent', cursor: 'pointer' }}/>
+                  </div>
+                )}
+              </>
             )
           })()}
           <button style={{ background: '#4F46E5', color: '#fff', border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>Apply</button>
