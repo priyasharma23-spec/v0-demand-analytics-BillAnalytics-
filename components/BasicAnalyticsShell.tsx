@@ -102,6 +102,17 @@ function BasicSummary({ appState }: BasicSectionProps) {
     cas:   (BRANCHES[st] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0),
   })).sort((a, b) => b.total - a.total)
 
+  // Top states by spend
+  const topStateRows = STATES.map(st => ({
+    name: st,
+    branches: (BRANCHES[st] ?? []).length,
+    cas: (BRANCHES[st] ?? []).reduce((s: number, br: string) => s + (CAS[br]?.length ?? 0), 0),
+    total: getStateBills(st, 'monthly').reduce((a: number, d: any) => a + d.totalBill, 0),
+  })).sort((a: any, b: any) => b.total - a.total).slice(0, 8)
+
+  // Monthly data for chart
+  const monthlyData = data
+
   // Count CAs that have a bill each month
   const caCounts = data.map((_, mi) =>
     allCAs.filter(ca => {
@@ -240,146 +251,184 @@ function BasicSummary({ appState }: BasicSectionProps) {
         ))}
       </div>
 
-      {/* Two column layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+      {/* Row 2 — two column: left (chart + funnel + top states) | right (status panel) */}
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
 
-        {/* Monthly spend trend */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '4px', padding: '16px 18px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend trend</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
-          <div style={{ position: 'relative', width: '100%', height: '160px' }}>
-            <canvas ref={spendTrendRef}></canvas>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
-            {[
-              { label: 'Lowest month', value: inr(minVal), color: '#36b37e' },
-              { label: 'Monthly avg',  value: inr(Math.round(totalBill / data.length)), color: '#192744' },
-              { label: 'Peak month',   value: inr(maxVal), color: '#1c5af4' },
-            ].map(item => (
-              <div key={item.label} style={{ background: '#f5f6fa', borderRadius: '4px', padding: '10px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: item.color }}>{item.value}</div>
-                <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '2px' }}>{item.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Left column */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
 
-        {/* Payment status */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '4px', padding: '16px 18px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Payment status</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '16px' }}>Current period · {totalCAs} total CAs</div>
-          {[
-            { label: 'Paid',    count: paid,    pct: Math.round(paid/totalCAs*100),    color: '#36b37e', bg: '#e8f8f1' },
-            { label: 'Pending', count: pending, pct: Math.round(pending/totalCAs*100), color: '#f59e0b', bg: '#fef3c7' },
-            { label: 'Hold',    count: hold,    pct: Math.round(hold/totalCAs*100),    color: '#8b5cf6', bg: '#f3e8ff' },
-            { label: 'Overdue', count: overdue, pct: Math.round(overdue/totalCAs*100), color: '#ec2127', bg: '#fce8e8' },
-          ].map(item => (
-            <div key={item.label} style={{ marginBottom: '14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }} />
-                  <span style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>{item.label}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>{item.count}</span>
-                  <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '4px', background: item.bg, color: item.color, fontWeight: 500 }}>{item.pct}%</span>
-                </div>
-              </div>
-              <div style={{ height: '6px', borderRadius: '3px', background: '#f3f4f6', overflow: 'hidden' }}>
-                <div style={{ height: '100%', borderRadius: '3px', background: item.color, width: `${item.pct}%` }} />
-              </div>
+          {/* Monthly spend trend */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '2px' }}>Monthly spend trend</div>
+            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
+            <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+              <canvas ref={spendTrendRef}></canvas>
             </div>
-          ))}
-          <div style={{ marginTop: '8px', padding: '10px 12px', background: '#fce8e8', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', color: '#ec2127', fontWeight: 500 }}>⚠ {overdue} CAs overdue</span>
-            <span style={{ fontSize: '11px', color: '#ec2127' }}>Immediate attention needed</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Top performers ��� tabbed: States / Branches / CAs */}
-      {/* Bill generation flow */}
-      {(() => {
-        const allCAsArr = Object.values(CAS).flat()
-        const total = allCAsArr.length
-        const generated    = Math.round(total * 0.757)
-        const paid         = Math.round(total * 0.60)
-        const notGenerated = total - generated
-        const unpaid       = generated - paid
-        const approvalHold = Math.round(total * 0.068)
-        const convPct      = 60
-        const genPct       = 75.7
-        const paidPct      = 60.0
-        const rows = [
-          { label: 'Active CAs',      count: total,     pct: 100,     fillColor: '#C47A00', chipColor: '#A05E00', drop: null as number | null },
-          { label: 'Bills generated', count: generated, pct: genPct,  fillColor: '#1755C8', chipColor: '#0d3d8a', drop: notGenerated as number | null },
-          { label: 'Bills paid',      count: paid,      pct: paidPct, fillColor: '#1A7A45', chipColor: '#145c34', drop: unpaid as number | null },
-        ]
-        return (
-          <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '16px' }}>
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill generation flow</div>
-              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Active CAs → Generated → Paid progression</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px', padding: '12px 16px', background: '#f9f9f9', borderRadius: '10px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span style={{ fontSize: '22px', fontWeight: 700, color: '#C47A00' }}>{total}</span>
-                <span style={{ fontSize: '13px', color: '#858ea2' }}>active CAs</span>
-              </div>
-              <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1755C8' }}>{generated}</span>
-                <span style={{ fontSize: '13px', color: '#858ea2' }}>generated</span>
-                <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−{notGenerated}</span>
-              </div>
-              <span style={{ color: '#d0d0d0', fontSize: '18px' }}>→</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1A7A45' }}>{paid}</span>
-                <span style={{ fontSize: '13px', color: '#858ea2' }}>paid</span>
-                <span style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500 }}>−{unpaid}</span>
-              </div>
-              <div style={{ marginLeft: 'auto', fontSize: '13px', color: '#858ea2' }}>
-                Overall conversion <span style={{ fontSize: '15px', fontWeight: 700, color: '#1A7A45', marginLeft: '4px' }}>{convPct}%</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '14px' }}>
-              {rows.map(row => (
-                <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '12px', color: '#858ea2', fontWeight: 500, width: '110px', flexShrink: 0 }}>{row.label}</div>
-                  <div style={{ flex: 1, height: '36px', background: '#e8e8e8', borderRadius: '20px', overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ width: row.pct + '%', height: '100%', background: row.fillColor, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '8px' }}>
-                      <div style={{ height: '26px', padding: '0 12px', borderRadius: '13px', fontSize: '13px', fontWeight: 600, color: '#fff', background: row.chipColor, display: 'flex', alignItems: 'center' }}>
-                        {row.count}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744', minWidth: '36px', textAlign: 'right' }}>{row.pct}%</div>
-                  {row.drop !== null && (
-                    <div style={{ fontSize: '12px', color: '#E24B4A', fontWeight: 500, minWidth: '48px', textAlign: 'right' }}>−{row.drop}</div>
-                  )}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+              {[
+                { label: 'Lowest month', value: inr(Math.min(...monthlyData.map((d:any)=>d.totalBill))), color: '#15803D' },
+                { label: 'Monthly avg',  value: inr(Math.round(monthlyData.reduce((a:any,d:any)=>a+d.totalBill,0)/monthlyData.length)), color: '#111827' },
+                { label: 'Peak month',   value: inr(Math.max(...monthlyData.map((d:any)=>d.totalBill))), color: '#1D4ED8' },
+              ].map(s => (
+                <div key={s.label} style={{ flex: 1, background: '#F3F4F6', borderRadius: '8px', padding: '12px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: s.color }}>{s.value}</div>
+                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '3px' }}>{s.label}</div>
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {[
-                  { label: 'Not generated', val: notGenerated, color: '#E24B4A', bg: '#FEF0F0' },
-                  { label: 'Unpaid',        val: unpaid,       color: '#C47A00', bg: '#FFF8ED' },
-                  { label: 'Approval hold', val: approvalHold, color: '#C47A00', bg: '#FFF8ED' },
-                ].map(e => (
-                  <div key={e.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: e.bg, borderRadius: '20px', fontSize: '12px' }}>
-                    <span style={{ fontWeight: 600, color: e.color }}>{e.val}</span>
-                    <span style={{ color: e.color, fontWeight: 500 }}>{e.label}</span>
+          </div>
+
+          {/* Bill generation funnel */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Bill generation funnel</div>
+              <div style={{ fontSize: '12px', color: '#6B7280' }}>Overall conversion: <span style={{ fontWeight: 700, color: '#15803D' }}>60%</span></div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '16px' }}>
+              {[
+                { label: 'Active CAs',      value: totalCAs,                          pct: 100,  color: '#4F46E5', bg: '#EEF2FF', bd: '#C7D2FE' },
+                { label: 'Bills generated', value: Math.round(totalCAs * 0.757),      pct: 75.7, color: '#1D4ED8', bg: '#EFF6FF', bd: '#BFDBFE' },
+                { label: 'Bills paid',      value: Math.round(totalCAs * 0.60),       pct: 60,   color: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
+              ].map((step, i) => (
+                <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
+                  <div style={{ flex: 1, background: step.bg, border: `1px solid ${step.bd}`, borderRadius: '10px', padding: '12px 14px', position: 'relative' }}>
+                    <div style={{ fontSize: '28px', fontWeight: 700, color: step.color, lineHeight: 1 }}>{step.value}</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: step.color, marginTop: '5px' }}>{step.label}</div>
+                    <div style={{ fontSize: '11px', color: step.color, opacity: 0.55, marginTop: '2px' }}>{step.pct}% of {totalCAs}</div>
+                    {i < 2 && (
+                      <div style={{ position: 'absolute', top: '50%', right: '-22px', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', zIndex: 2 }}>
+                        <div style={{ background: i === 0 ? '#FFFBEB' : '#FEF2F2', border: `1px solid ${i === 0 ? '#FDE68A' : '#FECACA'}`, borderRadius: '5px', padding: '1px 5px', fontSize: '10px', fontWeight: 700, color: i === 0 ? '#B45309' : '#B91C1C', whiteSpace: 'nowrap' }}>
+                          −{i === 0 ? Math.round(totalCAs * 0.243) : Math.round(totalCAs * 0.157)}
+                        </div>
+                        <div style={{ color: '#9CA3AF', fontSize: '12px' }}>→</div>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: '#1A7A45' }}>{convPct}% conversion</div>
+                  {i < 2 && <div style={{ width: '16px', flexShrink: 0 }}/>}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#F3F4F6', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9CA3AF', flexShrink: 0 }}/>
+              <div style={{ fontSize: '12px', color: '#6B7280' }}><span style={{ fontWeight: 600, color: '#111827' }}>{Math.round(totalCAs * 0.068)} CAs</span> on approval hold — excluded from paid count</div>
             </div>
           </div>
-        )
-      })()}
 
-            <TopPerformers totalBill={totalBill} appState={appState} />
+          {/* Top states by spend */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top states by spend</div>
+              <div style={{ fontSize: '12px', color: '#4F46E5', fontWeight: 600, cursor: 'pointer' }}>View all →</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {topStateRows.map((s: any, i: number) => (
+                <div key={s.name}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
+                    <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i+1}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{s.name}</div>
+                      <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{s.branches} branches · {s.cas} CAs</div>
+                      <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
+                        <div style={{ height: '100%', width: `${s.total / topStateRows[0].total * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{inr(s.total)}</div>
+                      <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{Math.round(s.total/totalBill*100)}%</div>
+                    </div>
+                  </div>
+                  {i < topStateRows.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right column — Status panel */}
+        <div style={{ width: '300px', flexShrink: 0, background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+          {/* Payment status */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Payment status</div>
+              <span style={{ fontSize: '11px', color: '#9CA3AF' }}>of {Math.round(totalCAs * 0.757)} approved</span>
+            </div>
+            <div style={{ display: 'flex', height: '6px', borderRadius: '99px', overflow: 'hidden', gap: '2px' }}>
+              {[
+                { pct: 60, color: '#22C55E' },
+                { pct: 25, color: '#F59E0B' },
+                { pct: 10, color: '#9CA3AF' },
+                { pct: 5,  color: '#EF4444' },
+              ].map((s, i) => <div key={i} style={{ width: s.pct+'%', background: s.color, borderRadius: '99px' }}/>)}
+            </div>
+            {[
+              { label: 'Paid',    count: Math.round(totalCAs*0.60), pct: 60, color: '#22C55E', textColor: '#15803D' },
+              { label: 'Pending', count: Math.round(totalCAs*0.25), pct: 25, color: '#F59E0B', textColor: '#B45309' },
+              { label: 'On hold', count: Math.round(totalCAs*0.10), pct: 10, color: '#9CA3AF', textColor: '#6B7280' },
+              { label: 'Overdue', count: Math.round(totalCAs*0.05), pct: 5,  color: '#EF4444', textColor: '#B91C1C' },
+            ].map((s, i, arr) => (
+              <div key={s.label}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0' }}>
+                  <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: s.color, flexShrink: 0 }}/>
+                  <div style={{ flex: 1, fontSize: '13px', fontWeight: 500, color: '#4F46E5', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: '#C7D2FE', textUnderlineOffset: '3px' }}>{s.label}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: s.textColor, lineHeight: 1 }}>{s.count}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF', width: '34px', textAlign: 'right' }}>{s.pct}%</div>
+                </div>
+                {i < arr.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ height: '1px', background: '#F3F4F6' }}/>
+
+          {/* Approval queue */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Approval queue</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              {[
+                { label: 'Pending',  count: 48,  textColor: '#B45309', bg: '#FFFBEB', bd: '#FDE68A' },
+                { label: 'Approved', count: 312, textColor: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
+                { label: 'On Hold',  count: 28,  textColor: '#6B7280', bg: '#F9FAFB', bd: '#E5E7EB' },
+                { label: 'Rejected', count: 12,  textColor: '#B91C1C', bg: '#FEF2F2', bd: '#FECACA' },
+              ].map(a => (
+                <div key={a.label} style={{ display: 'flex', alignItems: 'baseline', gap: '8px', padding: '10px 12px', borderRadius: '8px', background: a.bg, border: `1px solid ${a.bd}`, cursor: 'pointer' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: a.textColor, lineHeight: 1 }}>{a.count}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: a.textColor }}>{a.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ height: '1px', background: '#F3F4F6' }}/>
+
+          {/* Action required */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Action required</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              {[
+                { label: 'Fetch failed',    sub: 'BBPS error · payment blocked',  count: 34,  tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+                { label: 'Not generated',   sub: 'Active CAs · no bill yet',      count: 170, tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+                { label: 'Copy pending',    sub: 'Bill copy being fetched',        count: 62,  tone: { bg: '#EFF6FF', bd: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+              ].map(a => (
+                <div key={a.label} style={{ padding: '10px 12px', background: a.tone.bg, border: `1px solid ${a.tone.bd}`, borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '3px', alignSelf: 'stretch', borderRadius: '2px', background: a.tone.accent, flexShrink: 0 }}/>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: a.tone.text }}>{a.label}</div>
+                      <div style={{ fontSize: '11px', color: a.tone.text, opacity: 0.7 }}>{a.sub}</div>
+                    </div>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: a.tone.text, lineHeight: 1 }}>{a.count}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <TopPerformers totalBill={totalBill} appState={appState} />
 
     </div>
   )
