@@ -581,8 +581,19 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
                 <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(row as any).sub}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
+                    {rankTab === 'branches' && <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{row.cas} CAs</div>}
+                    {rankTab === 'cas' && <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{(row as any).sub}</div>}
+                  </div>
+                  {rankTab === 'states' && (
+                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>
+                      {(BRANCHES[(row as any).state ?? row.name] ?? []).length} branches · {row.cas} CAs
+                    </div>
+                  )}
+                  {rankTab === 'branches' && (
+                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(row as any).sub}</div>
+                  )}
                   <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
                     <div style={{ height: '100%', width: `${row.total / Math.max(arr[0].total, 1) * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
                   </div>
