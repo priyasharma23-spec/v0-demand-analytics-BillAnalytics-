@@ -102,12 +102,11 @@ const overdue      = Math.round(totalUnpaid * 0.30)
 const overdueAmt   = Math.round(totalUnpaid * 0.30 * 185000)
 
 const summaryMetrics = [
-  { label: 'Active billers',    value: `${totalBillers}`,          sub: `across ${STATES.length} states`,          subColor: '#185FA5',  borderColor: '#2500D7' },
-  { label: 'Avg conversion rate', value: `${FUNNEL.conversionPct}%`, sub: 'bills generated → paid',                subColor: '#185FA5',  borderColor: '#2500D7' },
-  { label: 'Approval pending',  value: `${FUNNEL.approvalHold}`,   sub: 'bills stuck in approval queue',           subColor: '#854F0B',  borderColor: '#EF9F27' },
-  { label: 'Overdue',           value: `${overdue} CAs`,           sub: inr(overdueAmt) + ' · not yet paid',       subColor: '#A32D2D',  borderColor: '#E24B4A' },
+  { label: 'Active billers',     value: `${totalBillers}`,           valueSub: `across ${STATES.length} states`,  subColor: '#1D4ED8', borderColor: '#2500D7', detail: `Registered billers across your portfolio. ${totalBillers} active with at least 1 CA mapped.`, action: 'View billers' },
+  { label: 'Avg conversion rate', value: `${FUNNEL.conversionPct}%`,  valueSub: 'bills generated → paid',      subColor: '#1D4ED8', borderColor: '#2500D7', detail: 'Percentage of generated bills that have been paid in the current period.',                    action: 'View funnel'  },
+  { label: 'Approval pending',   value: `${FUNNEL.approvalHold}`,    valueSub: 'bills in approval queue',          subColor: '#B45309', borderColor: '#EF9F27', detail: 'Bills awaiting approval before payment can be initiated. Review and clear queue.',             action: 'Review queue' },
+  { label: 'Overdue',            value: `${overdue} CAs`,            valueSub: inr(overdueAmt),                    subColor: '#B91C1C', borderColor: '#E24B4A', detail: 'CAs with bills past due date. Immediate action needed to avoid late payment charges.',         action: 'View overdue' },
 ]
-
 const dbcFunnel = {
   optedIn:     totalOpted,
   received:    totalReceived,
@@ -127,13 +126,22 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
       {/* Summary cards */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
         {summaryMetrics.map((m, i) => (
-          <div key={m.label} style={{ flex: 1, background: '#fff', border: `1px solid ${m.borderColor}22`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div key={m.label}
+            style={{ flex: 1, background: '#fff', border: `1px solid ${m.borderColor}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 0 3px ${m.borderColor}18` }}
+            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: m.borderColor, flexShrink: 0 }} />
               <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{m.label}</div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 700, color: m.subColor, lineHeight: 1 }}>{m.value}</div>
-            <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5 }}>{m.sub}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+              <div style={{ fontSize: '32px', fontWeight: 700, color: m.subColor, lineHeight: 1 }}>{m.value}</div>
+              {m.valueSub && <div style={{ fontSize: '12px', color: m.subColor, opacity: 0.65, fontWeight: 500 }}>{m.valueSub}</div>}
+            </div>
+            <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5, flex: 1 }}>{m.detail}</div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: m.borderColor, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+              {m.action} <span style={{ fontSize: '14px' }}>→</span>
+            </div>
           </div>
         ))}
       </div>
