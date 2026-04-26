@@ -1496,7 +1496,6 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             </tbody>
           </table>
         </div>
-        </div>
       </div>
     </div>
   )
