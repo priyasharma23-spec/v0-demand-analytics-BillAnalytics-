@@ -554,71 +554,50 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       )}
 
       {/* Ranked table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Top Contributors (by Total Bill)</div>
-          </div>
-          <div style={{ display: 'flex', background: '#f5f6fa', borderRadius: '6px', padding: '2px', gap: '2px' }}>
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top by spend</div>
+          <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: '8px', padding: '2px', gap: '2px' }}>
             {([
-              { id: 'states',   label: 'By State'   },
-              { id: 'branches', label: 'By Branch'  },
-              { id: 'cas',      label: 'By CA'      },
+              { id: 'states',   label: 'State'   },
+              { id: 'branches', label: 'Branch'  },
+              { id: 'cas',      label: 'CA'      },
             ] as const).map(t => (
               <button key={t.id} onClick={() => setRankTab(t.id)} style={{
-                padding: '4px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 500,
+                padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 500,
                 border: 'none', cursor: 'pointer',
                 background: rankTab === t.id ? '#fff' : 'transparent',
-                color: rankTab === t.id ? '#192744' : '#858ea2',
-                boxShadow: rankTab === t.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                color: rankTab === t.id ? '#111827' : '#6B7280',
+                boxShadow: rankTab === t.id ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
               }}>
                 {t.label}
               </button>
             ))}
           </div>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-          <thead>
-            <tr>
-              {['#', rankTab === 'states' ? 'State' : rankTab === 'branches' ? 'Branch' : 'CA Number', 'CAs', 'Total bill', 'Avg bill', 'Change', 'Trend'].map(h => (
-                <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid #f3f4f6', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {(rankTab === 'states' ? locationRows : rankTab === 'branches' ? branchRows : caRows).map((row, i) => (
-              <tr key={row.name}
-                onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f5f6fa'}
-                onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
-                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6', color: i < 3 ? '#1c5af4' : '#858ea2', fontWeight: 700 }}>{i + 1}</td>
-                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6' }}>
-                  <div style={{ fontWeight: 500, color: '#192744', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
-                  <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '1px' }}>{(row as any).sub}</div>
-                </td>
-                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6', color: '#858ea2' }}>{row.cas}</td>
-                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6', fontWeight: 600, color: '#192744' }}>₹{(row.total / 100000).toFixed(1)}L</td>
-                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6', color: '#858ea2' }}>₹{(row.total / Math.max(row.cas, 1) / 100000).toFixed(1)}L</td>
-                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 500, padding: '2px 8px', borderRadius: '4px',
-                    background: row.yoy > 10 ? '#fce8e8' : row.yoy < -10 ? '#fce8e8' : '#f5f5f4',
-                    color: row.yoy > 10 ? '#ec2127' : row.yoy < -10 ? '#ec2127' : '#6b6b67' }}>
-                    {row.yoy > 0 ? '+' : ''}{row.yoy}%
-                  </span>
-                </td>
-                <td style={{ padding: '10px 10px', borderBottom: '1px solid #f3f4f6' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 8px', borderRadius: '4px',
-                    background: row.isOutlier ? (row.yoy > 0 ? '#fce8e8' : '#fce8e8') : '#e8f8f1',
-                    color: row.isOutlier ? '#ec2127' : '#36b37e' }}>
-                    {row.isOutlier ? (row.yoy > 0 ? '⚠ Spike' : '⚠ Drop') : '✓ Normal'}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {(rankTab === 'states' ? locationRows : rankTab === 'branches' ? branchRows : caRows).map((row, i, arr) => (
+            <div key={row.name}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
+                <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(row as any).sub}</div>
+                  <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
+                    <div style={{ height: '100%', width: `${row.total / Math.max(arr[0].total, 1) * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{inr(row.total)}</div>
+                  <div style={{ fontSize: '11px', color: row.yoy > 10 ? '#B91C1C' : row.yoy < -10 ? '#B91C1C' : '#9CA3AF' }}>{row.yoy > 0 ? '+' : ''}{row.yoy}% YoY</div>
+                </div>
+              </div>
+              {i < arr.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Top states by spend */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px', marginTop: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
           <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top states by spend</div>
