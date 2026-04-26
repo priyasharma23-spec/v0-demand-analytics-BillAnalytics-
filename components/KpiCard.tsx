@@ -8,36 +8,24 @@ interface KpiCardProps {
 export function KpiCard({ variant, label, value, desc }: KpiCardProps) {
   const variantStyles = {
     danger: {
-      background: '#fce8e8',
-      borderColor: '#f5d0d0',
-      label: '#8b2323',
-      value: '#d63031',
-      desc: '#8b2323',
-      icon: '🔴',
+      bg: '#FEF2F2',
+      border: '#FECACA',
+      text: '#B91C1C',
     },
     warn: {
-      background: '#fff4e6',
-      borderColor: '#ffe0b3',
-      label: '#b87400',
-      value: '#e8860e',
-      desc: '#b87400',
-      icon: '🟠',
+      bg: '#FFFBEB',
+      border: '#FDE68A',
+      text: '#B45309',
     },
     good: {
-      background: '#e8f8f1',
-      borderColor: '#c8e6d7',
-      label: '#22863a',
-      value: '#28a745',
-      desc: '#22863a',
-      icon: '🟢',
+      bg: '#F0FDF4',
+      border: '#BBF7D0',
+      text: '#15803D',
     },
     info: {
-      background: '#e8f4fd',
-      borderColor: '#b5d4f4',
-      label: '#004c97',
-      value: '#2500d7',
-      desc: '#004c97',
-      icon: '🔵',
+      bg: '#EFF6FF',
+      border: '#BFDBFE',
+      text: '#1D4ED8',
     },
   };
 
@@ -46,27 +34,22 @@ export function KpiCard({ variant, label, value, desc }: KpiCardProps) {
   return (
     <div
       style={{
-        background: style.background,
-        borderTop: `1px solid ${style.borderColor}`,
-        borderRight: `1px solid ${style.borderColor}`,
-        borderBottom: `1px solid ${style.borderColor}`,
-        borderLeft: `4px solid ${style.borderColor}`,
-        borderRadius: '8px',
-        padding: '20px',
+        background: style.bg,
+        border: `1px solid ${style.border}`,
+        borderRadius: '12px',
+        padding: '16px 18px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
-        fontFamily: '"Inter", sans-serif',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        gap: '8px',
       }}
     >
       <div
         style={{
-          fontSize: '12px',
+          fontSize: '11px',
           fontWeight: 600,
-          color: style.label,
+          color: '#6B7280',
           textTransform: 'uppercase',
-          letterSpacing: '0.5px',
+          letterSpacing: '0.07em',
         }}
       >
         {label}
@@ -75,7 +58,7 @@ export function KpiCard({ variant, label, value, desc }: KpiCardProps) {
         style={{
           fontSize: '28px',
           fontWeight: 700,
-          color: style.value,
+          color: style.text,
           lineHeight: '1.2',
         }}
       >
@@ -83,9 +66,8 @@ export function KpiCard({ variant, label, value, desc }: KpiCardProps) {
       </div>
       <div
         style={{
-          fontSize: '13px',
-          fontWeight: 500,
-          color: style.desc,
+          fontSize: '12px',
+          color: '#6B7280',
           lineHeight: '1.4',
         }}
       >

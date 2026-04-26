@@ -132,7 +132,7 @@ export default function AnalyticsPage() {
                     {['summary','locations','trends','billers'].includes(activeSection) && (
                       <BasicAnalyticsShell appState={appState} section={activeSection} analyticsMode='advanced' />
                     )}
-                    {activeSection === 'billers' && <BillersSection appState={appState} onMultiBillReview={() => setMultiBillReview(true)} />}
+
                     {activeSection === 'excess-demand' && <ExcessDemandSection appState={appState} />}
                     {activeSection === 'consumption' && <ConsumptionSection appState={appState} />}
                     {activeSection === 'leakages' && <LeakagesSection />}
