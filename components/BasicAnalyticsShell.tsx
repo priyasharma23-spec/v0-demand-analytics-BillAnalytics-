@@ -8,6 +8,7 @@ import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills, getC
 interface BasicAnalyticsShellProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
   section?: string
+  analyticsMode?: 'basic' | 'advanced'
 }
 
 type BasicSectionProps = {
@@ -21,7 +22,7 @@ const BASIC_SECTIONS = [
   { id: 'billers',   label: 'Billers'    },
 ]
 
-export default function BasicAnalyticsShell({ appState, section: sectionProp }: BasicAnalyticsShellProps) {
+export default function BasicAnalyticsShell({ appState, section: sectionProp, analyticsMode = 'basic' }: BasicAnalyticsShellProps) {
   const [sectionState, setSectionState] = useState('summary')
   const section = sectionProp ?? sectionState
   const setSection = setSectionState
@@ -32,10 +33,10 @@ export default function BasicAnalyticsShell({ appState, section: sectionProp }: 
 
       {/* Section content */}
       <div style={{ padding: '20px' }}>
-        {section === 'summary' && <BasicSummary appState={appState} />}
-        {section === 'locations' && <BasicLocations appState={appState} />}
+        {section === 'summary' && <BasicSummary appState={appState} analyticsMode={analyticsMode} />}
+        {section === 'locations' && <BasicLocations appState={appState} analyticsMode={analyticsMode} />}
         {section === 'trends' && <BasicTrends appState={appState} />}
-        {section === 'billers' && <BasicBillers appState={appState} />}
+        {section === 'billers' && <BasicBillers appState={appState} analyticsMode={analyticsMode} />}
       </div>
     </div>
   )
@@ -70,7 +71,7 @@ function PlaceholderSection({ title, desc, bullets }: { title: string; desc: str
   )
 }
 
-function BasicSummary({ appState }: BasicSectionProps) {
+function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
   const [activeWeek, setActiveWeek] = useState<number | null>(null)
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const allCAs        = Object.values(CAS).flat()
@@ -391,7 +392,7 @@ function BasicSummary({ appState }: BasicSectionProps) {
   )
 }
 
-function BasicLocations({ appState }: BasicSectionProps) {
+function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
   const allCAs    = Object.values(CAS).flat()
   const totalCAs  = allCAs.length
   const showBranches = appState.stateF !== 'all'
@@ -1488,7 +1489,7 @@ function AnomalyCard({ a }: { a: { id: number; icon: string; iconColor: string; 
 }
 
 
-function BasicBillers({ appState }: BasicSectionProps) {
+function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
   const [activeWeek, setActiveWeek] = useState<number | null>(null)
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
 
