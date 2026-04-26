@@ -91,7 +91,7 @@ export default function AnalyticsPage() {
       {/* Section content */}
       <div className="content">
         {analyticsMode === 'basic' ? (
-          <BasicAnalyticsShell appState={appState} section={basicSection} analyticsMode={analyticsMode} />
+          <BasicAnalyticsShell appState={appState} section={basicSection} />
         ) : (
           <>
             {multiBillReview ? (
@@ -130,9 +130,6 @@ export default function AnalyticsPage() {
               <>
                 {activeProduct === 'bill-payment' ? (
                   <>
-                    {['summary','locations','trends','billers'].includes(activeSection) && (
-                      <BasicAnalyticsShell appState={appState} section={activeSection} analyticsMode='advanced' />
-                    )}
                     {activeSection === 'overview' && (
                       <OverviewSection 
                         appState={appState}
