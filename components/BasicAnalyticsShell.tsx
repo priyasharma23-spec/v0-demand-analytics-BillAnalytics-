@@ -1305,7 +1305,6 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
         ))}
       </div>
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px' }}>
       {analyticsMode === 'advanced' && (() => {
         const TOTAL_CAS_DBC = totalCAs
         const optedIn  = Math.round(TOTAL_CAS_DBC * 0.75)
@@ -1316,14 +1315,14 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         const multiBillCount = 4
         const multiBillCAs = 8
         const dbcTableData = [
-          { biller: 'MSEDCL', state: 'Maharashtra', opted: 18, received: 14, pending: 2, failed: 2 },
-          { biller: 'BEST', state: 'Maharashtra', opted: 6, received: 5, pending: 1, failed: 0 },
-          { biller: 'BESCOM', state: 'Karnataka', opted: 16, received: 12, pending: 2, failed: 2 },
-          { biller: 'TNEB', state: 'Tamil Nadu', opted: 16, received: 13, pending: 2, failed: 1 },
-          { biller: 'DGVCL', state: 'Gujarat', opted: 10, received: 8, pending: 1, failed: 1 },
-          { biller: 'UGVCL', state: 'Gujarat', opted: 8, received: 6, pending: 1, failed: 1 },
-          { biller: 'TPDDL', state: 'Delhi', opted: 11, received: 9, pending: 1, failed: 1 },
-          { biller: 'BSES Rajdhani', state: 'Delhi', opted: 9, received: 7, pending: 1, failed: 1 },
+          { biller: 'MSEDCL',        state: 'Maharashtra', opted: 18, received: 14, pending: 2, failed: 2 },
+          { biller: 'BEST',          state: 'Maharashtra', opted: 6,  received: 5,  pending: 1, failed: 0 },
+          { biller: 'BESCOM',        state: 'Karnataka',   opted: 16, received: 12, pending: 2, failed: 2 },
+          { biller: 'TNEB',          state: 'Tamil Nadu',  opted: 16, received: 13, pending: 2, failed: 1 },
+          { biller: 'DGVCL',         state: 'Gujarat',     opted: 10, received: 8,  pending: 1, failed: 1 },
+          { biller: 'UGVCL',         state: 'Gujarat',     opted: 8,  received: 6,  pending: 1, failed: 1 },
+          { biller: 'TPDDL',         state: 'Delhi',       opted: 11, received: 9,  pending: 1, failed: 1 },
+          { biller: 'BSES Rajdhani', state: 'Delhi',       opted: 9,  received: 7,  pending: 1, failed: 1 },
         ]
         return (
           <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
@@ -1338,10 +1337,10 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             </div>
             <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '20px' }}>
               {([
-                { label: 'Opted in',  sublabel: 'bill_copy_enabled = true', count: optedIn,  pct: undefined,                                           tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
-                { label: 'Received',  sublabel: 'Bills fetched from biller', count: received, pct: Math.round(received/Math.max(optedIn,1)*100),         tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
-                { label: 'Pending',   sublabel: 'Fetch in progress',         count: pending,  pct: Math.round(pending/Math.max(optedIn,1)*100),          tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
-                { label: 'Failed',    sublabel: 'Fetch error · needs fix',  count: failed,   pct: Math.round(failed/Math.max(optedIn,1)*100),       tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+                { label: 'Opted in',  sublabel: 'bill_copy_enabled = true', count: optedIn,  pct: undefined,                                        tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
+                { label: 'Received',  sublabel: 'Bills fetched from biller', count: received, pct: Math.round(received/Math.max(optedIn,1)*100),     tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+                { label: 'Pending',   sublabel: 'Fetch in progress',         count: pending,  pct: Math.round(pending/Math.max(optedIn,1)*100),      tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+                { label: 'Failed',    sublabel: 'Fetch error · needs fix',   count: failed,   pct: Math.round(failed/Math.max(optedIn,1)*100),       tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
               ] as const).map((step, i, arr) => {
                 const r = 18, stroke = 4, size = 44
                 const circ = 2 * Math.PI * r
@@ -1376,10 +1375,10 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             </div>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
               {([
-                { tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' }, title: 'Failed bill copies',  value: String(failed),   valueLabel: failedPct + '% failure rate',  detail: 'Check biller API connectivity. Repeated failures may block payment.',          action: 'View failed CAs'  },
-                { tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' }, title: 'Pending > 48 hrs',   value: String(Math.round(pending * 0.44)), valueLabel: 'of ' + pending + ' pending', detail: 'Bills waiting over 48 hours — need manual intervention to unblock.', action: 'Review stalled'   },
-                { tone: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', accent: '#22C55E' }, title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', valueLabel: undefined, detail: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs opted in. ' + (TOTAL_CAS_DBC - optedIn) + ' yet to opt.', action: 'View not opted' },
-                { tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' }, title: 'Multi-bill billers', value: String(multiBillCount), valueLabel: 'billers', detail: multiBillCAs + ' CAs received more than 1 bill this month. Review for duplicates.', action: 'Check duplicates' },
+                { tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' }, title: 'Failed bill copies',  value: String(failed),   valueLabel: failedPct + '% failure rate',                                                                                    detail: 'Check biller API connectivity. Repeated failures may block payment.',         action: 'View failed CAs'  },
+                { tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' }, title: 'Pending > 48 hrs',   value: String(Math.round(pending * 0.44)), valueLabel: 'of ' + pending + ' pending',                                                              detail: 'Bills waiting over 48 hours — need manual intervention to unblock.',          action: 'Review stalled'   },
+                { tone: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', accent: '#22C55E' }, title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', valueLabel: undefined,                                                             detail: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs opted in. ' + (TOTAL_CAS_DBC - optedIn) + ' yet to opt.', action: 'View not opted' },
+                { tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' }, title: 'Multi-bill billers', value: String(multiBillCount), valueLabel: 'billers',                                                                                              detail: multiBillCAs + ' CAs received more than 1 bill this month. Review for duplicates.', action: 'Check duplicates' },
               ] as const).map((card, ci) => (
                 <div key={ci}
                   style={{ flex: 1, background: '#fff', border: `1px solid ${card.tone.border}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
@@ -1446,6 +1445,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
         )
       })()}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
         <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid #E5E7EB' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
@@ -1495,6 +1495,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               })}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>
