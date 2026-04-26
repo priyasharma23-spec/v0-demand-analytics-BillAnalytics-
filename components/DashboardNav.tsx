@@ -380,7 +380,7 @@ export default function DashboardNav({
                     {s.icon}{s.label}
                   </button>
                 ))}
-                <div style={{ width: '1px', height: '18px', background: '#E5E7EB', margin: '0 4px', flexShrink: 0 }} />
+
                 {sections.map((section) => (
               <button
                 key={section.id}
