@@ -386,21 +386,21 @@ export default function DashboardNav({
                 key={section.id}
                 onClick={() => onSectionChange(section.id)}
                 style={{
-                  height: '28px',
-                  padding: '4px 10px',
-                  borderRadius: '20px',
+                  border: 'none',
                   fontFamily: '"Inter", sans-serif',
-                  fontSize: '12px',
+                  padding: '5px 12px',
+                  fontSize: '12.5px',
                   fontWeight: activeSection === section.id ? 600 : 400,
                   color: activeSection === section.id ? '#4F46E5' : '#6B7280',
-                  background: activeSection === section.id ? '#EEF2FF' : 'transparent',
-                  border: activeSection === section.id ? '1.5px solid #C7D2FE' : '1.5px solid transparent',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
+                  background: activeSection === section.id ? '#EEF2FF' : 'transparent',
+                  borderRadius: '20px',
+                  outline: activeSection === section.id ? '1.5px solid #C7D2FE' : '1.5px solid transparent',
+                  transition: 'all .12s',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
+                  whiteSpace: 'nowrap',
                 }}
                 onMouseEnter={(e) => {
                   if (activeSection !== section.id) {
