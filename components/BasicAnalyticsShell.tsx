@@ -583,7 +583,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
-                    {rankTab === 'branches' && <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{row.cas} CAs</div>}
+
                   </div>
                   {rankTab === 'states' && (
                     <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>
