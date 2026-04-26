@@ -490,68 +490,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       </div>
 
       {/* Heatmap or branches listing based on filter */}
-      {!showBranches && (
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '24px', marginBottom: '12px' }}>
-
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744', marginBottom: '3px' }}>State wise spend</div>
-              <div style={{ fontSize: '13px', color: '#858ea2' }}>Apr 2024 – Mar 2025</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#858ea2' }}>
-              <span>Low</span>
-              {['#ebebff','#c4bfff','#9e97ff','#5a52d5','#2d2b6b'].map(c => (
-                <div key={c} style={{ width: '28px', height: '28px', borderRadius: '6px', background: c }} />
-              ))}
-              <span style={{ fontWeight: 600, color: '#192744' }}>High</span>
-            </div>
-          </div>
-
-          {/* Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
-            {stateData.map((s, i) => {
-              const intensity = s.total / stateData[0].total
-              const bg = intensity > 0.90 ? '#2d2b6b'
-                       : intensity > 0.75 ? '#5a52d5'
-                       : intensity > 0.60 ? '#7b74e8'
-                       : intensity > 0.45 ? '#a09aef'
-                       : intensity > 0.30 ? '#c4bfff'
-                       : '#ebebff'
-              const isDark   = intensity > 0.55
-              const textMain = isDark ? '#fff' : '#192744'
-              const textSub  = isDark ? 'rgba(255,255,255,0.65)' : '#858ea2'
-              const avgPerCA = Math.round(s.total / Math.max(s.cas, 1) / 100000 * 10) / 10
-              return (
-                <div key={s.state}
-                  onClick={() => {}}
-                  style={{ background: bg, borderRadius: '12px', padding: '20px 18px', cursor: 'pointer', transition: 'opacity 0.15s', minHeight: '140px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '0.88'}
-                  onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.opacity = '1'}>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 500, color: textMain, marginBottom: '4px' }}>{s.state}</div>
-                    <div style={{ fontSize: '22px', fontWeight: 700, color: textMain, letterSpacing: '-0.5px', marginBottom: '10px' }}>
-                      ₹{(s.total / 100000).toFixed(1)}L
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '12px', color: textSub }}>
-                    {s.cas} CAs · ₹{avgPerCA}L/CA
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Footer */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #f3f4f6' }}>
-            <span style={{ fontSize: '12px', color: '#858ea2' }}>
-              {stateData.length} states · Total ₹{(portfolioTotal / 100000).toFixed(1)}L
-            </span>
-            <span style={{ fontSize: '12px', color: '#858ea2' }}>Click any tile to drill down</span>
-          </div>
-
-        </div>
-      )}
 
       {/* Ranked table */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
