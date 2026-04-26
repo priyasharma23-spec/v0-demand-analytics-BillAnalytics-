@@ -583,7 +583,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
-                    {rankTab === 'branches' && <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{row.cas} CAs</div>}
+
                   </div>
                   {rankTab === 'states' && (
                     <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>
@@ -606,34 +606,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                 </div>
               </div>
               {i < arr.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px', marginTop: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top states by spend</div>
-          <div style={{ fontSize: '12px', color: '#4F46E5', fontWeight: 600, cursor: 'pointer' }}>View all →</div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {stateData.slice(0, 8).map((s, i) => (
-            <div key={s.state}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
-                <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{s.state}</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(BRANCHES[s.state] ?? []).length} branches · {s.cas} CAs</div>
-                  <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
-                    <div style={{ height: '100%', width: `${s.total / Math.max(stateData[0].total, 1) * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{inr(s.total)}</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{Math.round(s.total / portfolioTotal * 100)}%</div>
-                </div>
-              </div>
-              {i < 7 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
             </div>
           ))}
         </div>
