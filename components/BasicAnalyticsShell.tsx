@@ -306,91 +306,6 @@ function BasicSummary({ appState }: BasicSectionProps) {
         </div>
       </div>
 
-      {/* Due date calendar + Weekly capital plan */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
-        {/* Due date calendar */}
-        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px 18px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '2px' }}>Due date calendar</div>
-          <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '14px' }}>Bills due per day · current month</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
-            {calendarDays.map(day => {
-              const dayCAs  = byDay[day] ?? []
-              const hasOver = dayCAs.some(c => c.isOverdue)
-              const hasSoon = dayCAs.some(c => c.isDueSoon)
-              const bg      = dayCAs.length === 0 ? '#F9FAFB' : hasOver ? '#FEF2F2' : hasSoon ? '#FFFBEB' : '#F0FDF4'
-              const border  = dayCAs.length === 0 ? '#E5E7EB' : hasOver ? '#FECACA' : hasSoon ? '#FDE68A' : '#BBF7D0'
-              const textCol = dayCAs.length === 0 ? '#9CA3AF' : hasOver ? '#B91C1C' : hasSoon ? '#B45309' : '#15803D'
-              return (
-                <div key={day} style={{ background: bg, border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px', textAlign: 'center', minHeight: '44px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: textCol }}>{day}</div>
-                  {dayCAs.length > 0 && <div style={{ fontSize: '9px', color: textCol, marginTop: '1px' }}>{dayCAs.length} CA{dayCAs.length > 1 ? 's' : ''}</div>}
-                </div>
-              )
-            })}
-          </div>
-          <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '11px', color: '#6B7280', flexWrap: 'wrap' }}>
-            {[{ color: '#FECACA', label: 'Overdue' },{ color: '#FDE68A', label: 'Due soon' },{ color: '#BBF7D0', label: 'Paid' },{ color: '#E5E7EB', label: 'No bills' }].map(item => (
-              <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: item.color, display: 'inline-block' }} />{item.label}
-              </span>
-            ))}
-          </div>
-        </div>
-        {/* Weekly capital plan */}
-        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px', overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px 14px', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827', marginBottom: '3px' }}>Weekly capital plan</div>
-              <div style={{ fontSize: '12px', color: '#6B7280' }}>Current month · plan ahead</div>
-            </div>
-            <div style={{ background: '#EEF2FF', border: '1.5px solid #C7D2FE', borderRadius: '10px', padding: '6px 14px', textAlign: 'right' }}>
-              <div style={{ fontSize: '10px', color: '#4F46E5', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>Month total</div>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: '#4338CA' }}>{inr(totalUnpaid)}</div>
-            </div>
-          </div>
-          <div style={{ padding: '16px 20px 8px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '100px' }}>
-              {weeklyAmounts.map((w, wi) => {
-                const maxAmt   = Math.max(...weeklyAmounts.map(x => x.unpaid))
-                const totalH   = Math.round((w.unpaid / Math.max(maxAmt,1)) * 80)
-                const overdueH = Math.round((w.overdue / Math.max(maxAmt,1)) * 80)
-                const safeH    = totalH - overdueH
-                const hasOD    = w.overdue > 0
-                const isAct    = activeWeek === wi
-                return (
-                  <div key={wi} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', cursor: 'pointer' }}
-                    onMouseEnter={() => setActiveWeek(wi)} onMouseLeave={() => setActiveWeek(null)}>
-                    <div style={{ fontSize: '10px', fontWeight: isAct ? 700 : 500, color: isAct ? '#111827' : '#6B7280' }}>{inr(w.unpaid)}</div>
-                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '72px', borderRadius: '5px', overflow: 'hidden', background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#F3F4F6' }}>
-                      {safeH > 0 && <div style={{ height: safeH+'px', background: isAct ? '#7B6FE8' : '#C7D2FE' }} />}
-                      {overdueH > 0 && <div style={{ height: overdueH+'px', background: isAct ? '#EF4444' : '#FECACA' }} />}
-                    </div>
-                    <div style={{ fontSize: '10px', color: isAct ? '#4F46E5' : '#9CA3AF' }}>W{wi+1}</div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-          <div style={{ padding: '4px 12px 14px', display: 'flex', gap: '6px' }}>
-            {weeklyAmounts.map((w, wi) => {
-              const hasOD = w.overdue > 0
-              const isAct = activeWeek === wi
-              const pct   = Math.round(w.unpaid / Math.max(totalUnpaid,1) * 100)
-              return (
-                <div key={wi} onClick={() => setActiveWeek(isAct ? null : wi)} style={{ flex: '1 1 0', minWidth: 0, background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#fff', border: '1.5px solid '+(isAct ? (hasOD ? '#FECACA' : '#C7D2FE') : '#E5E7EB'), borderRadius: '10px', padding: '10px 12px', cursor: 'pointer' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827' }}>{w.label}</div>
-                  <div style={{ fontSize: '10px', color: '#9CA3AF' }}>{w.count} bills</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: hasOD ? '#EF4444' : '#4338CA', margin: '4px 0' }}>{inr(w.unpaid)}</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#9CA3AF' }}>
-                    <span>{w.unpaidCount} unpaid</span><span>{pct}%</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
     </div>
   )
 }
@@ -482,7 +397,7 @@ function BasicLocations({ appState }: BasicSectionProps) {
           <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
           <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top branch</div>
           <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{branchRows[0]?.name ?? '—'}</div>
-          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{branchRows[0] ? '₹' + (branchRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
+          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{branchRows[0] ? '���' + (branchRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
         </div>
         <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
           <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
@@ -1342,9 +1257,92 @@ function BasicDueDates({ appState }: BasicSectionProps) {
             </div>
           )}
 
-        </div>
+          </div>
 
-      </div>
+          {/* Due date calendar */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '2px' }}>Due date calendar</div>
+            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '14px' }}>Bills due per day · current month</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+              {calendarDays.map(day => {
+                const dayCAs  = byDay[day] ?? []
+                const hasOver = dayCAs.some(c => c.isOverdue)
+                const hasSoon = dayCAs.some(c => c.isDueSoon)
+                const bg      = dayCAs.length === 0 ? '#F9FAFB' : hasOver ? '#FEF2F2' : hasSoon ? '#FFFBEB' : '#F0FDF4'
+                const border  = dayCAs.length === 0 ? '#E5E7EB' : hasOver ? '#FECACA' : hasSoon ? '#FDE68A' : '#BBF7D0'
+                const textCol = dayCAs.length === 0 ? '#9CA3AF' : hasOver ? '#B91C1C' : hasSoon ? '#B45309' : '#15803D'
+                return (
+                  <div key={day} style={{ background: bg, border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px', textAlign: 'center', minHeight: '44px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: textCol }}>{day}</div>
+                    {dayCAs.length > 0 && <div style={{ fontSize: '9px', color: textCol, marginTop: '1px' }}>{dayCAs.length} CA{dayCAs.length > 1 ? 's' : ''}</div>}
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '11px', color: '#6B7280', flexWrap: 'wrap' }}>
+              {[{ color: '#FECACA', label: 'Overdue' },{ color: '#FDE68A', label: 'Due soon' },{ color: '#BBF7D0', label: 'Paid' },{ color: '#E5E7EB', label: 'No bills' }].map(item => (
+                <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: item.color, display: 'inline-block' }} />{item.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Weekly capital plan */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', overflow: 'hidden' }}>
+            <div style={{ padding: '22px 24px 14px', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '3px' }}>Weekly capital plan</div>
+                <div style={{ fontSize: '12px', color: '#6B7280' }}>Current month · plan ahead</div>
+              </div>
+              <div style={{ background: '#EEF2FF', border: '1.5px solid #C7D2FE', borderRadius: '10px', padding: '6px 14px', textAlign: 'right' }}>
+                <div style={{ fontSize: '10px', color: '#4F46E5', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>Month total</div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#4338CA' }}>{inr(totalUnpaid)}</div>
+              </div>
+            </div>
+            <div style={{ padding: '16px 24px 8px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '100px' }}>
+                {weeklyAmounts.map((w, wi) => {
+                  const maxAmt   = Math.max(...weeklyAmounts.map(x => x.unpaid))
+                  const totalH   = Math.round((w.unpaid / Math.max(maxAmt,1)) * 80)
+                  const overdueH = Math.round((w.overdue / Math.max(maxAmt,1)) * 80)
+                  const safeH    = totalH - overdueH
+                  const hasOD    = w.overdue > 0
+                  const isAct    = activeWeek === wi
+                  return (
+                    <div key={wi} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', cursor: 'pointer' }}
+                      onMouseEnter={() => setActiveWeek(wi)} onMouseLeave={() => setActiveWeek(null)}>
+                      <div style={{ fontSize: '10px', fontWeight: isAct ? 700 : 500, color: isAct ? '#111827' : '#6B7280' }}>{inr(w.unpaid)}</div>
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '72px', borderRadius: '5px', overflow: 'hidden', background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#F3F4F6' }}>
+                        {safeH > 0 && <div style={{ height: safeH+'px', background: isAct ? '#7B6FE8' : '#C7D2FE' }} />}
+                        {overdueH > 0 && <div style={{ height: overdueH+'px', background: isAct ? '#EF4444' : '#FECACA' }} />}
+                      </div>
+                      <div style={{ fontSize: '10px', color: isAct ? '#4F46E5' : '#9CA3AF' }}>W{wi+1}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div style={{ padding: '4px 12px 14px', display: 'flex', gap: '6px' }}>
+              {weeklyAmounts.map((w, wi) => {
+                const hasOD = w.overdue > 0
+                const isAct = activeWeek === wi
+                const pct   = Math.round(w.unpaid / Math.max(totalUnpaid,1) * 100)
+                return (
+                  <div key={wi} onClick={() => setActiveWeek(isAct ? null : wi)} style={{ flex: '1 1 0', minWidth: 0, background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#fff', border: '1.5px solid '+(isAct ? (hasOD ? '#FECACA' : '#C7D2FE') : '#E5E7EB'), borderRadius: '10px', padding: '10px 12px', cursor: 'pointer' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827' }}>{w.label}</div>
+                    <div style={{ fontSize: '10px', color: '#9CA3AF' }}>{w.count} bills</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: hasOD ? '#EF4444' : '#4338CA', margin: '4px 0' }}>{inr(w.unpaid)}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#9CA3AF' }}>
+                      <span>{w.unpaidCount} unpaid</span><span>{pct}%</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+        </div>
     </div>
   )
 }
