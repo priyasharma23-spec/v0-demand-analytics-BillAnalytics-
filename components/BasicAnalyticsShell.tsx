@@ -102,14 +102,6 @@ function BasicSummary({ appState }: BasicSectionProps) {
     cas:   (BRANCHES[st] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0),
   })).sort((a, b) => b.total - a.total)
 
-  // Top states by spend
-  const topStateRows = STATES.map(st => ({
-    name: st,
-    branches: (BRANCHES[st] ?? []).length,
-    cas: (BRANCHES[st] ?? []).reduce((s: number, br: string) => s + (CAS[br]?.length ?? 0), 0),
-    total: getStateBills(st, 'monthly').reduce((a: number, d: any) => a + d.totalBill, 0),
-  })).sort((a: any, b: any) => b.total - a.total).slice(0, 8)
-
   // Monthly data for chart
   const monthlyData = data
 
@@ -192,35 +184,6 @@ function BasicSummary({ appState }: BasicSectionProps) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#F3F4F6', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9CA3AF', flexShrink: 0 }}/>
               <div style={{ fontSize: '12px', color: '#6B7280' }}><span style={{ fontWeight: 600, color: '#111827' }}>{Math.round(totalCAs * 0.068)} CAs</span> on approval hold — excluded from paid count</div>
-            </div>
-          </div>
-
-          {/* Top states by spend */}
-          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top states by spend</div>
-              <div style={{ fontSize: '12px', color: '#4F46E5', fontWeight: 600, cursor: 'pointer' }}>View all →</div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {topStateRows.map((s: any, i: number) => (
-                <div key={s.name}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
-                    <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i+1}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{s.name}</div>
-                      <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{s.branches} branches · {s.cas} CAs</div>
-                      <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
-                        <div style={{ height: '100%', width: `${s.total / topStateRows[0].total * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{inr(s.total)}</div>
-                      <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{Math.round(s.total/totalBill*100)}%</div>
-                    </div>
-                  </div>
-                  {i < topStateRows.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
-                </div>
-              ))}
             </div>
           </div>
 
@@ -541,6 +504,35 @@ function BasicLocations({ appState }: BasicSectionProps) {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Top states by spend */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top states by spend</div>
+          <div style={{ fontSize: '12px', color: '#4F46E5', fontWeight: 600, cursor: 'pointer' }}>View all →</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {stateData.slice(0, 8).map((s, i) => (
+            <div key={s.state}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
+                <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{s.state}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(BRANCHES[s.state] ?? []).length} branches · {s.cas} CAs</div>
+                  <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
+                    <div style={{ height: '100%', width: `${s.total / Math.max(stateData[0].total, 1) * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{inr(s.total)}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{Math.round(s.total / portfolioTotal * 100)}%</div>
+                </div>
+              </div>
+              {i < 7 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
+            </div>
+          ))}
+        </div>
       </div>
 
     </div>
