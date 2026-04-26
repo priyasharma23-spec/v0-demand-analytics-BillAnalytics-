@@ -102,12 +102,11 @@ const overdue      = Math.round(totalUnpaid * 0.30)
 const overdueAmt   = Math.round(totalUnpaid * 0.30 * 185000)
 
 const summaryMetrics = [
-  { label: 'Active billers',    value: `${totalBillers}`,          sub: `across ${STATES.length} states`,          subColor: '#185FA5',  borderColor: '#2500D7' },
-  { label: 'Avg conversion rate', value: `${FUNNEL.conversionPct}%`, sub: 'bills generated → paid',                subColor: '#185FA5',  borderColor: '#2500D7' },
-  { label: 'Approval pending',  value: `${FUNNEL.approvalHold}`,   sub: 'bills stuck in approval queue',           subColor: '#854F0B',  borderColor: '#EF9F27' },
-  { label: 'Overdue',           value: `${overdue} CAs`,           sub: inr(overdueAmt) + ' · not yet paid',       subColor: '#A32D2D',  borderColor: '#E24B4A' },
+  { label: 'Active billers',     value: `${totalBillers}`,           valueSub: `across ${STATES.length} states`,  subColor: '#1D4ED8', borderColor: '#2500D7', detail: `Registered billers across your portfolio. ${totalBillers} active with at least 1 CA mapped.`, action: 'View billers' },
+  { label: 'Avg conversion rate', value: `${FUNNEL.conversionPct}%`,  valueSub: 'bills generated → paid',      subColor: '#1D4ED8', borderColor: '#2500D7', detail: 'Percentage of generated bills that have been paid in the current period.',                    action: 'View funnel'  },
+  { label: 'Approval pending',   value: `${FUNNEL.approvalHold}`,    valueSub: 'bills in approval queue',          subColor: '#B45309', borderColor: '#EF9F27', detail: 'Bills awaiting approval before payment can be initiated. Review and clear queue.',             action: 'Review queue' },
+  { label: 'Overdue',            value: `${overdue} CAs`,            valueSub: inr(overdueAmt),                    subColor: '#B91C1C', borderColor: '#E24B4A', detail: 'CAs with bills past due date. Immediate action needed to avoid late payment charges.',         action: 'View overdue' },
 ]
-
 const dbcFunnel = {
   optedIn:     totalOpted,
   received:    totalReceived,
@@ -125,13 +124,24 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
 
       {/* Summary cards */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
         {summaryMetrics.map((m, i) => (
-          <div key={m.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
-            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
-            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{m.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{m.value}</div>
-            <div style={{ fontSize: '12px', color: m.subColor }}>{m.sub}</div>
+          <div key={m.label}
+            style={{ flex: 1, background: '#fff', border: `1px solid ${m.borderColor}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 0 3px ${m.borderColor}18` }}
+            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: m.borderColor, flexShrink: 0 }} />
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{m.label}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+              <div style={{ fontSize: '32px', fontWeight: 700, color: m.subColor, lineHeight: 1 }}>{m.value}</div>
+              {m.valueSub && <div style={{ fontSize: '12px', color: m.subColor, opacity: 0.65, fontWeight: 500 }}>{m.valueSub}</div>}
+            </div>
+            <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5, flex: 1 }}>{m.detail}</div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: m.borderColor, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+              {m.action} <span style={{ fontSize: '14px' }}>→</span>
+            </div>
           </div>
         ))}
       </div>
@@ -260,68 +270,6 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
         </div>
       </div>
 
-      {/* Bill status table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px', marginTop: '24px' }}>
-        <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: '#192744' }}>
-                {statusView === 'state' ? 'Bill status — by state' : 'Bill status — by biller'}
-              </div>
-              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>
-                {statusView === 'state' ? 'Active CA states only · click to expand billers' : 'All registered billers'}
-              </div>
-            </div>
-            <div style={{ display: 'flex', background: '#f5f5f4', borderRadius: '10px', padding: '3px', gap: '2px' }}>
-              {(['state','biller'] as const).map(v => (
-                <button key={v} onClick={() => setStatusView(v)} style={{
-                  padding: '5px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
-                  border: 'none', cursor: 'pointer', textTransform: 'capitalize',
-                  background: statusView === v ? '#fff' : 'transparent',
-                  color: statusView === v ? '#192744' : '#858ea2',
-                }}>By {v}</button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
-              <tr>
-                {['Name', 'Total', 'Generated', 'Received', 'Processed', 'Paid', 'Drop', 'Status'].map(h => (
-                  <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(statusView === 'state' ? stateData : billerData).map((row: any, idx: number) => {
-                const name = 'state' in row ? row.state : row.biller
-                const status = row.dropPct > 25 ? 'High drop' : row.dropPct > 15 ? 'Watch' : 'Healthy'
-                return (
-                  <tr key={name}
-                    onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{name}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{row.total}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{row.generated}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#3B6D11' }}>{row.received}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#854F0B' }}>{row.processed}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{row.paid}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#A32D2D' }}>{row.dropPct}%</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                      <span style={{
-                        fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
-                        background: status === 'High drop' ? '#FCEBEB' : status === 'Watch' ? '#FAEEDA' : '#EAF3DE',
-                        color: status === 'High drop' ? '#A32D2D' : status === 'Watch' ? '#633806' : '#27500A',
-                      }}>{status}</span>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
     </div>
   )
