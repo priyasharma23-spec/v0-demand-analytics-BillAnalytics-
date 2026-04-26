@@ -446,7 +446,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         const seed = ca.charCodeAt(0) % 20
         const prior = Math.round(total * (0.88 + seed * 0.015))
         const yoy = Math.round((total - prior) / Math.max(prior, 1) * 100)
-        return { name: ca, sub: br, cas: 1, total, yoy, isOutlier: Math.abs(yoy) > 10 }
+        return { name: ca, sub: br, state: Object.entries(BRANCHES).find(([,brs]) => brs.includes(br))?.[0] ?? '', cas: 1, total, yoy, isOutlier: Math.abs(yoy) > 10 }
       })
     ).sort((a, b) => b.total - a.total).slice(0, 20)
 
@@ -584,7 +584,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
                     {rankTab === 'branches' && <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{row.cas} CAs</div>}
-                    {rankTab === 'cas' && <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{(row as any).sub}</div>}
                   </div>
                   {rankTab === 'states' && (
                     <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>
@@ -592,7 +591,10 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                     </div>
                   )}
                   {rankTab === 'branches' && (
-                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(row as any).sub}</div>
+                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(row as any).sub} · {row.cas} CAs</div>
+                  )}
+                  {rankTab === 'cas' && (
+                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(row as any).sub} · {(row as any).state}</div>
                   )}
                   <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
                     <div style={{ height: '100%', width: `${row.total / Math.max(arr[0].total, 1) * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
