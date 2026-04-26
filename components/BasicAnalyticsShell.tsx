@@ -8,6 +8,7 @@ import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills, getC
 interface BasicAnalyticsShellProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
   section?: string
+  analyticsMode?: 'basic' | 'advanced'
 }
 
 type BasicSectionProps = {
@@ -21,7 +22,7 @@ const BASIC_SECTIONS = [
   { id: 'billers',   label: 'Billers'    },
 ]
 
-export default function BasicAnalyticsShell({ appState, section: sectionProp }: BasicAnalyticsShellProps) {
+export default function BasicAnalyticsShell({ appState, section: sectionProp, analyticsMode = 'basic' }: BasicAnalyticsShellProps) {
   const [sectionState, setSectionState] = useState('summary')
   const section = sectionProp ?? sectionState
   const setSection = setSectionState
@@ -32,10 +33,10 @@ export default function BasicAnalyticsShell({ appState, section: sectionProp }: 
 
       {/* Section content */}
       <div style={{ padding: '20px' }}>
-        {section === 'summary' && <BasicSummary appState={appState} />}
-        {section === 'locations' && <BasicLocations appState={appState} />}
+        {section === 'summary' && <BasicSummary appState={appState} analyticsMode={analyticsMode} />}
+        {section === 'locations' && <BasicLocations appState={appState} analyticsMode={analyticsMode} />}
         {section === 'trends' && <BasicTrends appState={appState} />}
-        {section === 'billers' && <BasicBillers appState={appState} />}
+        {section === 'billers' && <BasicBillers appState={appState} analyticsMode={analyticsMode} />}
       </div>
     </div>
   )
@@ -70,7 +71,7 @@ function PlaceholderSection({ title, desc, bullets }: { title: string; desc: str
   )
 }
 
-function BasicSummary({ appState }: BasicSectionProps) {
+function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const allCAs        = Object.values(CAS).flat()
   const totalBill     = data.reduce((s, d) => s + d.totalBill, 0)
@@ -432,11 +433,51 @@ function BasicSummary({ appState }: BasicSectionProps) {
       </div>
 
 
+      {analyticsMode === 'advanced' && (
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>Approval queue</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '16px' }}>
+              {[
+                { label: 'Pending',  count: 48,  textColor: '#B45309', bg: '#FFFBEB', bd: '#FDE68A' },
+                { label: 'Approved', count: 312, textColor: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
+                { label: 'On Hold',  count: 28,  textColor: '#6B7280', bg: '#F9FAFB', bd: '#E5E7EB' },
+                { label: 'Rejected', count: 12,  textColor: '#B91C1C', bg: '#FEF2F2', bd: '#FECACA' },
+              ].map(a => (
+                <div key={a.label} style={{ display: 'flex', alignItems: 'baseline', gap: '8px', padding: '10px 12px', borderRadius: '8px', background: a.bg, border: `1px solid ${a.bd}`, cursor: 'pointer' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.opacity = '0.8'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.10)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.opacity = '1'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: a.textColor, lineHeight: 1 }}>{a.count}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: a.textColor }}>{a.label}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Action required</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              {[
+                { label: 'Fetch failed',    sub: 'BBPS error · payment blocked',  count: 34,  tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+                { label: 'Not generated',   sub: 'Active CAs · no bill yet',      count: 170, tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+                { label: 'Copy pending',    sub: 'Bill copy being fetched',             count: 62,  tone: { bg: '#EFF6FF', bd: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+                { label: 'Duplicate bills', sub: 'Same bill fetched more than once',   count: 8,   tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+              ].map(a => (
+                <div key={a.label} style={{ padding: '10px 12px', background: a.tone.bg, border: `1px solid ${a.tone.bd}`, borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '3px', alignSelf: 'stretch', borderRadius: '2px', background: a.tone.accent, flexShrink: 0 }}/>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: a.tone.text }}>{a.label}</div>
+                    <div style={{ fontSize: '11px', color: a.tone.text, opacity: 0.7 }}>{a.sub}</div>
+                  </div>
+                  <div style={{ fontSize: '22px', fontWeight: 700, color: a.tone.text, lineHeight: 1 }}>{a.count}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function BasicLocations({ appState }: BasicSectionProps) {
+function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
   const allCAs    = Object.values(CAS).flat()
   const totalCAs  = allCAs.length
   const showBranches = appState.stateF !== 'all'
@@ -662,6 +703,56 @@ function BasicLocations({ appState }: BasicSectionProps) {
         </table>
       </div>
 
+      {analyticsMode === 'advanced' && (
+        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginTop: '16px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '4px' }}>Leakage heatmap — state × month</div>
+          <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '14px' }}>Leakage as % of total bill · advanced data · click a state to drill in</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#6B7280', marginBottom: '12px' }}>
+            <span>Low</span>
+            {['#EAF3DE','#FAC775','#EF9F27','#E24B4A','#A32D2D'].map((c, i) => (
+              <div key={i} style={{ width: '16px', height: '10px', borderRadius: '2px', background: c }} />
+            ))}
+            <span>High</span>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', fontSize: '11px', width: '100%', tableLayout: 'fixed' }}>
+              <thead>
+                <tr>
+                  <th style={{ width: '40px', padding: '4px 6px', textAlign: 'left', fontSize: '10px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '0.5px solid #E5E7EB' }}>State</th>
+                  {['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'].map(m => (
+                    <th key={m} style={{ padding: '4px 1px', textAlign: 'center', fontSize: '10px', fontWeight: 500, color: '#6B7280', borderBottom: '0.5px solid #E5E7EB' }}>{m}</th>
+                  ))}
+                  <th style={{ width: '36px', padding: '4px 4px', textAlign: 'right', fontSize: '10px', fontWeight: 500, color: '#6B7280', borderBottom: '0.5px solid #E5E7EB' }}>Avg</th>
+                </tr>
+              </thead>
+              <tbody>
+                {STATES.map((st, ri) => {
+                  const d = getStateBills(st, 'monthly')
+                  const mths = d.map((m: any) => Math.round(m.totalLeakage / Math.max(m.totalBill, 1) * 100))
+                  const avg = Math.round(mths.reduce((a: number, v: number) => a + v, 0) / mths.length)
+                  const getBg = (p: number) => p <= 0 ? '#f9f9f9' : p < 5 ? '#EAF3DE' : p < 10 ? '#FAC775' : p < 15 ? '#EF9F27' : p < 20 ? '#E24B4A' : '#A32D2D'
+                  const getTextColor = (p: number) => p >= 15 ? '#fff' : '#111827'
+                  return (
+                    <tr key={st}>
+                      <td style={{ padding: '3px 6px', fontSize: '11px', fontWeight: 600, color: '#111827', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>{st.substring(0,2).toUpperCase()}</td>
+                      {mths.map((pct: number, mi: number) => (
+                        <td key={mi} style={{ padding: '2px 1px', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>
+                          <div style={{ background: getBg(pct), borderRadius: '3px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 600, color: getTextColor(pct) }}>
+                            {pct > 0 ? pct + '%' : ''}
+                          </div>
+                        </td>
+                      ))}
+                      <td style={{ padding: '3px 4px', textAlign: 'right', fontWeight: 700, fontSize: '11px', color: avg >= 15 ? '#A32D2D' : avg >= 10 ? '#B45309' : '#15803D', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>
+                        {avg}%
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1303,7 +1394,7 @@ function AnomalyCard({ a }: { a: { id: number; icon: string; iconColor: string; 
 }
 
 
-function BasicBillers({ appState }: BasicSectionProps) {
+function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
   const [activeWeek, setActiveWeek] = useState<number | null>(null)
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
 
@@ -1465,6 +1556,47 @@ function BasicBillers({ appState }: BasicSectionProps) {
           </div>
         </div>
       </div>
+      {analyticsMode === 'advanced' && (
+        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Digital bill copy status</div>
+            <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '3px' }}>CAs opted for digital bill copy · bill_copy_enabled flag driven</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '16px' }}>
+            {([
+              { label: 'Opted in',  sublabel: 'bill_copy_enabled = true', count: Math.round(totalCAs * 0.75),  pct: undefined,                                                                                 tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
+              { label: 'Received',  sublabel: 'Bills fetched from biller', count: Math.round(totalCAs * 0.59), pct: Math.round(Math.round(totalCAs*0.59)/Math.max(Math.round(totalCAs*0.75),1)*100),          tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+              { label: 'Pending',   sublabel: 'Fetch in progress',         count: Math.round(totalCAs * 0.10), pct: Math.round(Math.round(totalCAs*0.10)/Math.max(Math.round(totalCAs*0.75),1)*100),          tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+              { label: 'Failed',    sublabel: 'Fetch error · needs fix',  count: Math.round(totalCAs * 0.06), pct: Math.round(Math.round(totalCAs*0.06)/Math.max(Math.round(totalCAs*0.75),1)*100),     tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+            ] as const).map((step, i, arr) => {
+              const r = 18, stroke = 4, size = 44
+              const circ = 2 * Math.PI * r
+              const dash = step.pct !== undefined ? (step.pct / 100) * circ : 0
+              return (
+                <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
+                  <div style={{ flex: 1, background: step.tone.bg, border: `1px solid ${step.tone.border}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '32px', fontWeight: 700, color: step.tone.text, lineHeight: 1 }}>{step.count}</div>
+                      {step.pct !== undefined && (
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+                            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
+                            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
+                          </svg>
+                          <div style={{ position: 'absolute', fontSize: '10px', fontWeight: 600, color: step.tone.text }}>{step.pct}%</div>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{step.label}</div>
+                    <div style={{ fontSize: '11px', color: step.tone.text, opacity: 0.6 }}>{step.sublabel}</div>
+                  </div>
+                  {i < arr.length - 1 && <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px', color: '#D1D5DB', fontSize: '16px' }}>→</div>}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px' }}>
         <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid #E5E7EB' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

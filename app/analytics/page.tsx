@@ -91,7 +91,7 @@ export default function AnalyticsPage() {
       {/* Section content */}
       <div className="content">
         {analyticsMode === 'basic' ? (
-          <BasicAnalyticsShell appState={appState} section={basicSection} />
+          <BasicAnalyticsShell appState={appState} section={basicSection} analyticsMode={analyticsMode} />
         ) : (
           <>
             {multiBillReview ? (
