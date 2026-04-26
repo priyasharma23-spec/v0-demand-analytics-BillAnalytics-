@@ -248,6 +248,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
 
   return (
     <div>
+      <div style={{ marginBottom: "20px" }} />
       {/* Excess Demand Metrics */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '20px' }}>
         {[
