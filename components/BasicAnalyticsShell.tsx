@@ -8,7 +8,6 @@ import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills, getC
 interface BasicAnalyticsShellProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
   section?: string
-  analyticsMode?: 'basic' | 'advanced'
 }
 
 type BasicSectionProps = {
@@ -22,7 +21,7 @@ const BASIC_SECTIONS = [
   { id: 'billers',   label: 'Billers'    },
 ]
 
-export default function BasicAnalyticsShell({ appState, section: sectionProp, analyticsMode = 'basic' }: BasicAnalyticsShellProps) {
+export default function BasicAnalyticsShell({ appState, section: sectionProp }: BasicAnalyticsShellProps) {
   const [sectionState, setSectionState] = useState('summary')
   const section = sectionProp ?? sectionState
   const setSection = setSectionState
@@ -33,10 +32,10 @@ export default function BasicAnalyticsShell({ appState, section: sectionProp, an
 
       {/* Section content */}
       <div style={{ padding: '20px' }}>
-        {section === 'summary' && <BasicSummary appState={appState} analyticsMode={analyticsMode} />}
-        {section === 'locations' && <BasicLocations appState={appState} analyticsMode={analyticsMode} />}
+        {section === 'summary' && <BasicSummary appState={appState} />}
+        {section === 'locations' && <BasicLocations appState={appState} />}
         {section === 'trends' && <BasicTrends appState={appState} />}
-        {section === 'billers' && <BasicBillers appState={appState} analyticsMode={analyticsMode} />}
+        {section === 'billers' && <BasicBillers appState={appState} />}
       </div>
     </div>
   )
@@ -71,7 +70,7 @@ function PlaceholderSection({ title, desc, bullets }: { title: string; desc: str
   )
 }
 
-function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
+function BasicSummary({ appState }: BasicSectionProps) {
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const allCAs        = Object.values(CAS).flat()
   const totalBill     = data.reduce((s, d) => s + d.totalBill, 0)
@@ -122,7 +121,103 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     }).length
   )
 
+  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
+  const spendTrendChart = useRef<Chart | null>(null)
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!spendTrendRef.current) return
+      const ctx = spendTrendRef.current.getContext('2d')
+      if (!ctx) return
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+      const padding = (maxVal - minVal) * 0.15
+    spendTrendChart.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+          labels,
+          datasets: [{
+            type: 'line' as const,
+            label: 'Total bill',
+            data: monthlyTotals,
+            borderColor: '#1c5af4',
+            borderWidth: 2,
+            backgroundColor: 'rgba(28,90,244,0.06)',
+            pointBackgroundColor: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
+            ),
+            pointBorderColor: '#1c5af4',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBorderWidth: 2,
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'y',
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#f5f6fa',
+              titleColor: '#192744',
+              bodyColor: '#5e687d',
+              borderColor: '#f3f4f6',
+              borderWidth: 1,
+              padding: 10,
+              cornerRadius: 4,
+              displayColors: false,
+              callbacks: {
+                title: items => items[0].label,
+                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
+                afterLabel: item => {
+                  const i = item.dataIndex
+                  const count = caCounts[i] ?? 0
+                  const lines = [`  Active CAs: ${count}`]
+                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
+                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
+                  else {
+                    const prev = monthlyTotals[i - 1]
+                    if (prev) {
+                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
+                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
+                    }
+                  }
+                  return lines.join('\n')
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#858ea2', font: { size: 11 } },
+            },
+            y: {
+              type: 'linear' as const,
+              position: 'left' as const,
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              min: Math.floor((minVal - padding) / 100000) * 100000,
+              max: Math.ceil((maxVal + padding) / 100000) * 100000,
+              ticks: {
+                color: '#858ea2',
+                font: { size: 11 },
+                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
+              },
+            },
+          },
+        },
+      })
+    }, 100)
+    return () => {
+      clearTimeout(timer)
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+    }
+  }, [appState, labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx, caCounts])
 
   return (
     <div>
@@ -162,6 +257,26 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         {/* Left column */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
 
+          {/* Monthly spend trend */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '2px' }}>Monthly spend trend</div>
+            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
+            <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+              <canvas ref={spendTrendRef}></canvas>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+              {[
+                { label: 'Lowest month', value: inr(Math.min(...monthlyData.map((d:any)=>d.totalBill))), color: '#15803D' },
+                { label: 'Monthly avg',  value: inr(Math.round(monthlyData.reduce((a:any,d:any)=>a+d.totalBill,0)/monthlyData.length)), color: '#111827' },
+                { label: 'Peak month',   value: inr(Math.max(...monthlyData.map((d:any)=>d.totalBill))), color: '#1D4ED8' },
+              ].map(s => (
+                <div key={s.label} style={{ flex: 1, background: '#F3F4F6', borderRadius: '8px', padding: '12px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: s.color }}>{s.value}</div>
+                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '3px' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Bill generation funnel */}
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
@@ -321,7 +436,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
   )
 }
 
-function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
+function BasicLocations({ appState }: BasicSectionProps) {
   const allCAs    = Object.values(CAS).flat()
   const totalCAs  = allCAs.length
   const showBranches = appState.stateF !== 'all'
@@ -547,69 +662,19 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         </table>
       </div>
 
-      {analyticsMode === 'advanced' && (
-        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginTop: '16px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '4px' }}>Leakage heatmap — state × month</div>
-          <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '14px' }}>Leakage as % of total bill · advanced data · click a state to drill in</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#6B7280', marginBottom: '12px' }}>
-            <span>Low</span>
-            {['#EAF3DE','#FAC775','#EF9F27','#E24B4A','#A32D2D'].map((c, i) => (
-              <div key={i} style={{ width: '16px', height: '10px', borderRadius: '2px', background: c }} />
-            ))}
-            <span>High</span>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', fontSize: '11px', width: '100%', tableLayout: 'fixed' }}>
-              <thead>
-                <tr>
-                  <th style={{ width: '40px', padding: '4px 6px', textAlign: 'left', fontSize: '10px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '0.5px solid #E5E7EB' }}>State</th>
-                  {['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'].map(m => (
-                    <th key={m} style={{ padding: '4px 1px', textAlign: 'center', fontSize: '10px', fontWeight: 500, color: '#6B7280', borderBottom: '0.5px solid #E5E7EB' }}>{m}</th>
-                  ))}
-                  <th style={{ width: '36px', padding: '4px 4px', textAlign: 'right', fontSize: '10px', fontWeight: 500, color: '#6B7280', borderBottom: '0.5px solid #E5E7EB' }}>Avg</th>
-                </tr>
-              </thead>
-              <tbody>
-                {STATES.map((st, ri) => {
-                  const d = getStateBills(st, 'monthly')
-                  const mths = d.map((m: any) => Math.round(m.totalLeakage / Math.max(m.totalBill, 1) * 100))
-                  const avg = Math.round(mths.reduce((a: number, v: number) => a + v, 0) / mths.length)
-                  const getBg = (p: number) => p <= 0 ? '#f9f9f9' : p < 5 ? '#EAF3DE' : p < 10 ? '#FAC775' : p < 15 ? '#EF9F27' : p < 20 ? '#E24B4A' : '#A32D2D'
-                  const getTextColor = (p: number) => p >= 15 ? '#fff' : '#111827'
-                  return (
-                    <tr key={st}>
-                      <td style={{ padding: '3px 6px', fontSize: '11px', fontWeight: 600, color: '#111827', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>{st.substring(0,2).toUpperCase()}</td>
-                      {mths.map((pct: number, mi: number) => (
-                        <td key={mi} style={{ padding: '2px 1px', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>
-                          <div style={{ background: getBg(pct), borderRadius: '3px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 600, color: getTextColor(pct) }}>
-                            {pct > 0 ? pct + '%' : ''}
-                          </div>
-                        </td>
-                      ))}
-                      <td style={{ padding: '3px 4px', textAlign: 'right', fontWeight: 700, fontSize: '11px', color: avg >= 15 ? '#A32D2D' : avg >= 10 ? '#B45309' : '#15803D', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>
-                        {avg}%
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
 
 function BasicTrends({ appState }: BasicSectionProps) {
-  const spendTrendRef = useRef<HTMLCanvasElement>(null)
-  const spendTrendChart = useRef<Chart | null>(null)
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
+  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
+  const spendTrendChart = useRef<Chart | null>(null)
 
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -715,6 +780,101 @@ function BasicTrends({ appState }: BasicSectionProps) {
     }, 50)
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF])
+
+  // Monthly spend trend chart (simple line chart)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!spendTrendRef.current) return
+      const ctx = spendTrendRef.current.getContext('2d')
+      if (!ctx) return
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+      const padding = (maxVal - minVal) * 0.15
+      spendTrendChart.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            type: 'line' as const,
+            label: 'Total bill',
+            data: monthlyTotals,
+            borderColor: '#4F46E5',
+            borderWidth: 2,
+            backgroundColor: 'rgba(79,70,229,0.06)',
+            pointBackgroundColor: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx ? '#4F46E5' : i === minMonthIdx ? '#15803D' : '#fff'
+            ),
+            pointBorderColor: '#4F46E5',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBorderWidth: 2,
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'y',
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#f5f6fa',
+              titleColor: '#192744',
+              bodyColor: '#5e687d',
+              borderColor: '#f3f4f6',
+              borderWidth: 1,
+              padding: 10,
+              cornerRadius: 4,
+              displayColors: false,
+              callbacks: {
+                title: items => items[0].label,
+                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
+                afterLabel: item => {
+                  const i = item.dataIndex
+                  const lines = []
+                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
+                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
+                  else {
+                    const prev = monthlyTotals[i - 1]
+                    if (prev) {
+                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
+                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
+                    }
+                  }
+                  return lines.join('\n')
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#858ea2', font: { size: 11 } },
+            },
+            y: {
+              type: 'linear' as const,
+              position: 'left' as const,
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              min: Math.floor((minVal - padding) / 100000) * 100000,
+              max: Math.ceil((maxVal + padding) / 100000) * 100000,
+              ticks: {
+                color: '#858ea2',
+                font: { size: 11 },
+                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
+              },
+            },
+          },
+        },
+      })
+    }, 100)
+    return () => {
+      clearTimeout(timer)
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+    }
+  }, [labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx])
 
   // YoY change line chart — same style as spend chart
   useEffect(() => {
@@ -869,77 +1029,26 @@ function BasicTrends({ appState }: BasicSectionProps) {
     }, 50)
     return () => { clearTimeout(timer); if (caChart.current) caChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF])
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!spendTrendRef.current) return
-      const ctx = spendTrendRef.current.getContext('2d')
-      if (!ctx) return
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-      const padding = (maxVal - minVal) * 0.15
-      spendTrendChart.current = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            type: 'line' as const,
-            label: 'Total bill',
-            data: monthlyTotals,
-            borderColor: '#4F46E5',
-            borderWidth: 2,
-            backgroundColor: 'rgba(79,70,229,0.06)',
-            pointBackgroundColor: monthlyTotals.map((_, i) =>
-              i === maxMonthIdx ? '#4F46E5' : i === minMonthIdx ? '#22C55E' : '#fff'
-            ),
-            pointBorderColor: '#4F46E5',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBorderWidth: 2,
-            tension: 0.35,
-            fill: true,
-            yAxisID: 'y',
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#fff',
-              titleColor: '#111827',
-              bodyColor: '#6B7280',
-              borderColor: '#E5E7EB',
-              borderWidth: 1,
-              padding: 10,
-              cornerRadius: 8,
-              displayColors: false,
-              callbacks: {
-                title: (items: any) => items[0].label,
-                label: (item: any) => '  Bill: ₹' + (Number(item.raw) / 100000).toFixed(1) + 'L',
-              }
-            }
-          },
-          scales: {
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#9CA3AF', font: { size: 11 } } },
-            y: {
-              type: 'linear' as const, position: 'left' as const,
-              border: { display: false }, grid: { color: '#F3F4F6' },
-              min: Math.floor((minVal - padding) / 100000) * 100000,
-              max: Math.ceil((maxVal + padding) / 100000) * 100000,
-              ticks: { color: '#9CA3AF', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L' },
-            },
-          },
-        },
-      })
-    }, 100)
-    return () => { clearTimeout(timer); if (spendTrendChart.current) spendTrendChart.current.destroy() }
-  }, [appState, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx, labels])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-      {/* Summary KPI bar */}
+      {/* Summary cards */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+        {[
+          { label: 'Overall YoY change', value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', sub: 'avg monthly spend vs prior year',               subColor: overallYoy > 0 ? '#B45309' : '#15803D' },
+          { label: 'Peak month',         value: labels[maxMonthIdx],                              sub: inr(monthlyTotals[maxMonthIdx]) + ' · highest spend', subColor: '#B91C1C' },
+          { label: 'Lowest month',       value: labels[minMonthIdx],                              sub: inr(monthlyTotals[minMonthIdx]) + ' · lowest spend',  subColor: '#15803D' },
+          { label: 'Monthly average',    value: inr(avgCurrent),                                  sub: 'vs ' + inr(avgPrior) + ' prior year',           subColor: '#1D4ED8' },
+        ].map((k, i) => (
+          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+          </div>
+        ))}
+      </div>
 
       {/* Monthly spend trend */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
@@ -950,9 +1059,9 @@ function BasicTrends({ appState }: BasicSectionProps) {
         </div>
         <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
           {[
-            { label: 'Lowest month', value: inr(monthlyTotals.length ? Math.min(...monthlyTotals) : 0), color: '#15803D' },
-            { label: 'Monthly avg',  value: inr(monthlyTotals.length ? Math.round(monthlyTotals.reduce((a:number,v:number)=>a+v,0)/monthlyTotals.length) : 0), color: '#111827' },
-            { label: 'Peak month',   value: inr(monthlyTotals.length ? Math.max(...monthlyTotals) : 0), color: '#1D4ED8' },
+            { label: 'Lowest month', value: inr(Math.min(...monthlyTotals)), color: '#15803D' },
+            { label: 'Monthly avg',  value: inr(Math.round(monthlyTotals.reduce((a:number,v:number)=>a+v,0)/monthlyTotals.length)), color: '#111827' },
+            { label: 'Peak month',   value: inr(Math.max(...monthlyTotals)), color: '#1D4ED8' },
           ].map(s => (
             <div key={s.label} style={{ flex: 1, background: '#F3F4F6', borderRadius: '8px', padding: '12px 16px', textAlign: 'center' }}>
               <div style={{ fontSize: '16px', fontWeight: 700, color: s.color }}>{s.value}</div>
@@ -1312,7 +1421,7 @@ function AnomalyCard({ a }: { a: { id: number; icon: string; iconColor: string; 
 }
 
 
-function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
+function BasicBillers({ appState }: BasicSectionProps) {
   const [activeWeek, setActiveWeek] = useState<number | null>(null)
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
 
@@ -1474,47 +1583,6 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
         </div>
       </div>
-      {analyticsMode === 'advanced' && (
-        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Digital bill copy status</div>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '3px' }}>CAs opted for digital bill copy · bill_copy_enabled flag driven</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '16px' }}>
-            {([
-              { label: 'Opted in',  sublabel: 'bill_copy_enabled = true', count: Math.round(totalCAs * 0.75),  pct: undefined,                                                                                 tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
-              { label: 'Received',  sublabel: 'Bills fetched from biller', count: Math.round(totalCAs * 0.59), pct: Math.round(Math.round(totalCAs*0.59)/Math.max(Math.round(totalCAs*0.75),1)*100),          tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
-              { label: 'Pending',   sublabel: 'Fetch in progress',         count: Math.round(totalCAs * 0.10), pct: Math.round(Math.round(totalCAs*0.10)/Math.max(Math.round(totalCAs*0.75),1)*100),          tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
-              { label: 'Failed',    sublabel: 'Fetch error · needs fix',  count: Math.round(totalCAs * 0.06), pct: Math.round(Math.round(totalCAs*0.06)/Math.max(Math.round(totalCAs*0.75),1)*100),     tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
-            ] as const).map((step, i, arr) => {
-              const r = 18, stroke = 4, size = 44
-              const circ = 2 * Math.PI * r
-              const dash = step.pct !== undefined ? (step.pct / 100) * circ : 0
-              return (
-                <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
-                  <div style={{ flex: 1, background: step.tone.bg, border: `1px solid ${step.tone.border}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: '32px', fontWeight: 700, color: step.tone.text, lineHeight: 1 }}>{step.count}</div>
-                      {step.pct !== undefined && (
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
-                            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
-                            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
-                          </svg>
-                          <div style={{ position: 'absolute', fontSize: '10px', fontWeight: 600, color: step.tone.text }}>{step.pct}%</div>
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{step.label}</div>
-                    <div style={{ fontSize: '11px', color: step.tone.text, opacity: 0.6 }}>{step.sublabel}</div>
-                  </div>
-                  {i < arr.length - 1 && <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px', color: '#D1D5DB', fontSize: '16px' }}>→</div>}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px' }}>
         <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid #E5E7EB' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
