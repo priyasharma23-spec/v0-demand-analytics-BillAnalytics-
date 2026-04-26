@@ -368,7 +368,7 @@ export default function DashboardNav({
                 {basicSections.map((s) => (
                   <button key={s.id} onClick={() => onSectionChange(s.id)} style={{
                     border: 'none', fontFamily: 'inherit',
-                    padding: '4px 10px', fontSize: '12px',
+                    padding: '5px 12px', fontSize: '12.5px',
                     fontWeight: activeSection === s.id ? 600 : 400,
                     color: activeSection === s.id ? '#4F46E5' : '#6B7280',
                     cursor: 'pointer',
