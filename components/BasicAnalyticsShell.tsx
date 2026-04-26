@@ -1306,6 +1306,146 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         ))}
       </div>
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px' }}>
+      {analyticsMode === 'advanced' && (() => {
+        const TOTAL_CAS_DBC = totalCAs
+        const optedIn  = Math.round(TOTAL_CAS_DBC * 0.75)
+        const received = Math.round(TOTAL_CAS_DBC * 0.59)
+        const pending  = Math.round(TOTAL_CAS_DBC * 0.10)
+        const failed   = Math.round(TOTAL_CAS_DBC * 0.06)
+        const failedPct = Math.round(failed / Math.max(optedIn, 1) * 100)
+        const multiBillCount = 4
+        const multiBillCAs = 8
+        const dbcTableData = [
+          { biller: 'MSEDCL', state: 'Maharashtra', opted: 18, received: 14, pending: 2, failed: 2 },
+          { biller: 'BEST', state: 'Maharashtra', opted: 6, received: 5, pending: 1, failed: 0 },
+          { biller: 'BESCOM', state: 'Karnataka', opted: 16, received: 12, pending: 2, failed: 2 },
+          { biller: 'TNEB', state: 'Tamil Nadu', opted: 16, received: 13, pending: 2, failed: 1 },
+          { biller: 'DGVCL', state: 'Gujarat', opted: 10, received: 8, pending: 1, failed: 1 },
+          { biller: 'UGVCL', state: 'Gujarat', opted: 8, received: 6, pending: 1, failed: 1 },
+          { biller: 'TPDDL', state: 'Delhi', opted: 11, received: 9, pending: 1, failed: 1 },
+          { biller: 'BSES Rajdhani', state: 'Delhi', opted: 9, received: 7, pending: 1, failed: 1 },
+        ]
+        return (
+          <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Digital bill copy status</div>
+              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>CAs opted for digital bill copy · bill_copy_enabled flag driven · current month</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0 14px' }}>
+              <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Delivery funnel</span>
+              <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '20px' }}>
+              {([
+                { label: 'Opted in',  sublabel: 'bill_copy_enabled = true', count: optedIn,  pct: undefined,                                           tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
+                { label: 'Received',  sublabel: 'Bills fetched from biller', count: received, pct: Math.round(received/Math.max(optedIn,1)*100),         tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+                { label: 'Pending',   sublabel: 'Fetch in progress',         count: pending,  pct: Math.round(pending/Math.max(optedIn,1)*100),          tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+                { label: 'Failed',    sublabel: 'Fetch error · needs fix',  count: failed,   pct: Math.round(failed/Math.max(optedIn,1)*100),       tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+              ] as const).map((step, i, arr) => {
+                const r = 18, stroke = 4, size = 44
+                const circ = 2 * Math.PI * r
+                const dash = step.pct !== undefined ? (step.pct / 100) * circ : 0
+                return (
+                  <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
+                    <div style={{ flex: 1, background: step.tone.bg, border: `1px solid ${step.tone.border}`, borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ fontSize: '36px', fontWeight: 700, color: step.tone.text, lineHeight: 1 }}>{step.count}</div>
+                        {step.pct !== undefined && (
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+                              <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
+                              <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
+                            </svg>
+                            <div style={{ position: 'absolute', fontSize: '10px', fontWeight: 600, color: step.tone.text }}>{step.pct}%</div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{step.label}</div>
+                      <div style={{ fontSize: '12px', color: step.tone.text, opacity: 0.6 }}>{step.sublabel}</div>
+                    </div>
+                    {i < arr.length - 1 && <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px', flexShrink: 0, color: '#D1D5DB', fontSize: '16px' }}>→</div>}
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0 14px' }}>
+              <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Attention needed</span>
+              <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
+            </div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+              {([
+                { tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' }, title: 'Failed bill copies',  value: String(failed),   valueLabel: failedPct + '% failure rate',  detail: 'Check biller API connectivity. Repeated failures may block payment.',          action: 'View failed CAs'  },
+                { tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' }, title: 'Pending > 48 hrs',   value: String(Math.round(pending * 0.44)), valueLabel: 'of ' + pending + ' pending', detail: 'Bills waiting over 48 hours — need manual intervention to unblock.', action: 'Review stalled'   },
+                { tone: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', accent: '#22C55E' }, title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', valueLabel: undefined, detail: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs opted in. ' + (TOTAL_CAS_DBC - optedIn) + ' yet to opt.', action: 'View not opted' },
+                { tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' }, title: 'Multi-bill billers', value: String(multiBillCount), valueLabel: 'billers', detail: multiBillCAs + ' CAs received more than 1 bill this month. Review for duplicates.', action: 'Check duplicates' },
+              ] as const).map((card, ci) => (
+                <div key={ci}
+                  style={{ flex: 1, background: '#fff', border: `1px solid ${card.tone.border}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 0 3px ${card.tone.accent}18` }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.tone.accent, flexShrink: 0 }} />
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: 700, color: card.tone.text, lineHeight: 1 }}>{card.value}</div>
+                    {card.valueLabel && <div style={{ fontSize: '12px', color: card.tone.text, opacity: 0.65, fontWeight: 500 }}>{card.valueLabel}</div>}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5, flex: 1 }}>{card.detail}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: card.tone.accent, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                    {card.action} <span style={{ fontSize: '14px' }}>→</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Bill copy status by biller</div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr>
+                    {['Biller','State','Opted','Received','Pending','Failed','Success rate','Status'].map(h => (
+                      <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dbcTableData.map(r => {
+                    const rate = r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0
+                    const failRate = r.opted > 0 ? r.failed / r.opted : 0
+                    const barColor = rate >= 80 ? '#1D9E75' : rate >= 70 ? '#EF9F27' : '#E24B4A'
+                    const badge = failRate > 0.10 ? { bg: '#FCEBEB', color: '#A32D2D', label: 'High failure' } : failRate > 0.06 ? { bg: '#FAEEDA', color: '#633806', label: 'Check API' } : { bg: '#EAF3DE', color: '#27500A', label: 'Healthy' }
+                    return (
+                      <tr key={r.biller}
+                        onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
+                        onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
+                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{r.biller}</td>
+                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{r.state}</td>
+                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.opted}</td>
+                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.received}</td>
+                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#854F0B' }}>{r.pending}</td>
+                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#A32D2D' }}>{r.failed}</td>
+                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{rate}%</span>
+                            <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#f0f0f0', overflow: 'hidden', minWidth: '60px' }}>
+                              <div style={{ width: `${rate}%`, height: '100%', borderRadius: '3px', background: barColor }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: badge.bg, color: badge.color }}>{badge.label}</span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
         <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid #E5E7EB' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
