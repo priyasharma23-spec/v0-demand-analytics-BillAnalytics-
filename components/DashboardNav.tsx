@@ -329,7 +329,7 @@ export default function DashboardNav({
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', flexWrap: 'nowrap', scrollbarWidth: 'none' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', overflowX: 'auto', flexWrap: 'nowrap', scrollbarWidth: 'none', flex: 1, minWidth: 0 }}>
             {analyticsMode === 'basic' ? (
               <React.Fragment>
                 {[
@@ -368,7 +368,7 @@ export default function DashboardNav({
                 {basicSections.map((s) => (
                   <button key={s.id} onClick={() => onSectionChange(s.id)} style={{
                     border: 'none', fontFamily: 'inherit',
-                    padding: '5px 12px', fontSize: '12.5px',
+                    padding: '4px 10px', fontSize: '12px',
                     fontWeight: activeSection === s.id ? 600 : 400,
                     color: activeSection === s.id ? '#4F46E5' : '#6B7280',
                     cursor: 'pointer',
@@ -386,11 +386,11 @@ export default function DashboardNav({
                 key={section.id}
                 onClick={() => onSectionChange(section.id)}
                 style={{
-                  height: '32px',
-                  padding: '6px 14px',
+                  height: '28px',
+                  padding: '4px 10px',
                   borderRadius: '20px',
                   fontFamily: '"Inter", sans-serif',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: activeSection === section.id ? 600 : 400,
                   color: activeSection === section.id ? '#4F46E5' : '#6B7280',
                   background: activeSection === section.id ? '#EEF2FF' : 'transparent',
