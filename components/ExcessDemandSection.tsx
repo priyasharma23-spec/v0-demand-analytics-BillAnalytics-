@@ -297,7 +297,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
         </div>
         <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '12px', padding: '0 24px' }}>Click a row to drill down</div>
         <div style={{ overflowX: 'auto', paddingLeft: '24px', paddingRight: '24px', paddingBottom: '20px' }}>
-          <table className="breakdown-table">
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
               <tr>
                 {breakdownCols.map(c => <th key={c}>{c}</th>)}
@@ -307,7 +307,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
               {breakdownRows.map((r, i) => (
                 <tr
                   key={i}
-                  className={r.level !== 'ca' ? 'drillable' : ''}
+                  style={{ cursor: r.level !== 'ca' ? 'pointer' : 'default' }}
                   onClick={() => r.level !== 'ca' ? handleDrillDown(r) : undefined}
                 >
                   <td style={{ fontWeight: 500 }}>
@@ -318,12 +318,13 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
                   <td>{r.over}</td>
                   <td>{inr(r.totalLeak)}</td>
                   <td>
-                    <span className={`badge ${r.util > 110 ? 'over' : r.util > 100 ? 'warn' : 'ok'}`}>
+                    <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: r.util > 110 ? '#FCEBEB' : r.util > 100 ? '#FAEEDA' : '#EAF3DE', color: r.util > 110 ? '#A32D2D' : r.util > 100 ? '#633806' : '#27500A' }}>
                       {r.util > 110 ? 'Over' : r.util > 100 ? 'Near limit' : 'OK'}
                     </span>
-                    <div className="bar-bg">
-                      <div className="bar-f" style={{
+                    <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#F3F4F6', overflow: 'hidden', minWidth: '60px' }}>
+                      <div style={{
                         width: `${Math.min(r.util, 130)}%`,
+                        height: '100%', borderRadius: '3px',
                         background: r.util > 110 ? '#E24B4A' : r.util > 100 ? '#EF9F27' : '#1D9E75'
                       }} />
                     </div>
