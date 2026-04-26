@@ -61,8 +61,6 @@ export default function DashboardNav({
     { id: 'billers',   label: 'Billers',   icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><rect x="1.5" y="2" width="10" height="9" rx="1.5"/><path d="M4 5.5h5M4 7.5h3"/></svg> },
   ]
   const sections = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'billers', label: 'Billers' },
     { id: 'excess-demand', label: 'Excess demand' },
     { id: 'consumption', label: 'Consumption' },
     { id: 'leakages', label: 'Leakages' },
@@ -331,7 +329,7 @@ export default function DashboardNav({
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', overflowX: 'auto', flexWrap: 'nowrap', scrollbarWidth: 'none', flex: 1, minWidth: 0 }}>
             {analyticsMode === 'basic' ? (
               <React.Fragment>
                 {[
@@ -370,7 +368,7 @@ export default function DashboardNav({
                 {basicSections.map((s) => (
                   <button key={s.id} onClick={() => onSectionChange(s.id)} style={{
                     border: 'none', fontFamily: 'inherit',
-                    padding: '5px 12px', fontSize: '12.5px',
+                    padding: '4px 10px', fontSize: '12px',
                     fontWeight: activeSection === s.id ? 600 : 400,
                     color: activeSection === s.id ? '#4F46E5' : '#6B7280',
                     cursor: 'pointer',
@@ -382,17 +380,17 @@ export default function DashboardNav({
                     {s.icon}{s.label}
                   </button>
                 ))}
-                <div style={{ width: '1px', height: '18px', background: '#E5E7EB', margin: '0 4px', flexShrink: 0 }} />
+
                 {sections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => onSectionChange(section.id)}
                 style={{
-                  height: '32px',
-                  padding: '6px 14px',
+                  height: '28px',
+                  padding: '4px 10px',
                   borderRadius: '20px',
                   fontFamily: '"Inter", sans-serif',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: activeSection === section.id ? 600 : 400,
                   color: activeSection === section.id ? '#4F46E5' : '#6B7280',
                   background: activeSection === section.id ? '#EEF2FF' : 'transparent',

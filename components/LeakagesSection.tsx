@@ -295,6 +295,88 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
         ))}
       </div>
 
+      {/* Surfaced anomalies */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginBottom: '16px' }}>
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>Surfaced anomalies</div>
+          <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>Ranked by avoidable cost · leakage-related signals</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {[
+            {
+              anomalyKey: 'over_contracted_every_month',
+              title: '43 CAs exceeded contracted demand every single month',
+              where: 'MH · DL · KA',
+              amount: '₹4.8L',
+              amountLabel: 'avoidable / yr',
+              amountColor: '#A32D2D',
+              iconBg: '#FCEBEB',
+              iconColor: '#A32D2D',
+              cta: 'View CAs',
+            },
+            {
+              anomalyKey: 'pf_below_threshold',
+              title: 'Power factor below 0.90 in 28 branches for 6+ months',
+              where: 'UP · RJ',
+              amount: '₹2.1L',
+              amountLabel: 'avoidable / yr',
+              amountColor: '#854F0B',
+              iconBg: '#FAEEDA',
+              iconColor: '#854F0B',
+              cta: 'View branches',
+            },
+            {
+              anomalyKey: 'recurring_late_payment',
+              title: 'Late payment surcharge recurring in 19 CAs — 3+ consecutive months',
+              where: 'WB · GJ',
+              amount: '₹1.3L',
+              amountLabel: 'avoidable / yr',
+              amountColor: '#A32D2D',
+              iconBg: '#FCEBEB',
+              iconColor: '#A32D2D',
+              cta: 'View CAs',
+            },
+            {
+              anomalyKey: 'under_utilised',
+              title: '12 CAs under-utilising contracted demand below 70% — revision opportunity',
+              where: 'TN · RJ',
+              amount: '₹0.8L',
+              amountLabel: 'saveable / yr',
+              amountColor: '#15803D',
+              iconBg: '#F0FDF4',
+              iconColor: '#15803D',
+              cta: 'View CAs',
+            },
+          ].map((a, idx) => {
+            return (
+              <div key={a.anomalyKey} style={{ background: '#fff', border: '1.5px solid #F3F4F6', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', cursor: 'pointer', transition: 'all .16s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.border = '1.5px solid #4F46E5'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 16px rgba(0,0,0,.07)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.border = '1.5px solid #F3F4F6'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: a.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: a.iconColor, flexShrink: 0 }}>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <path d="M9 2.5L1.5 15.5h15L9 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="currentColor" fillOpacity="0.15" />
+                      <path d="M9 7v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                      <circle cx="9" cy="13" r="0.8" fill="currentColor" />
+                    </svg>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '22px', fontWeight: 800, color: a.amountColor, letterSpacing: '-0.5px' }}>{a.amount}</div>
+                    <div style={{ fontSize: '11px', color: '#858ea2' }}>{a.amountLabel}</div>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', lineHeight: 1.4 }}>{a.title}</div>
+                  {a.where && <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '6px' }}>{a.where}</div>}
+                </div>
+                <button style={{ alignSelf: 'flex-start', background: '#EEF2FF', color: '#4F46E5', border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {a.cta} →
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </div>
       {/* Stacked leakage chart */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
         <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Total leakage charges by type</div>
