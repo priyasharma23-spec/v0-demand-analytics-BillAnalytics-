@@ -270,68 +270,6 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
         </div>
       </div>
 
-      {/* Bill status table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: '12px', padding: '16px', marginBottom: '12px', marginTop: '24px' }}>
-        <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid rgba(0,0,0,0.10)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: '#192744' }}>
-                {statusView === 'state' ? 'Bill status — by state' : 'Bill status — by biller'}
-              </div>
-              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>
-                {statusView === 'state' ? 'Active CA states only · click to expand billers' : 'All registered billers'}
-              </div>
-            </div>
-            <div style={{ display: 'flex', background: '#f5f5f4', borderRadius: '10px', padding: '3px', gap: '2px' }}>
-              {(['state','biller'] as const).map(v => (
-                <button key={v} onClick={() => setStatusView(v)} style={{
-                  padding: '5px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
-                  border: 'none', cursor: 'pointer', textTransform: 'capitalize',
-                  background: statusView === v ? '#fff' : 'transparent',
-                  color: statusView === v ? '#192744' : '#858ea2',
-                }}>By {v}</button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 9 }}>
-              <tr>
-                {['Name', 'Total', 'Generated', 'Received', 'Processed', 'Paid', 'Drop', 'Status'].map(h => (
-                  <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(statusView === 'state' ? stateData : billerData).map((row: any, idx: number) => {
-                const name = 'state' in row ? row.state : row.biller
-                const status = row.dropPct > 25 ? 'High drop' : row.dropPct > 15 ? 'Watch' : 'Healthy'
-                return (
-                  <tr key={name}
-                    onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{name}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{row.total}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{row.generated}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#3B6D11' }}>{row.received}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#854F0B' }}>{row.processed}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{row.paid}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#A32D2D' }}>{row.dropPct}%</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                      <span style={{
-                        fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px',
-                        background: status === 'High drop' ? '#FCEBEB' : status === 'Watch' ? '#FAEEDA' : '#EAF3DE',
-                        color: status === 'High drop' ? '#A32D2D' : status === 'Watch' ? '#633806' : '#27500A',
-                      }}>{status}</span>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
     </div>
   )
