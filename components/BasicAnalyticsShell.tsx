@@ -613,6 +613,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
 
 
       {/* India map — leakage choropleth */}
+      <div style={{ marginTop: '24px' }} />
       {/* Heatmap — India map */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
