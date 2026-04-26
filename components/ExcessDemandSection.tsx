@@ -265,38 +265,38 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
         ))}
       </div>
 
-      <div className="chart-card px-6 py-6 mb-6">
-        <div className="chart-title text-lg font-semibold text-foreground">Contracted demand vs Max demand (MDI) — {chartMeta.granularityLabel}</div>
-        <div className="chart-sub text-sm text-foreground-secondary mt-1">kVA · {chartMeta.dateRangeLabel} · {chartMeta.scopeLabel}</div>
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '24px', marginBottom: '16px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>Contracted demand vs Max demand (MDI) — {chartMeta.granularityLabel}</div>
+        <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>kVA · {chartMeta.dateRangeLabel} · {chartMeta.scopeLabel}</div>
         <div style={{ position: 'relative', width: '100%', height: '260px', marginTop: '16px' }}>
           <canvas ref={edMainRef}></canvas>
         </div>
       </div>
 
-      <div className="chart-card px-6 py-6 mb-6">
-        <div className="chart-title text-lg font-semibold text-foreground">Excess demand charges — {chartMeta.granularityLabel} (₹)</div>
-        <div className="chart-sub text-sm text-foreground-secondary mt-1">Penalty billed when MDI exceeds contracted demand · {chartMeta.scopeLabel}</div>
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '24px', marginBottom: '16px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>Excess demand charges — {chartMeta.granularityLabel} (₹)</div>
+        <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>Penalty billed when MDI exceeds contracted demand · {chartMeta.scopeLabel}</div>
         <div style={{ position: 'relative', width: '100%', height: '200px', marginTop: '16px' }}>
           <canvas ref={edExcessRef}></canvas>
         </div>
       </div>
 
-      <div className="sec-label">Insights</div>
-      <div className="kpi-grid grid grid-cols-4 gap-4 px-6 py-4" style={{ marginBottom: '1.25rem' }}>
+      <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 0 8px 0' }}>Insights</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
         {kpis.map((kpi, i) => <KpiCard key={i} variant={kpi.variant} label={kpi.label} value={kpi.value} desc={kpi.desc} />)}
       </div>
 
       {/* Breakdown table */}
-      <div className="chart-card" id="lk-breakdownCard">
-        <div className="chart-title" id="lk-breakdownTitle">
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', overflow: 'hidden' }} id="lk-breakdownCard">
+        <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '4px', padding: '20px 24px 0' }} id="lk-breakdownTitle">
           {appState.stateF && appState.stateF !== 'all'
             ? appState.branchF && appState.branchF !== 'all'
               ? `Branch breakdown — ${appState.branchF}`
               : `Branch breakdown — ${appState.stateF}`
             : 'State breakdown — all states'}
         </div>
-        <div className="chart-sub" style={{ cursor: 'default' }}>Click a row to drill down</div>
-        <div style={{ overflowX: 'auto', marginTop: '10px' }}>
+        <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '12px', padding: '0 24px' }}>Click a row to drill down</div>
+        <div style={{ overflowX: 'auto', paddingLeft: '24px', paddingRight: '24px', paddingBottom: '20px' }}>
           <table className="breakdown-table">
             <thead>
               <tr>
