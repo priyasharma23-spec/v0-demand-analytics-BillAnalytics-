@@ -121,104 +121,6 @@ function BasicSummary({ appState }: BasicSectionProps) {
     }).length
   )
 
-  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
-  const spendTrendChart = useRef<Chart | null>(null)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!spendTrendRef.current) return
-      const ctx = spendTrendRef.current.getContext('2d')
-      if (!ctx) return
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-      const padding = (maxVal - minVal) * 0.15
-    spendTrendChart.current = new Chart(ctx, {
-      type: 'line',
-      data: {
-          labels,
-          datasets: [{
-            type: 'line' as const,
-            label: 'Total bill',
-            data: monthlyTotals,
-            borderColor: '#1c5af4',
-            borderWidth: 2,
-            backgroundColor: 'rgba(28,90,244,0.06)',
-            pointBackgroundColor: monthlyTotals.map((_, i) =>
-              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
-            ),
-            pointBorderColor: '#1c5af4',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBorderWidth: 2,
-            tension: 0.35,
-            fill: true,
-            yAxisID: 'y',
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#f5f6fa',
-              titleColor: '#192744',
-              bodyColor: '#5e687d',
-              borderColor: '#f3f4f6',
-              borderWidth: 1,
-              padding: 10,
-              cornerRadius: 4,
-              displayColors: false,
-              callbacks: {
-                title: items => items[0].label,
-                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
-                afterLabel: item => {
-                  const i = item.dataIndex
-                  const count = caCounts[i] ?? 0
-                  const lines = [`  Active CAs: ${count}`]
-                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
-                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
-                  else {
-                    const prev = monthlyTotals[i - 1]
-                    if (prev) {
-                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
-                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
-                    }
-                  }
-                  return lines.join('\n')
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              border: { display: false },
-              ticks: { color: '#858ea2', font: { size: 11 } },
-            },
-            y: {
-              type: 'linear' as const,
-              position: 'left' as const,
-              border: { display: false },
-              grid: { color: '#f3f4f6' },
-              min: Math.floor((minVal - padding) / 100000) * 100000,
-              max: Math.ceil((maxVal + padding) / 100000) * 100000,
-              ticks: {
-                color: '#858ea2',
-                font: { size: 11 },
-                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
-              },
-            },
-          },
-        },
-      })
-    }, 100)
-    return () => {
-      clearTimeout(timer)
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-    }
-  }, [appState, labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx, caCounts])
-
   return (
     <div>
       {/* Welcome banner */}
@@ -256,27 +158,6 @@ function BasicSummary({ appState }: BasicSectionProps) {
 
         {/* Left column */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
-
-          {/* Monthly spend trend */}
-          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '2px' }}>Monthly spend trend</div>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
-            <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-              <canvas ref={spendTrendRef}></canvas>
-            </div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
-              {[
-                { label: 'Lowest month', value: inr(Math.min(...monthlyData.map((d:any)=>d.totalBill))), color: '#15803D' },
-                { label: 'Monthly avg',  value: inr(Math.round(monthlyData.reduce((a:any,d:any)=>a+d.totalBill,0)/monthlyData.length)), color: '#111827' },
-                { label: 'Peak month',   value: inr(Math.max(...monthlyData.map((d:any)=>d.totalBill))), color: '#1D4ED8' },
-              ].map(s => (
-                <div key={s.label} style={{ flex: 1, background: '#F3F4F6', borderRadius: '8px', padding: '12px 16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: s.color }}>{s.value}</div>
-                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '3px' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Bill generation funnel */}
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
