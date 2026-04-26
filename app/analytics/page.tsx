@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import DashboardNav from '@/components/DashboardNav';
 import TopFilter from '@/components/TopFilter';
-import OverviewSection from '@/components/OverviewSection';
 import ExcessDemandSection from '@/components/ExcessDemandSection';
 import LeakagesSection from '@/components/LeakagesSection';
 import BillersSection from '@/components/BillersSection';
@@ -17,7 +16,7 @@ import { BillCategory } from '@/lib/calculations';
 
 export default function AnalyticsPage() {
   const [activeProduct, setActiveProduct] = useState<'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst'>('bill-payment');
-  const [activeSection, setActiveSection] = useState<'overview' | 'billers' | 'excess-demand' | 'consumption' | 'leakages' | 'savings'>('overview');
+  const [activeSection, setActiveSection] = useState<'billers' | 'excess-demand' | 'consumption' | 'leakages' | 'savings'>('leakages');
   const [analyticsMode, setAnalyticsMode] = useState<'basic' | 'advanced'>('basic');
   const [basicSection, setBasicSection] = useState('summary');
 
@@ -27,7 +26,7 @@ export default function AnalyticsPage() {
     branchF: 'all',
     caF: 'all',
     billCategory: 'all' as BillCategory,
-    section: 'overview',
+    section: 'leakages',
   });
 
   const [drilldown, setDrilldown] = useState<{ state: string; month: string; monthIndex: number } | null>(null);
@@ -37,7 +36,7 @@ export default function AnalyticsPage() {
   const handleProductChange = (product: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst') => {
     setActiveProduct(product);
     if (product === 'bill-payment') {
-      setActiveSection('overview');
+      setActiveSection('leakages');
     }
   };
 
@@ -132,19 +131,6 @@ export default function AnalyticsPage() {
                   <>
                     {['summary','locations','trends','billers'].includes(activeSection) && (
                       <BasicAnalyticsShell appState={appState} section={activeSection} analyticsMode='advanced' />
-                    )}
-                    {activeSection === 'overview' && (
-                      <OverviewSection 
-                        appState={appState}
-                        onStateChange={handleStateChange}
-                        onBranchChange={handleBranchChange}
-                        onCAChange={handleCAChange}
-                        onSectionChange={(s) => setActiveSection(s as any)}
-                        onHeatmapCellClick={(state, month, monthIndex) => {
-                          setDrilldown({ state, month, monthIndex });
-                        }}
-                        onAnomalyClick={(anomalyKey) => setAnomalyDrilldown(anomalyKey)}
-                      />
                     )}
                     {activeSection === 'billers' && <BillersSection appState={appState} onMultiBillReview={() => setMultiBillReview(true)} />}
                     {activeSection === 'excess-demand' && <ExcessDemandSection appState={appState} />}
