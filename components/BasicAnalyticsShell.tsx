@@ -1239,7 +1239,6 @@ function BasicTrends({ appState }: BasicSectionProps) {
   )
 }
 function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
-  const [activeWeek, setActiveWeek] = useState<number | null>(null)
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
 
   const allCAs = Object.values(CAS).flat()
@@ -1258,25 +1257,12 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     if (!byDay[ca.dueDay]) byDay[ca.dueDay] = []
     byDay[ca.dueDay].push(ca)
   })
-  const weeks = [
-    { label: 'Week 1 (1–7)',   days: [1,2,3,4,5,6,7]       },
-    { label: 'Week 2 (8–14)',  days: [8,9,10,11,12,13,14]   },
-    { label: 'Week 3 (15–21)', days: [15,16,17,18,19,20,21] },
-    { label: 'Week 4 (22–28)', days: [22,23,24,25,26,27,28] },
-  ]
-  const weeklyAmounts = weeks.map(w => {
-    const cas     = w.days.flatMap(d => byDay[d] ?? [])
-    const unpaid  = cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
-    const overdue = cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
-    return { ...w, unpaid, overdue, count: cas.length, unpaidCount: cas.filter(c => !c.isPaid).length }
-  })
   const totalUnpaid  = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
   const totalOverdue = caSchedule.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
   const overdueCount = caSchedule.filter(c => c.isOverdue).length
   const paidAmt      = caSchedule.filter(c => c.isPaid).reduce((s, c) => s + c.billAmt, 0)
   const paidCount    = caSchedule.filter(c => c.isPaid).length
   const approvalHold = Math.round(totalCAs * 0.068)
-  const calendarDays = Array.from({ length: 28 }, (_, i) => i + 1)
   const STATE_BILLERS: Record<string, string[]> = {
     'Maharashtra':['MSEDCL','BEST'], 'Karnataka':['BESCOM'],
     'Tamil Nadu':['TNEB'], 'Gujarat':['DGVCL','UGVCL'],
