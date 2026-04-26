@@ -304,6 +304,17 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           {[
             {
+              anomalyKey: 'over_contracted_every_month',
+              title: '43 CAs exceeded contracted demand every single month',
+              where: 'MH · DL · KA',
+              amount: '₹4.8L',
+              amountLabel: 'avoidable / yr',
+              amountColor: '#A32D2D',
+              iconBg: '#FCEBEB',
+              iconColor: '#A32D2D',
+              cta: 'View CAs',
+            },
+            {
               anomalyKey: 'pf_below_threshold',
               title: 'Power factor below 0.90 in 28 branches for 6+ months',
               where: 'UP · RJ',
@@ -323,6 +334,17 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
               amountColor: '#A32D2D',
               iconBg: '#FCEBEB',
               iconColor: '#A32D2D',
+              cta: 'View CAs',
+            },
+            {
+              anomalyKey: 'under_utilised',
+              title: '12 CAs under-utilising contracted demand below 70% — revision opportunity',
+              where: 'TN · RJ',
+              amount: '₹0.8L',
+              amountLabel: 'saveable / yr',
+              amountColor: '#15803D',
+              iconBg: '#F0FDF4',
+              iconColor: '#15803D',
               cta: 'View CAs',
             },
           ].map((a, idx) => {
