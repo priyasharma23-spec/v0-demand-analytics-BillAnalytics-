@@ -8,7 +8,6 @@ import { getFilteredBills, inr, inrK, STATES, BRANCHES, CAS, getStateBills, getC
 interface BasicAnalyticsShellProps {
   appState: { view: string; stateF: string; branchF: string; caF: string }
   section?: string
-  analyticsMode?: 'basic' | 'advanced'
 }
 
 type BasicSectionProps = {
@@ -22,7 +21,7 @@ const BASIC_SECTIONS = [
   { id: 'billers',   label: 'Billers'    },
 ]
 
-export default function BasicAnalyticsShell({ appState, section: sectionProp, analyticsMode = 'basic' }: BasicAnalyticsShellProps) {
+export default function BasicAnalyticsShell({ appState, section: sectionProp }: BasicAnalyticsShellProps) {
   const [sectionState, setSectionState] = useState('summary')
   const section = sectionProp ?? sectionState
   const setSection = setSectionState
@@ -33,10 +32,10 @@ export default function BasicAnalyticsShell({ appState, section: sectionProp, an
 
       {/* Section content */}
       <div style={{ padding: '20px' }}>
-        {section === 'summary' && <BasicSummary appState={appState} analyticsMode={analyticsMode} />}
-        {section === 'locations' && <BasicLocations appState={appState} analyticsMode={analyticsMode} />}
+        {section === 'summary' && <BasicSummary appState={appState} />}
+        {section === 'locations' && <BasicLocations appState={appState} />}
         {section === 'trends' && <BasicTrends appState={appState} />}
-        {section === 'billers' && <BasicBillers appState={appState} analyticsMode={analyticsMode} />}
+        {section === 'billers' && <BasicBillers appState={appState} />}
       </div>
     </div>
   )
@@ -71,7 +70,8 @@ function PlaceholderSection({ title, desc, bullets }: { title: string; desc: str
   )
 }
 
-function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
+function BasicSummary({ appState }: BasicSectionProps) {
+  const [activeWeek, setActiveWeek] = useState<number | null>(null)
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const allCAs        = Object.values(CAS).flat()
   const totalBill     = data.reduce((s, d) => s + d.totalBill, 0)
@@ -103,14 +103,6 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     cas:   (BRANCHES[st] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0),
   })).sort((a, b) => b.total - a.total)
 
-  // Top states by spend
-  const topStateRows = STATES.map(st => ({
-    name: st,
-    branches: (BRANCHES[st] ?? []).length,
-    cas: (BRANCHES[st] ?? []).reduce((s: number, br: string) => s + (CAS[br]?.length ?? 0), 0),
-    total: getStateBills(st, 'monthly').reduce((a: number, d: any) => a + d.totalBill, 0),
-  })).sort((a: any, b: any) => b.total - a.total).slice(0, 8)
-
   // Monthly data for chart
   const monthlyData = data
 
@@ -122,103 +114,35 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     }).length
   )
 
-  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
-  const spendTrendChart = useRef<Chart | null>(null)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!spendTrendRef.current) return
-      const ctx = spendTrendRef.current.getContext('2d')
-      if (!ctx) return
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-      const padding = (maxVal - minVal) * 0.15
-    spendTrendChart.current = new Chart(ctx, {
-      type: 'line',
-      data: {
-          labels,
-          datasets: [{
-            type: 'line' as const,
-            label: 'Total bill',
-            data: monthlyTotals,
-            borderColor: '#1c5af4',
-            borderWidth: 2,
-            backgroundColor: 'rgba(28,90,244,0.06)',
-            pointBackgroundColor: monthlyTotals.map((_, i) =>
-              i === maxMonthIdx ? '#1c5af4' : i === minMonthIdx ? '#36b37e' : '#fff'
-            ),
-            pointBorderColor: '#1c5af4',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBorderWidth: 2,
-            tension: 0.35,
-            fill: true,
-            yAxisID: 'y',
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#f5f6fa',
-              titleColor: '#192744',
-              bodyColor: '#5e687d',
-              borderColor: '#f3f4f6',
-              borderWidth: 1,
-              padding: 10,
-              cornerRadius: 4,
-              displayColors: false,
-              callbacks: {
-                title: items => items[0].label,
-                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
-                afterLabel: item => {
-                  const i = item.dataIndex
-                  const count = caCounts[i] ?? 0
-                  const lines = [`  Active CAs: ${count}`]
-                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
-                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
-                  else {
-                    const prev = monthlyTotals[i - 1]
-                    if (prev) {
-                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
-                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
-                    }
-                  }
-                  return lines.join('\n')
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              border: { display: false },
-              ticks: { color: '#858ea2', font: { size: 11 } },
-            },
-            y: {
-              type: 'linear' as const,
-              position: 'left' as const,
-              border: { display: false },
-              grid: { color: '#f3f4f6' },
-              min: Math.floor((minVal - padding) / 100000) * 100000,
-              max: Math.ceil((maxVal + padding) / 100000) * 100000,
-              ticks: {
-                color: '#858ea2',
-                font: { size: 11 },
-                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
-              },
-            },
-          },
-        },
-      })
-    }, 100)
-    return () => {
-      clearTimeout(timer)
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-    }
-  }, [appState, labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx, caCounts])
+  // Due date calendar and weekly capital plan data
+  const caSchedule = allCAs.map((ca) => {
+    const seed      = ca.charCodeAt(0) + ca.charCodeAt(ca.length - 1)
+    const dueDay    = (seed % 25) + 3
+    const billAmt   = Math.round(180000 + (seed % 50) * 4200)
+    const isPaid    = (seed % 10) < 6
+    const isOverdue = !isPaid && (seed % 10) < 8
+    const isDueSoon = !isPaid && !isOverdue
+    return { ca, dueDay, billAmt, isPaid, isOverdue, isDueSoon }
+  })
+  const byDay: Record<number, typeof caSchedule> = {}
+  caSchedule.forEach(ca => {
+    if (!byDay[ca.dueDay]) byDay[ca.dueDay] = []
+    byDay[ca.dueDay].push(ca)
+  })
+  const weeks = [
+    { label: 'Week 1 (1–7)',   days: [1,2,3,4,5,6,7]       },
+    { label: 'Week 2 (8–14)',  days: [8,9,10,11,12,13,14]   },
+    { label: 'Week 3 (15–21)', days: [15,16,17,18,19,20,21] },
+    { label: 'Week 4 (22–28)', days: [22,23,24,25,26,27,28] },
+  ]
+  const weeklyAmounts = weeks.map(w => {
+    const cas     = w.days.flatMap(d => byDay[d] ?? [])
+    const unpaid  = cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+    const overdue = cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
+    return { ...w, unpaid, overdue, count: cas.length, unpaidCount: cas.filter(c => !c.isPaid).length }
+  })
+  const totalUnpaid  = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+  const calendarDays = Array.from({ length: 28 }, (_, i) => i + 1)
 
   return (
     <div>
@@ -258,27 +182,6 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         {/* Left column */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
 
-          {/* Monthly spend trend */}
-          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '2px' }}>Monthly spend trend</div>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
-            <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-              <canvas ref={spendTrendRef}></canvas>
-            </div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
-              {[
-                { label: 'Lowest month', value: inr(Math.min(...monthlyData.map((d:any)=>d.totalBill))), color: '#15803D' },
-                { label: 'Monthly avg',  value: inr(Math.round(monthlyData.reduce((a:any,d:any)=>a+d.totalBill,0)/monthlyData.length)), color: '#111827' },
-                { label: 'Peak month',   value: inr(Math.max(...monthlyData.map((d:any)=>d.totalBill))), color: '#1D4ED8' },
-              ].map(s => (
-                <div key={s.label} style={{ flex: 1, background: '#F3F4F6', borderRadius: '8px', padding: '12px 16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: s.color }}>{s.value}</div>
-                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '3px' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Bill generation funnel */}
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
@@ -313,35 +216,87 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9CA3AF', flexShrink: 0 }}/>
               <div style={{ fontSize: '12px', color: '#6B7280' }}><span style={{ fontWeight: 600, color: '#111827' }}>{Math.round(totalCAs * 0.068)} CAs</span> on approval hold — excluded from paid count</div>
             </div>
-          </div>
-
-          {/* Top states by spend */}
-          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top states by spend</div>
-              <div style={{ fontSize: '12px', color: '#4F46E5', fontWeight: 600, cursor: 'pointer' }}>View all →</div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {topStateRows.map((s: any, i: number) => (
-                <div key={s.name}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
-                    <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i+1}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{s.name}</div>
-                      <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{s.branches} branches · {s.cas} CAs</div>
-                      <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
-                        <div style={{ height: '100%', width: `${s.total / topStateRows[0].total * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{inr(s.total)}</div>
-                      <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{Math.round(s.total/totalBill*100)}%</div>
-                    </div>
+          {/* Due date calendar */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '16px 18px', marginTop: '16px' }}>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '2px' }}>Due date calendar</div>
+            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '14px' }}>Bills due per day · current month</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+              {calendarDays.map(day => {
+                const dayCAs  = byDay[day] ?? []
+                const hasOver = dayCAs.some((c: any) => c.isOverdue)
+                const hasSoon = dayCAs.some((c: any) => c.isDueSoon)
+                const bg      = dayCAs.length === 0 ? '#F9FAFB' : hasOver ? '#FEF2F2' : hasSoon ? '#FFFBEB' : '#F0FDF4'
+                const border  = dayCAs.length === 0 ? '#E5E7EB' : hasOver ? '#FECACA' : hasSoon ? '#FDE68A' : '#BBF7D0'
+                const textCol = dayCAs.length === 0 ? '#9CA3AF' : hasOver ? '#B91C1C' : hasSoon ? '#B45309' : '#15803D'
+                return (
+                  <div key={day} style={{ background: bg, border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px', textAlign: 'center', minHeight: '44px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: textCol }}>{day}</div>
+                    {dayCAs.length > 0 && <div style={{ fontSize: '9px', color: textCol, marginTop: '1px' }}>{dayCAs.length} CA{dayCAs.length > 1 ? 's' : ''}</div>}
                   </div>
-                  {i < topStateRows.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
-                </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '11px', color: '#6B7280', flexWrap: 'wrap' }}>
+              {[{ color: '#FECACA', label: 'Overdue' },{ color: '#FDE68A', label: 'Due soon' },{ color: '#BBF7D0', label: 'Paid' },{ color: '#E5E7EB', label: 'No bills' }].map(item => (
+                <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: item.color, display: 'inline-block' }} />{item.label}
+                </span>
               ))}
             </div>
+          </div>
+          {/* Weekly capital plan */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', overflow: 'hidden', marginTop: '16px' }}>
+            <div style={{ padding: '16px 20px 14px', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827', marginBottom: '3px' }}>Weekly capital plan</div>
+                <div style={{ fontSize: '12px', color: '#6B7280' }}>Current month · plan ahead</div>
+              </div>
+              <div style={{ background: '#EEF2FF', border: '1.5px solid #C7D2FE', borderRadius: '10px', padding: '6px 14px', textAlign: 'right' }}>
+                <div style={{ fontSize: '10px', color: '#4F46E5', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>Month total</div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#4338CA' }}>{inr(totalUnpaid)}</div>
+              </div>
+            </div>
+            <div style={{ padding: '16px 20px 8px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '100px' }}>
+                {weeklyAmounts.map((w: any, wi: number) => {
+                  const maxAmt   = Math.max(...weeklyAmounts.map((x: any) => x.unpaid))
+                  const totalH   = Math.round((w.unpaid / Math.max(maxAmt,1)) * 80)
+                  const overdueH = Math.round((w.overdue / Math.max(maxAmt,1)) * 80)
+                  const safeH    = totalH - overdueH
+                  const hasOD    = w.overdue > 0
+                  const isAct    = activeWeek === wi
+                  return (
+                    <div key={wi} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', cursor: 'pointer' }}
+                      onMouseEnter={() => setActiveWeek(wi)} onMouseLeave={() => setActiveWeek(null)}>
+                      <div style={{ fontSize: '10px', fontWeight: isAct ? 700 : 500, color: isAct ? '#111827' : '#6B7280' }}>{inr(w.unpaid)}</div>
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '72px', borderRadius: '5px', overflow: 'hidden', background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#F3F4F6' }}>
+                        {safeH > 0 && <div style={{ height: safeH+'px', background: isAct ? '#7B6FE8' : '#C7D2FE' }} />}
+                        {overdueH > 0 && <div style={{ height: overdueH+'px', background: isAct ? '#EF4444' : '#FECACA' }} />}
+                      </div>
+                      <div style={{ fontSize: '10px', color: isAct ? '#4F46E5' : '#9CA3AF' }}>W{wi+1}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div style={{ padding: '4px 12px 14px', display: 'flex', gap: '6px' }}>
+              {weeklyAmounts.map((w: any, wi: number) => {
+                const hasOD = w.overdue > 0
+                const isAct = activeWeek === wi
+                const pct   = Math.round(w.unpaid / Math.max(totalUnpaid,1) * 100)
+                return (
+                  <div key={wi} onClick={() => setActiveWeek(isAct ? null : wi)} style={{ flex: '1 1 0', minWidth: 0, background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#fff', border: '1.5px solid '+(isAct ? (hasOD ? '#FECACA' : '#C7D2FE') : '#E5E7EB'), borderRadius: '10px', padding: '10px 12px', cursor: 'pointer' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827' }}>{w.label}</div>
+                    <div style={{ fontSize: '10px', color: '#9CA3AF' }}>{w.count} bills</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: hasOD ? '#EF4444' : '#4338CA', margin: '4px 0' }}>{inr(w.unpaid)}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#9CA3AF' }}>
+                      <span>{w.unpaidCount} unpaid</span><span>{pct}%</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
           </div>
 
         </div>
@@ -432,52 +387,11 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         </div>
       </div>
 
-
-      {analyticsMode === 'advanced' && (
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>Approval queue</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '16px' }}>
-              {[
-                { label: 'Pending',  count: 48,  textColor: '#B45309', bg: '#FFFBEB', bd: '#FDE68A' },
-                { label: 'Approved', count: 312, textColor: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
-                { label: 'On Hold',  count: 28,  textColor: '#6B7280', bg: '#F9FAFB', bd: '#E5E7EB' },
-                { label: 'Rejected', count: 12,  textColor: '#B91C1C', bg: '#FEF2F2', bd: '#FECACA' },
-              ].map(a => (
-                <div key={a.label} style={{ display: 'flex', alignItems: 'baseline', gap: '8px', padding: '10px 12px', borderRadius: '8px', background: a.bg, border: `1px solid ${a.bd}`, cursor: 'pointer' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.opacity = '0.8'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.10)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.opacity = '1'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: a.textColor, lineHeight: 1 }}>{a.count}</div>
-                  <div style={{ fontSize: '12px', fontWeight: 500, color: a.textColor }}>{a.label}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Action required</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              {[
-                { label: 'Fetch failed',    sub: 'BBPS error · payment blocked',  count: 34,  tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
-                { label: 'Not generated',   sub: 'Active CAs · no bill yet',      count: 170, tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
-                { label: 'Copy pending',    sub: 'Bill copy being fetched',             count: 62,  tone: { bg: '#EFF6FF', bd: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
-                { label: 'Duplicate bills', sub: 'Same bill fetched more than once',   count: 8,   tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
-              ].map(a => (
-                <div key={a.label} style={{ padding: '10px 12px', background: a.tone.bg, border: `1px solid ${a.tone.bd}`, borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '3px', alignSelf: 'stretch', borderRadius: '2px', background: a.tone.accent, flexShrink: 0 }}/>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: a.tone.text }}>{a.label}</div>
-                    <div style={{ fontSize: '11px', color: a.tone.text, opacity: 0.7 }}>{a.sub}</div>
-                  </div>
-                  <div style={{ fontSize: '22px', fontWeight: 700, color: a.tone.text, lineHeight: 1 }}>{a.count}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
 
-function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
+function BasicLocations({ appState }: BasicSectionProps) {
   const allCAs    = Object.values(CAS).flat()
   const totalCAs  = allCAs.length
   const showBranches = appState.stateF !== 'all'
@@ -564,7 +478,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
           <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top branch</div>
           <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{branchRows[0]?.name ?? '—'}</div>
-          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{branchRows[0] ? '₹' + (branchRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
+          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{branchRows[0] ? '���' + (branchRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
         </div>
         <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
           <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
@@ -703,56 +617,35 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         </table>
       </div>
 
-      {analyticsMode === 'advanced' && (
-        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginTop: '16px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '4px' }}>Leakage heatmap — state × month</div>
-          <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '14px' }}>Leakage as % of total bill · advanced data · click a state to drill in</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#6B7280', marginBottom: '12px' }}>
-            <span>Low</span>
-            {['#EAF3DE','#FAC775','#EF9F27','#E24B4A','#A32D2D'].map((c, i) => (
-              <div key={i} style={{ width: '16px', height: '10px', borderRadius: '2px', background: c }} />
-            ))}
-            <span>High</span>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', fontSize: '11px', width: '100%', tableLayout: 'fixed' }}>
-              <thead>
-                <tr>
-                  <th style={{ width: '40px', padding: '4px 6px', textAlign: 'left', fontSize: '10px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '0.5px solid #E5E7EB' }}>State</th>
-                  {['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'].map(m => (
-                    <th key={m} style={{ padding: '4px 1px', textAlign: 'center', fontSize: '10px', fontWeight: 500, color: '#6B7280', borderBottom: '0.5px solid #E5E7EB' }}>{m}</th>
-                  ))}
-                  <th style={{ width: '36px', padding: '4px 4px', textAlign: 'right', fontSize: '10px', fontWeight: 500, color: '#6B7280', borderBottom: '0.5px solid #E5E7EB' }}>Avg</th>
-                </tr>
-              </thead>
-              <tbody>
-                {STATES.map((st, ri) => {
-                  const d = getStateBills(st, 'monthly')
-                  const mths = d.map((m: any) => Math.round(m.totalLeakage / Math.max(m.totalBill, 1) * 100))
-                  const avg = Math.round(mths.reduce((a: number, v: number) => a + v, 0) / mths.length)
-                  const getBg = (p: number) => p <= 0 ? '#f9f9f9' : p < 5 ? '#EAF3DE' : p < 10 ? '#FAC775' : p < 15 ? '#EF9F27' : p < 20 ? '#E24B4A' : '#A32D2D'
-                  const getTextColor = (p: number) => p >= 15 ? '#fff' : '#111827'
-                  return (
-                    <tr key={st}>
-                      <td style={{ padding: '3px 6px', fontSize: '11px', fontWeight: 600, color: '#111827', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>{st.substring(0,2).toUpperCase()}</td>
-                      {mths.map((pct: number, mi: number) => (
-                        <td key={mi} style={{ padding: '2px 1px', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>
-                          <div style={{ background: getBg(pct), borderRadius: '3px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 600, color: getTextColor(pct) }}>
-                            {pct > 0 ? pct + '%' : ''}
-                          </div>
-                        </td>
-                      ))}
-                      <td style={{ padding: '3px 4px', textAlign: 'right', fontWeight: 700, fontSize: '11px', color: avg >= 15 ? '#A32D2D' : avg >= 10 ? '#B45309' : '#15803D', borderBottom: ri < STATES.length-1 ? '0.5px solid #F3F4F6' : 'none' }}>
-                        {avg}%
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+      {/* Top states by spend */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top states by spend</div>
+          <div style={{ fontSize: '12px', color: '#4F46E5', fontWeight: 600, cursor: 'pointer' }}>View all →</div>
         </div>
-      )}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {stateData.slice(0, 8).map((s, i) => (
+            <div key={s.state}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
+                <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{s.state}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(BRANCHES[s.state] ?? []).length} branches · {s.cas} CAs</div>
+                  <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
+                    <div style={{ height: '100%', width: `${s.total / Math.max(stateData[0].total, 1) * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{inr(s.total)}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{Math.round(s.total / portfolioTotal * 100)}%</div>
+                </div>
+              </div>
+              {i < 7 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   )
 }
@@ -761,9 +654,11 @@ function BasicTrends({ appState }: BasicSectionProps) {
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
+  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
+  const spendTrendChart = useRef<Chart | null>(null)
 
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -869,6 +764,101 @@ function BasicTrends({ appState }: BasicSectionProps) {
     }, 50)
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF])
+
+  // Monthly spend trend chart (simple line chart)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!spendTrendRef.current) return
+      const ctx = spendTrendRef.current.getContext('2d')
+      if (!ctx) return
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+      const padding = (maxVal - minVal) * 0.15
+      spendTrendChart.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            type: 'line' as const,
+            label: 'Total bill',
+            data: monthlyTotals,
+            borderColor: '#4F46E5',
+            borderWidth: 2,
+            backgroundColor: 'rgba(79,70,229,0.06)',
+            pointBackgroundColor: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx ? '#4F46E5' : i === minMonthIdx ? '#15803D' : '#fff'
+            ),
+            pointBorderColor: '#4F46E5',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBorderWidth: 2,
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'y',
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#f5f6fa',
+              titleColor: '#192744',
+              bodyColor: '#5e687d',
+              borderColor: '#f3f4f6',
+              borderWidth: 1,
+              padding: 10,
+              cornerRadius: 4,
+              displayColors: false,
+              callbacks: {
+                title: items => items[0].label,
+                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
+                afterLabel: item => {
+                  const i = item.dataIndex
+                  const lines = []
+                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
+                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
+                  else {
+                    const prev = monthlyTotals[i - 1]
+                    if (prev) {
+                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
+                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
+                    }
+                  }
+                  return lines.join('\n')
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#858ea2', font: { size: 11 } },
+            },
+            y: {
+              type: 'linear' as const,
+              position: 'left' as const,
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              min: Math.floor((minVal - padding) / 100000) * 100000,
+              max: Math.ceil((maxVal + padding) / 100000) * 100000,
+              ticks: {
+                color: '#858ea2',
+                font: { size: 11 },
+                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
+              },
+            },
+          },
+        },
+      })
+    }, 100)
+    return () => {
+      clearTimeout(timer)
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+    }
+  }, [labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx])
 
   // YoY change line chart — same style as spend chart
   useEffect(() => {
@@ -1045,6 +1035,27 @@ function BasicTrends({ appState }: BasicSectionProps) {
       </div>
 
       {/* Monthly spend trend */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '2px' }}>Monthly spend trend</div>
+        <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
+        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+          <canvas ref={spendTrendRef}></canvas>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+          {[
+            { label: 'Lowest month', value: inr(Math.min(...monthlyTotals)), color: '#15803D' },
+            { label: 'Monthly avg',  value: inr(Math.round(monthlyTotals.reduce((a:number,v:number)=>a+v,0)/monthlyTotals.length)), color: '#111827' },
+            { label: 'Peak month',   value: inr(Math.max(...monthlyTotals)), color: '#1D4ED8' },
+          ].map(s => (
+            <div key={s.label} style={{ flex: 1, background: '#F3F4F6', borderRadius: '8px', padding: '12px 16px', textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '3px' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Monthly spend — current vs prior year */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div>
@@ -1327,9 +1338,92 @@ function BasicDueDates({ appState }: BasicSectionProps) {
             </div>
           )}
 
-        </div>
+          </div>
 
-      </div>
+          {/* Due date calendar */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '2px' }}>Due date calendar</div>
+            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '14px' }}>Bills due per day · current month</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+              {calendarDays.map(day => {
+                const dayCAs  = byDay[day] ?? []
+                const hasOver = dayCAs.some(c => c.isOverdue)
+                const hasSoon = dayCAs.some(c => c.isDueSoon)
+                const bg      = dayCAs.length === 0 ? '#F9FAFB' : hasOver ? '#FEF2F2' : hasSoon ? '#FFFBEB' : '#F0FDF4'
+                const border  = dayCAs.length === 0 ? '#E5E7EB' : hasOver ? '#FECACA' : hasSoon ? '#FDE68A' : '#BBF7D0'
+                const textCol = dayCAs.length === 0 ? '#9CA3AF' : hasOver ? '#B91C1C' : hasSoon ? '#B45309' : '#15803D'
+                return (
+                  <div key={day} style={{ background: bg, border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px', textAlign: 'center', minHeight: '44px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: textCol }}>{day}</div>
+                    {dayCAs.length > 0 && <div style={{ fontSize: '9px', color: textCol, marginTop: '1px' }}>{dayCAs.length} CA{dayCAs.length > 1 ? 's' : ''}</div>}
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '11px', color: '#6B7280', flexWrap: 'wrap' }}>
+              {[{ color: '#FECACA', label: 'Overdue' },{ color: '#FDE68A', label: 'Due soon' },{ color: '#BBF7D0', label: 'Paid' },{ color: '#E5E7EB', label: 'No bills' }].map(item => (
+                <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: item.color, display: 'inline-block' }} />{item.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Weekly capital plan */}
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', overflow: 'hidden', marginTop: '16px' }}>
+            <div style={{ padding: '22px 24px 14px', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '3px' }}>Weekly capital plan</div>
+                <div style={{ fontSize: '12px', color: '#6B7280' }}>Current month · plan ahead</div>
+              </div>
+              <div style={{ background: '#EEF2FF', border: '1.5px solid #C7D2FE', borderRadius: '10px', padding: '6px 14px', textAlign: 'right' }}>
+                <div style={{ fontSize: '10px', color: '#4F46E5', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>Month total</div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#4338CA' }}>{inr(totalUnpaid)}</div>
+              </div>
+            </div>
+            <div style={{ padding: '16px 24px 8px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '100px' }}>
+                {weeklyAmounts.map((w, wi) => {
+                  const maxAmt   = Math.max(...weeklyAmounts.map(x => x.unpaid))
+                  const totalH   = Math.round((w.unpaid / Math.max(maxAmt,1)) * 80)
+                  const overdueH = Math.round((w.overdue / Math.max(maxAmt,1)) * 80)
+                  const safeH    = totalH - overdueH
+                  const hasOD    = w.overdue > 0
+                  const isAct    = activeWeek === wi
+                  return (
+                    <div key={wi} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', cursor: 'pointer' }}
+                      onMouseEnter={() => setActiveWeek(wi)} onMouseLeave={() => setActiveWeek(null)}>
+                      <div style={{ fontSize: '10px', fontWeight: isAct ? 700 : 500, color: isAct ? '#111827' : '#6B7280' }}>{inr(w.unpaid)}</div>
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '72px', borderRadius: '5px', overflow: 'hidden', background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#F3F4F6' }}>
+                        {safeH > 0 && <div style={{ height: safeH+'px', background: isAct ? '#7B6FE8' : '#C7D2FE' }} />}
+                        {overdueH > 0 && <div style={{ height: overdueH+'px', background: isAct ? '#EF4444' : '#FECACA' }} />}
+                      </div>
+                      <div style={{ fontSize: '10px', color: isAct ? '#4F46E5' : '#9CA3AF' }}>W{wi+1}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div style={{ padding: '4px 12px 14px', display: 'flex', gap: '6px' }}>
+              {weeklyAmounts.map((w, wi) => {
+                const hasOD = w.overdue > 0
+                const isAct = activeWeek === wi
+                const pct   = Math.round(w.unpaid / Math.max(totalUnpaid,1) * 100)
+                return (
+                  <div key={wi} onClick={() => setActiveWeek(isAct ? null : wi)} style={{ flex: '1 1 0', minWidth: 0, background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#fff', border: '1.5px solid '+(isAct ? (hasOD ? '#FECACA' : '#C7D2FE') : '#E5E7EB'), borderRadius: '10px', padding: '10px 12px', cursor: 'pointer' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827' }}>{w.label}</div>
+                    <div style={{ fontSize: '10px', color: '#9CA3AF' }}>{w.count} bills</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: hasOD ? '#EF4444' : '#4338CA', margin: '4px 0' }}>{inr(w.unpaid)}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#9CA3AF' }}>
+                      <span>{w.unpaidCount} unpaid</span><span>{pct}%</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+        </div>
     </div>
   )
 }
@@ -1394,7 +1488,7 @@ function AnomalyCard({ a }: { a: { id: number; icon: string; iconColor: string; 
 }
 
 
-function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
+function BasicBillers({ appState }: BasicSectionProps) {
   const [activeWeek, setActiveWeek] = useState<number | null>(null)
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
 
@@ -1556,47 +1650,6 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
         </div>
       </div>
-      {analyticsMode === 'advanced' && (
-        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Digital bill copy status</div>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '3px' }}>CAs opted for digital bill copy · bill_copy_enabled flag driven</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '16px' }}>
-            {([
-              { label: 'Opted in',  sublabel: 'bill_copy_enabled = true', count: Math.round(totalCAs * 0.75),  pct: undefined,                                                                                 tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
-              { label: 'Received',  sublabel: 'Bills fetched from biller', count: Math.round(totalCAs * 0.59), pct: Math.round(Math.round(totalCAs*0.59)/Math.max(Math.round(totalCAs*0.75),1)*100),          tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
-              { label: 'Pending',   sublabel: 'Fetch in progress',         count: Math.round(totalCAs * 0.10), pct: Math.round(Math.round(totalCAs*0.10)/Math.max(Math.round(totalCAs*0.75),1)*100),          tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
-              { label: 'Failed',    sublabel: 'Fetch error · needs fix',  count: Math.round(totalCAs * 0.06), pct: Math.round(Math.round(totalCAs*0.06)/Math.max(Math.round(totalCAs*0.75),1)*100),     tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
-            ] as const).map((step, i, arr) => {
-              const r = 18, stroke = 4, size = 44
-              const circ = 2 * Math.PI * r
-              const dash = step.pct !== undefined ? (step.pct / 100) * circ : 0
-              return (
-                <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
-                  <div style={{ flex: 1, background: step.tone.bg, border: `1px solid ${step.tone.border}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: '32px', fontWeight: 700, color: step.tone.text, lineHeight: 1 }}>{step.count}</div>
-                      {step.pct !== undefined && (
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
-                            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
-                            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
-                          </svg>
-                          <div style={{ position: 'absolute', fontSize: '10px', fontWeight: 600, color: step.tone.text }}>{step.pct}%</div>
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{step.label}</div>
-                    <div style={{ fontSize: '11px', color: step.tone.text, opacity: 0.6 }}>{step.sublabel}</div>
-                  </div>
-                  {i < arr.length - 1 && <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px', color: '#D1D5DB', fontSize: '16px' }}>→</div>}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px' }}>
         <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid #E5E7EB' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
