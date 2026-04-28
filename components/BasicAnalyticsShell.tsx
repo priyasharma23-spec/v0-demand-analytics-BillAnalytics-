@@ -1510,58 +1510,6 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
         )
       })()}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
-        <div style={{ paddingBottom: '14px', marginBottom: '14px', borderBottom: '0.5px solid #E5E7EB' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: '#111827' }}>{statusView === 'state' ? 'Bill status — by state' : 'Bill status — by biller'}</div>
-              <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>{statusView === 'state' ? 'Active CA states only' : 'All registered billers'}</div>
-            </div>
-            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: '10px', padding: '3px', gap: '2px' }}>
-              {(['state','biller'] as const).map(v => (
-                <button key={v} onClick={() => setStatusView(v)} style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500, border: 'none', cursor: 'pointer', textTransform: 'capitalize', background: statusView === v ? '#fff' : 'transparent', color: statusView === v ? '#111827' : '#6B7280' }}>By {v}</button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <thead>
-              <tr>
-                {(statusView === 'state' ? ['State','Billers','Active CAs','Bill available','Paid','Unpaid','Conversion'] : ['Biller','State','Active CAs','Bill available','Paid','Unpaid','Conversion']).map(h => (
-                  <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid #E5E7EB', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(statusView === 'state' ? stateData : billerData).map((r: any) => {
-                const convPct  = r.total > 0 ? Math.round(r.paid / r.total * 100) : 0
-                const barColor = convPct >= 85 ? '#22C55E' : convPct >= 75 ? '#F59E0B' : '#EF4444'
-                return (
-                  <tr key={statusView === 'state' ? r.state : r.biller}
-                    onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#F9FAFB'}
-                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid #F3F4F6', fontWeight: 500, color: '#4F46E5' }}>{statusView === 'state' ? r.state : r.biller}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid #F3F4F6', color: '#6B7280' }}>{statusView === 'state' ? r.billers : r.state}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid #F3F4F6', color: '#111827' }}>{r.total}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid #F3F4F6', color: '#111827' }}>{r.generated}<span style={{ fontSize: '11px', color: '#9CA3AF', marginLeft: '4px' }}>({r.total > 0 ? Math.round(r.generated/r.total*100) : 0}%)</span></td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid #F3F4F6', fontWeight: 500, color: '#15803D' }}>{r.paid}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid #F3F4F6', color: '#111827' }}>{r.generated - r.paid}</td>
-                    <td style={{ padding: '9px 10px', borderBottom: '0.5px solid #F3F4F6' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{convPct}%</span>
-                        <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#F3F4F6', overflow: 'hidden', minWidth: '60px' }}>
-                          <div style={{ width: convPct+'%', height: '100%', borderRadius: '3px', background: barColor }} />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   )
 }
