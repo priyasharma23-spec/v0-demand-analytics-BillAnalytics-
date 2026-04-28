@@ -1441,7 +1441,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Bill Copy Status — by {dbcView}</div>
-                  <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
+                  <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
                 </div>
                 <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
                   {(['Biller','State','Branch'] as const).map(v => (
@@ -1525,7 +1525,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Bill Status — by Biller</div>
-              <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
+              <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
               {dbcBasic.map((b) => {
