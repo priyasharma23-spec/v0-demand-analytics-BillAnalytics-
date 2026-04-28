@@ -723,7 +723,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           ))}
         </div>
       </div>
-        </div>
 
       <div style={{ marginTop: '24px' }} />
 
