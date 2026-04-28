@@ -1477,7 +1477,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                       </div>
                       {/* Expected */}
                       <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
-                        <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bill Copies
+                        <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bills
                       </div>
                       {/* Stats */}
                       <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
@@ -1524,7 +1524,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         return (
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
             <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Bill Copy Status — by Biller</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Bill Status — by Biller</div>
               <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
@@ -1549,7 +1549,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                       <div style={{ fontSize: '10.5px', color: '#9CA3AF', marginTop: '3px' }}>{b.state}</div>
                     </div>
                     <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
-                      <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bill Copies
+                      <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bills
                     </div>
                     <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                       <div style={{ textAlign: 'center' }}>
