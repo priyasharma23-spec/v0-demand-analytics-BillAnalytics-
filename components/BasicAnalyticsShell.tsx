@@ -946,11 +946,32 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       </div>
 
       {/* India map — leakage choropleth */}
+      <div style={{ marginTop: '24px' }} />
+      {/* Heatmap — India map */}
+      {(() => {
+        const PATHS = (() => {
+          const PATHS: Record<string, string> = {
+            'Andhra Pradesh': 'M138,220...',
+          }
+          return PATHS
+        })()
+        const [lpH, setLpH] = useState<string | null>(null)
+        const [selectedLeakageState, setSelectedLeakageState] = useState<string | null>(null)
+        
+        return (
+          <div style={{ display: 'flex', gap: '20px' }}>
+            {/* Leakage choropleth */}
+            <div style={{ flex: '0 0 280px' }}>
+              {/* Placeholder for leakage map */}
             </div>
-          )
-        })()}
-      </div>
-
+            
+            {/* Leakage ranking */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Placeholder for leakage ranking */}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
