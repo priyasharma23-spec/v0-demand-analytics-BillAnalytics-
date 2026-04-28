@@ -725,8 +725,11 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           ))}
         </div>
       </div>
-
-      {/* India map — leakage choropleth */}
+          )}
+        </div>
+        )
+      })()}
+    </div>
       <div style={{ marginTop: '24px' }} />
       {/* Heatmap — India map */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
@@ -942,10 +945,9 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         style={{ marginTop: '14px', width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #f3f4f6', background: '#fff', fontSize: '12px', fontWeight: 600, color: '#2500D7', cursor: 'pointer' }}>
                         Deep dive into {sel} →
                       </button>
-                    </div>
-                  )
-                })()}
-              </div>
+      </div>
+
+      {/* India map — leakage choropleth */}
             </div>
           )
         })()}
