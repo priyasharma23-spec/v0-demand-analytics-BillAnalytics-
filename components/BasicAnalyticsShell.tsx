@@ -399,6 +399,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   const [rankTab, setRankTab] = useState<'states' | 'branches' | 'cas'>('states')
   const [hov, setHov] = useState<string|null>(null)
   const [sel, setSel] = useState<string|null>(null)
+  const [spendHov, setSpendHov] = useState<string|null>(null)
+  const [spendSel, setSpendSel] = useState<string|null>(null)
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -706,6 +708,208 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         style={{ marginTop: '14px', width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #f3f4f6', background: '#fff', fontSize: '12px', fontWeight: 600, color: '#2500D7', cursor: 'pointer' }}>
                         Deep dive into {sel} →
                       </button>
+                    </div>
+                  )
+                })()}
+              </div>
+            </div>
+          )
+        })()}
+      </div>
+
+      {/* Spend by state — state × month */}
+      <div style={{ marginTop: '24px' }} />
+      {/* Spend heatmap — India map */}
+      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Spend by state — state × month</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>Total bill spend per state · click a state to drill in</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#858ea2' }}>
+            <span>Low</span>
+            {(['#DBEAFE','#93C5FD','#3B82F6','#1D4ED8','#1E3A8A'] as const).map((bg, bi) => (
+              <div key={bi} style={{ width: '16px', height: '10px', borderRadius: '2px', background: bg }} />
+            ))}
+            <span>High</span>
+          </div>
+        </div>
+        {(() => {
+          const MONTHS = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']
+          const spendData = {} as Record<string, { total: number; months: number[] }>
+          ['Maharashtra', 'Karnataka', 'Tamil Nadu', 'Gujarat', 'Delhi', 'Rajasthan', 'Uttar Pradesh', 'West Bengal'].forEach(st => {
+            const d = getStateBills(st, 'monthly')
+            const mths = d.map((m: any) => Math.round(m.totalBill / 100000))
+            const total = mths.reduce((a: number, v: number) => a + v, 0)
+            spendData[st] = { total, months: mths }
+          })
+          const maxSpend = Math.max(...Object.values(spendData).map(s => s.total), 1)
+          const getSpendBg = (t: number) => {
+            if (t <= 0) return '#f9f9f9'
+            const p = t / maxSpend
+            if (p < 0.2) return '#DBEAFE'
+            if (p < 0.4) return '#93C5FD'
+            if (p < 0.6) return '#3B82F6'
+            if (p < 0.8) return '#1D4ED8'
+            return '#1E3A8A'
+          }
+          const isDkSpend = (t: number) => t / maxSpend >= 0.4
+          const PATHS: Record<string,string> = {
+            'Andhra Pradesh':'M152.5 287.7L150.5 291.1L147.6 292.9L144.4 293.0L141.3 294.5L140.2 298.7L138.3 302.3L135.5 300.1L132.5 301.3L130.4 304.8L129.0 308.8L128.6 313.2L129.5 317.6L129.8 322.1L129.4 326.5L130.5 330.7L131.0 335.2L127.9 336.2L125.3 338.9L121.9 338.2L119.7 341.5L116.4 342.0L113.3 343.3L112.5 347.7L109.2 347.6L111.2 344.0L112.7 340.1L110.6 336.7L108.4 333.4L106.0 330.1L103.1 331.8L100.0 330.7L96.9 331.8L95.4 327.8L98.6 328.0L101.4 325.8L98.6 323.4L95.5 324.6L94.2 320.5L94.3 316.0L96.9 313.1L97.2 308.5L96.3 304.2L96.8 299.7L100.0 299.3L101.3 295.1L98.9 292.1L101.0 288.7L101.0 284.1L100.5 279.6L102.8 276.3L101.7 271.9L102.0 267.4L101.7 262.9L104.0 259.7L106.1 256.2L104.1 252.6L105.8 248.7L109.0 247.2L110.2 243.0L113.2 241.4L116.0 243.8L118.8 246.1L122.0 245.6L125.2 244.6L127.7 247.5L126.6 251.7L127.0 256.4L130.0 258.4L133.2 259.1L135.6 262.4L137.2 266.4L138.7 270.5L141.8 271.3L145.1 271.2L148.0 269.1L151.1 267.9L153.2 264.4L156.5 264.1L159.7 263.1L160.5 258.7L163.4 256.6L164.9 252.6L167.9 254.5L170.7 256.5L173.9 256.8L175.9 253.2L175.7 257.7L173.6 261.1L171.4 264.4L168.5 266.2L165.9 268.8L163.8 272.1L161.4 275.2L158.6 277.2L155.7 279.2L153.2 281.9L153.1 286.4L152.5 287.7Z',
+            'Bihar':'M171.9 126.6L174.8 128.7L178.0 130.7L179.8 134.4L182.8 136.2L185.9 137.4L189.1 137.1L192.0 139.4L195.3 139.9L198.2 141.8L201.4 142.3L204.7 143.1L208.0 142.7L211.3 142.3L214.5 141.3L214.7 145.8L212.0 148.2L212.6 152.6L214.1 156.6L211.0 157.6L208.1 159.7L205.8 162.7L203.8 166.3L201.8 169.9L198.6 170.3L195.9 172.6L193.3 169.9L190.7 167.0L188.4 170.3L185.2 171.1L182.3 173.3L179.4 171.2L176.6 173.3L173.9 170.8L170.7 169.5L167.6 171.5L165.2 168.5L163.6 164.6L164.5 160.3L167.4 158.3L170.0 155.6L173.2 154.2L176.3 153.3L174.0 149.9L171.2 147.7L172.5 143.6L169.6 141.5L172.6 139.8L171.2 135.7L170.4 131.2L171.5 127.0L171.9 126.6Z',
+            'Chhattisgarh':'M163.5 177.5L165.9 180.6L167.9 184.1L170.9 185.8L171.2 190.3L172.9 194.1L173.1 198.7L170.4 201.1L168.3 204.7L166.0 208.0L165.1 212.3L163.6 216.3L162.3 220.4L159.2 221.4L156.0 222.6L154.2 226.4L152.8 230.4L153.7 234.7L155.5 238.7L152.5 240.4L149.7 238.3L149.8 242.9L150.8 247.2L151.1 251.8L151.0 256.4L148.4 258.9L146.6 263.2L144.2 266.3L142.8 270.3L139.6 271.3L138.1 267.3L135.9 263.7L134.1 260.1L131.1 258.1L130.9 253.6L132.6 249.8L135.8 249.3L136.2 244.8L133.8 241.7L133.8 237.1L134.3 232.5L134.0 228.0L132.7 223.8L134.5 220.2L135.7 216.0L136.9 211.8L137.6 207.3L139.9 204.2L142.2 201.0L145.4 200.4L146.8 196.4L148.7 192.7L151.1 189.9L148.8 186.8L145.6 186.4L145.5 181.9L148.7 181.1L152.0 181.7L155.3 181.6L158.3 179.7L161.5 180.4L163.5 177.5Z',
+            'Delhi':'M98.3 106.9L99.3 111.2L96.1 111.2L96.4 106.6L98.3 106.9Z',
+            'Goa':'M63.0 295.0L65.5 297.0L64.0 300.0L61.5 298.0L63.0 295.0Z',
+            'Gujarat':'M43.8 169.4L46.8 171.5L50.0 172.1L53.0 173.7L55.1 177.2L57.8 179.7L58.7 184.0L60.9 187.4L64.0 188.9L66.7 191.3L68.2 195.4L66.7 199.4L66.1 203.8L65.4 208.2L62.7 211.2L62.3 215.7L65.5 215.5L63.5 219.0L60.8 221.5L63.0 224.8L62.4 229.3L59.1 228.7L57.7 232.7L56.2 236.6L53.6 233.9L50.9 236.7L51.6 232.3L51.8 227.8L50.5 223.7L49.0 219.7L50.5 215.7L48.5 212.2L48.3 207.7L51.1 205.5L47.9 205.8L45.7 209.1L45.7 213.6L44.6 217.8L42.8 221.5L39.9 223.4L37.0 225.4L34.0 226.9L30.9 227.9L29.3 223.9L26.6 226.3L23.9 223.9L21.5 220.9L19.4 217.5L17.2 214.3L14.7 211.4L12.3 208.4L10.2 205.1L13.4 204.8L16.2 202.7L19.4 202.6L22.3 200.7L24.5 197.5L26.3 193.8L23.2 194.6L20.1 195.8L17.1 197.5L14.0 196.4L11.0 194.9L8.2 192.7L6.7 188.8L5.2 184.8L7.5 181.6L8.1 176.6L11.4 175.1L14.7 175.0L17.9 175.9L21.1 176.5L24.0 174.2L27.3 172.7L29.8 175.7L32.6 173.7L32.8 169.2L36.0 169.6L39.3 169.4L42.6 169.3L43.8 169.4Z',
+            'Haryana':'M83.1 89.5L86.4 89.8L89.7 89.5L93.0 90.0L96.2 91.3L98.5 94.0L98.3 98.5L98.3 103.0L98.3 106.9L96.4 106.6L96.1 111.2L93.0 110.5L90.0 112.5L87.0 111.0L84.2 108.8L81.5 106.5L80.5 102.4L79.3 98.3L80.4 94.2L83.1 89.5Z',
+            'Himachal Pradesh':'M98.5 67.5L102.5 68.0L106.0 69.5L109.0 72.0L111.5 75.5L112.0 79.8L110.5 83.5L107.5 85.5L104.0 86.0L100.5 87.0L97.0 88.5L94.0 91.0L91.0 90.5L88.5 88.0L90.0 84.5L89.5 80.5L91.5 77.0L94.5 74.0L98.5 72.5L98.5 67.5Z',
+            'Jharkhand':'M185.0 158.0L188.5 160.0L192.0 162.0L195.5 164.0L198.5 166.5L200.5 170.0L203.0 173.5L203.5 178.0L204.0 182.5L201.5 185.0L198.5 187.5L195.5 185.5L192.5 183.0L190.0 186.0L187.0 188.0L184.0 186.5L181.0 184.0L178.5 181.0L177.5 177.0L175.5 173.5L173.5 170.5L176.5 168.5L179.5 166.5L182.0 164.0L184.5 161.0L185.0 158.0Z',
+            'Karnataka':'M99.6 262.0L102.4 264.3L102.9 268.8L101.4 272.7L103.3 276.3L100.7 279.0L101.2 283.4L101.0 287.9L98.7 291.3L101.7 293.0L101.3 297.5L98.2 299.1L97.3 303.4L96.4 307.9L97.3 312.2L94.1 312.1L93.7 316.6L94.5 321.1L96.6 324.7L99.8 324.1L100.0 328.6L96.8 327.6L95.9 331.9L99.0 330.5L101.9 332.4L104.8 330.2L107.9 331.5L110.3 334.4L111.7 338.7L111.5 343.2L109.1 346.6L106.0 345.3L103.5 348.1L102.5 352.5L104.2 356.3L101.6 359.1L98.7 360.9L95.4 361.2L92.7 363.9L89.6 362.7L86.9 360.0L83.7 358.6L81.2 355.7L79.1 352.4L76.9 349.1L74.3 346.4L72.4 342.8L71.7 338.5L71.2 334.0L70.3 329.7L69.1 325.6L68.0 321.3L66.7 317.2L67.1 312.8L67.4 308.3L66.8 303.9L68.3 299.9L69.3 295.6L67.7 291.7L70.6 289.8L73.1 287.0L75.6 284.2L78.9 283.7L81.9 282.3L80.8 277.7L84.0 277.4L87.1 278.9L89.2 275.6L91.3 272.0L94.2 270.1L95.5 265.9L98.3 263.6L99.6 262.0Z',
+            'Kerala':'M98.7 360.9L101.6 359.1L104.2 356.3L103.5 348.1L101.9 356.0L100.5 360.5L99.5 365.0L97.5 369.5L95.5 374.0L93.0 378.5L90.5 383.0L88.5 387.5L87.0 392.0L88.5 396.0L90.0 400.5L88.5 404.5L86.0 408.0L84.0 412.0L86.5 415.0L88.5 411.5L90.5 408.0L92.5 404.5L94.0 400.5L95.5 396.5L97.0 392.0L98.5 387.5L100.0 383.0L101.0 378.5L101.5 374.0L101.0 369.5L99.5 365.0L98.7 360.9Z',
+            'Madhya Pradesh':'M80.5 154.5L83.5 156.0L86.5 157.5L89.5 159.0L92.5 160.5L95.5 162.0L98.5 163.5L101.5 165.0L104.5 166.5L107.0 169.0L109.5 171.5L112.0 174.0L112.5 178.5L113.0 183.0L113.5 187.5L114.0 192.0L114.5 196.5L115.0 201.0L115.5 205.5L116.0 210.0L116.5 214.5L113.5 215.5L110.5 216.5L107.5 215.0L104.5 215.5L101.5 214.0L98.5 213.5L95.5 215.0L92.5 217.5L89.5 218.5L86.5 217.0L83.5 217.5L80.5 218.0L77.5 217.0L74.5 213.0L71.5 213.5L68.5 210.0L65.5 209.0L66.0 204.5L66.5 200.0L67.0 195.5L68.5 191.5L70.5 188.0L72.5 184.5L74.5 181.0L76.5 177.5L78.5 174.0L79.5 169.5L80.0 165.0L80.5 160.0L80.5 154.5Z',
+            'Maharashtra':'M68.6 208.4L69.5 212.7L72.4 214.6L75.5 215.8L78.4 217.9L81.7 218.0L84.9 217.8L87.2 221.0L90.3 221.5L93.0 217.8L95.8 213.8L99.0 212.9L102.1 214.4L103.7 218.3L106.9 217.5L109.5 214.9L112.6 216.0L116.0 216.5L118.8 214.2L122.0 213.6L125.1 214.7L128.3 215.4L131.6 215.6L134.0 218.6L132.7 222.7L133.8 227.0L134.5 231.4L132.5 234.9L133.7 239.0L135.1 243.2L137.5 246.1L134.8 248.9L131.9 251.0L131.5 255.5L128.8 258.0L127.3 254.0L127.4 249.3L126.1 245.2L122.8 245.5L119.6 245.9L116.8 243.7L113.6 241.6L110.4 240.4L110.0 244.9L108.7 249.0L105.5 248.8L104.1 252.8L104.6 257.4L102.3 260.6L100.2 264.0L97.1 265.5L95.1 269.1L92.8 272.5L89.8 274.2L89.4 278.7L86.2 278.5L83.0 277.7L81.9 282.0L78.9 283.7L75.7 284.7L72.6 287.1L70.1 290.1L66.9 290.3L68.5 294.3L68.7 298.8L66.3 301.8L63.1 302.1L60.1 300.7L58.3 296.9L57.2 292.7L56.9 288.2L56.5 283.7L55.7 279.4L54.8 275.1L54.2 270.7L53.0 266.5L52.3 262.1L51.9 257.6L53.6 253.7L51.2 250.8L50.9 246.3L50.0 242.0L50.2 237.5L53.4 236.8L56.5 235.7L58.1 231.7L61.2 230.1L63.4 226.7L61.3 223.1L63.3 219.5L65.9 216.8L62.7 216.3L62.3 211.8L65.2 209.6L68.3 208.4L68.6 208.4Z',
+            'Manipur':'M247.0 175.0L250.0 177.0L252.5 180.0L253.0 184.0L251.5 187.5L248.5 189.5L245.5 188.0L243.0 185.5L242.5 181.5L244.0 178.0L247.0 175.0Z',
+            'Meghalaya':'M215.0 143.5L218.5 144.0L222.0 145.5L225.5 147.5L228.0 150.5L226.5 153.5L223.5 154.5L220.5 153.0L217.5 151.5L214.5 150.0L213.5 147.0L215.0 143.5Z',
+            'Mizoram':'M245.0 190.0L248.0 192.5L249.5 196.0L248.5 199.5L245.5 201.0L242.5 199.0L241.5 195.5L242.5 192.0L245.0 190.0Z',
+            'Nagaland':'M248.5 161.0L252.0 162.5L254.5 165.5L254.0 169.5L251.0 171.0L247.5 170.0L245.5 167.0L246.0 163.5L248.5 161.0Z',
+            'Odisha':'M175.5 207.5L178.5 209.5L181.5 211.5L184.5 213.5L187.0 216.5L188.5 220.0L190.0 223.5L191.5 227.0L191.0 231.5L190.0 236.0L188.0 240.0L185.5 243.5L182.5 246.0L179.5 248.0L176.5 249.5L173.5 248.0L170.5 246.5L168.5 244.0L167.0 240.5L165.5 237.0L164.5 233.0L163.5 229.0L163.0 225.0L162.5 221.0L163.5 217.0L164.5 213.0L165.5 209.0L167.0 205.5L169.0 202.5L172.0 200.5L175.0 202.0L175.5 207.5Z',
+            'Punjab':'M73.5 76.5L77.0 77.5L80.5 79.0L84.0 80.5L87.0 83.0L88.5 87.0L86.5 90.5L83.5 90.5L80.5 89.5L77.5 88.0L74.5 86.5L72.0 84.0L71.5 80.5L73.5 76.5Z',
+            'Rajasthan':'M62.8 89.8L66.3 90.1L69.5 90.3L70.2 94.8L70.4 99.5L73.5 98.7L76.6 100.4L79.3 103.4L80.2 107.8L82.0 111.9L84.9 114.3L85.4 118.8L88.7 119.0L92.0 119.2L94.4 115.9L95.1 120.4L98.2 122.1L99.6 126.2L102.0 129.2L102.3 133.8L100.6 137.6L103.6 136.0L106.8 135.7L105.5 139.7L102.7 141.9L99.7 143.8L97.0 146.3L94.2 148.7L91.4 151.5L90.9 156.0L93.4 159.0L96.6 159.3L99.7 157.8L100.2 162.2L97.0 163.1L94.7 166.5L96.6 170.1L94.4 173.3L91.6 175.7L88.3 175.8L85.6 178.2L83.0 181.0L79.9 180.3L82.9 178.8L83.2 174.3L84.0 169.9L80.9 168.2L77.5 168.1L78.4 163.7L75.5 165.7L73.5 169.2L72.4 173.4L74.2 177.3L73.7 181.8L72.3 185.8L69.8 188.8L67.9 192.5L65.3 189.8L62.3 187.5L59.9 184.2L57.3 181.5L55.7 177.6L54.6 173.4L51.4 173.6L48.5 171.4L45.3 170.3L42.1 169.5L38.9 169.4L35.7 169.3L32.6 167.7L31.1 163.4L29.4 159.6L28.6 155.3L25.3 154.1L22.9 151.1L23.0 146.3L23.3 141.7L20.0 140.5L17.1 138.6L16.1 134.0L18.1 130.1L20.5 127.1L22.5 122.8L24.9 119.7L28.3 120.2L30.3 123.7L33.5 122.3L36.8 121.3L40.1 120.7L42.2 117.0L44.6 114.0L45.9 109.4L48.5 106.7L51.7 104.6L53.9 101.3L55.7 97.3L56.9 93.1L59.0 89.6L62.3 87.9L62.8 89.8Z',
+            'Tamil Nadu':'M128.8 335.2L131.6 337.4L131.1 341.9L130.5 346.2L129.7 350.6L127.8 354.2L126.4 358.2L125.6 362.6L126.1 367.0L126.5 371.5L126.4 376.1L126.5 380.6L123.9 383.1L120.7 383.7L119.6 387.9L117.7 391.5L116.2 395.6L118.7 398.4L115.5 399.0L112.6 400.7L109.7 402.5L108.4 406.6L107.6 411.0L105.1 413.8L102.2 415.6L99.0 415.2L98.2 410.8L97.9 406.3L98.0 401.8L99.4 397.5L97.6 393.7L98.3 389.2L98.9 384.8L95.7 384.7L94.1 380.6L94.9 376.3L92.4 373.5L90.4 369.9L88.6 366.1L90.7 362.5L93.8 363.9L96.2 361.0L99.5 361.6L102.2 359.0L101.0 354.8L102.7 350.8L104.4 346.9L107.5 345.7L110.1 348.5L113.0 346.1L114.7 342.4L117.9 342.6L121.0 341.2L123.8 339.1L127.0 338.1L128.8 335.2Z',
+            'Telangana':'M128.8 258.2L130.9 261.5L132.5 265.0L134.8 268.5L137.2 266.4L138.7 270.5L141.8 271.3L145.1 271.2L148.0 269.1L151.1 267.9L153.2 264.4L156.5 264.1L159.7 263.1L160.5 258.7L163.4 256.6L164.9 252.6L163.5 248.5L161.0 245.5L159.0 242.0L156.5 239.0L153.5 237.0L150.5 239.5L148.0 242.5L145.0 244.5L142.5 247.5L140.0 250.5L138.0 253.5L135.5 256.0L133.0 258.5L130.5 260.5L128.8 258.2Z',
+            'Tripura':'M236.0 171.0L239.5 172.0L242.0 175.0L241.5 178.5L238.5 179.5L235.5 178.0L234.5 174.5L236.0 171.0Z',
+            'Uttar Pradesh':'M102.2 83.4L105.1 85.4L103.9 89.6L104.5 94.0L107.5 95.4L110.2 92.5L112.7 95.6L115.7 97.5L116.3 101.9L119.1 104.1L121.8 106.6L125.1 106.1L127.9 108.6L131.1 108.7L134.3 109.2L137.0 111.8L140.3 113.8L142.3 117.2L145.3 119.2L148.1 121.4L151.3 121.5L154.0 124.0L157.2 124.6L160.0 127.4L163.1 129.2L166.5 127.2L169.3 129.5L170.9 133.6L173.4 136.6L171.5 140.3L172.5 144.6L172.4 149.1L175.5 150.8L173.3 154.2L170.2 155.5L167.6 158.2L164.7 160.2L163.6 164.4L165.1 168.5L164.3 172.8L163.7 177.3L161.4 180.6L158.1 179.5L157.3 175.2L156.9 170.7L154.1 168.6L151.1 167.0L148.3 164.5L145.2 163.2L142.2 161.5L140.3 165.1L137.0 165.0L134.6 162.0L131.6 163.8L131.3 159.1L128.1 159.2L125.7 162.3L122.6 162.8L120.8 159.0L118.7 162.4L116.5 159.0L113.5 157.5L113.0 162.2L114.7 166.1L116.3 170.0L116.3 174.5L113.1 174.3L110.1 172.9L109.3 168.5L110.2 164.1L110.3 159.6L111.7 155.5L115.0 154.9L116.1 150.7L117.1 146.3L118.0 141.9L115.8 138.5L112.6 137.7L109.4 136.9L106.3 135.7L103.1 136.3L102.5 131.9L100.6 128.2L99.6 123.9L101.7 120.2L101.8 115.6L99.9 112.0L98.4 107.8L97.7 103.4L97.2 98.8L97.3 94.3L98.4 90.1L100.8 86.9L102.2 83.4Z',
+            'Uttarakhand':'M107.5 67.0L110.5 69.0L113.5 71.0L116.5 73.5L118.5 77.0L119.0 81.0L117.5 84.5L114.5 86.0L111.5 84.5L108.5 83.0L106.0 80.5L104.5 77.0L105.0 73.0L107.5 67.0L107.5 67.0Z',
+            'West Bengal':'M214.7 132.4L217.9 133.0L221.1 132.2L223.5 135.2L226.5 136.9L229.7 137.0L232.9 138.5L233.0 143.0L230.9 146.4L228.3 149.0L225.6 146.6L223.9 142.8L220.8 144.2L218.5 141.1L217.1 145.1L215.3 148.8L216.7 152.9L218.9 156.1L222.1 156.8L223.6 160.8L220.3 161.0L217.9 164.0L214.8 165.3L213.9 169.6L216.3 172.5L219.2 174.5L221.2 178.0L219.6 182.0L220.8 186.2L221.6 190.6L222.9 194.7L223.3 199.1L222.7 203.5L220.2 206.3L219.2 210.6L216.1 211.8L215.7 207.3L213.0 204.9L213.7 209.2L211.6 212.7L208.6 214.3L205.9 211.9L202.7 210.4L200.6 207.0L200.2 202.5L198.5 198.7L196.6 195.1L193.6 193.3L190.7 191.5L190.5 187.0L193.5 185.4L196.7 184.5L199.9 183.6L202.6 181.2L205.8 180.6L207.9 177.3L210.5 174.6L211.9 170.6L212.5 166.2L210.9 162.2L210.9 157.7L214.0 156.9L212.7 152.8L211.6 148.5L214.3 146.1L215.7 142.0L215.3 137.5L213.7 133.6L214.7 132.4Z',
+            'Jammu and Kashmir':'M88.0 32.0L92.0 33.5L96.0 35.5L99.5 38.5L101.5 42.5L100.0 46.5L97.0 49.0L94.0 51.5L91.5 54.5L90.5 58.5L91.0 62.5L93.0 66.0L95.5 68.0L93.0 71.0L90.0 72.5L87.0 71.0L84.5 68.5L82.5 65.5L80.5 62.5L79.0 59.0L78.0 55.5L77.5 52.0L79.0 48.5L81.5 45.5L84.5 42.5L86.5 39.0L88.0 35.5L88.0 32.0Z',
+          }
+          const LBLS: Record<string,[number,number]> = {
+            'Maharashtra':[85,250],'Karnataka':[87,308],'Tamil Nadu':[108,375],
+            'Gujarat':[42,202],'Rajasthan':[72,142],'Delhi':[101,110],
+            'Uttar Pradesh':[139,133],'West Bengal':[210,172],
+            'Andhra Pradesh':[148,295],'Bihar':[192,149],'Madhya Pradesh':[115,187],
+            'Odisha':[178,224],'Chhattisgarh':[155,218],'Telangana':[145,255],
+          }
+          const ABBR: Record<string,string> = {
+            'Maharashtra':'MH','Karnataka':'KA','Tamil Nadu':'TN','Gujarat':'GJ',
+            'Rajasthan':'RJ','Delhi':'DL','Uttar Pradesh':'UP','West Bengal':'WB',
+            'Andhra Pradesh':'AP','Bihar':'BR','Madhya Pradesh':'MP','Odisha':'OD',
+            'Chhattisgarh':'CG','Telangana':'TG','Kerala':'KL','Punjab':'PB',
+            'Haryana':'HR','Jharkhand':'JH',
+          }
+          return (
+            <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+              {/* Map */}
+              <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <svg width={295} height={406} viewBox="0 0 320 440" style={{ background: '#F8FAFF', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
+                  <rect width="320" height="440" fill="#F8FAFF"/>
+                  {Object.entries(PATHS).map(([name, path]) => {
+                    const sd = spendData[name]
+                    const fill = sd ? getSpendBg(sd.total) : '#E8E6E0'
+                    const isSelected = spendSel === name
+                    const isHov = spendHov === name
+                    return (
+                      <path key={name} d={path} fill={fill}
+                        stroke={isSelected ? '#1E3A8A' : '#fff'}
+                        strokeWidth={isSelected ? 2 : 0.8}
+                        style={{ cursor: sd ? 'pointer' : 'default', transition: 'opacity .15s',
+                          opacity: spendSel && !isSelected ? 0.4 : spendHov && !isHov && !isSelected ? 0.6 : 1 }}
+                        onMouseEnter={() => sd && setSpendHov(name)}
+                        onMouseLeave={() => setSpendHov(null)}
+                        onClick={() => sd && setSpendSel(spendSel === name ? null : name)}
+                      />
+                    )
+                  })}
+                  {Object.entries(LBLS).map(([name,[x,y]]) => {
+                    const sd = spendData[name]
+                    if (!sd) return null
+                    return (
+                      <text key={name} x={x} y={y} textAnchor="middle" fontSize="8" fontWeight="700"
+                        fontFamily="sans-serif" style={{ pointerEvents:'none' }}
+                        fill={isDkSpend(sd.total) ? '#fff' : '#1e3a8a'}>
+                        {ABBR[name] ?? name.slice(0,2).toUpperCase()}
+                      </text>
+                    )
+                  })}
+                  {spendHov && !spendSel && spendData[spendHov] && LBLS[spendHov] && (() => {
+                    const [tx,ty] = LBLS[spendHov]
+                    return (
+                      <g style={{ pointerEvents:'none' }}>
+                        <rect x={tx-44} y={ty+5} width="88" height="18" rx="3" fill="#1E3A8A" opacity="0.92"/>
+                        <text x={tx} y={ty+17} textAnchor="middle" fontSize="9" fill="#fff" fontFamily="sans-serif">
+                          {spendHov} · {inr(spendData[spendHov].total * 100000)}
+                        </text>
+                      </g>
+                    )
+                  })()}
+                </svg>
+                <div style={{ display:'flex', alignItems:'center', gap:'3px', justifyContent:'center' }}>
+                  <span style={{ fontSize:'9px', color:'#9CA3AF' }}>Low</span>
+                  {['#DBEAFE','#93C5FD','#3B82F6','#1D4ED8','#1E3A8A'].map((bg,bi)=>(
+                    <div key={bi} style={{ width:'14px', height:'6px', borderRadius:'2px', background:bg }}/>
+                  ))}
+                  <span style={{ fontSize:'9px', color:'#9CA3AF' }}>High</span>
+                </div>
+              </div>
+              {/* State list or drill-down panel */}
+              <div style={{ flex:1, minWidth:0 }}>
+                {!spendSel ? (
+                  <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                    <div style={{ fontSize:'11px', fontWeight:600, color:'#9CA3AF', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'6px' }}>All states</div>
+                    {Object.entries(spendData).sort((a,b)=>b[1].total-a[1].total).map(([name, sd], i) => (
+                      <div key={name} onClick={() => setSpendSel(name)}
+                        style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
+                        <div style={{ fontSize:'11px', color:'#9CA3AF', fontWeight:600, width:'14px' }}>{i+1}</div>
+                        <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#111827' }}>{name}</div>
+                        <div style={{ fontSize:'12px', fontWeight:700, color:'#1D4ED8' }}>{inr(sd.total * 100000)}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (() => {
+                  const sd = spendData[spendSel]
+                  const branches = BRANCHES[spendSel] ?? []
+                  const branchCount = branches.length
+                  const totalBill = sd.total * 100000
+                  const avgPerBranch = branchCount > 0 ? Math.round(totalBill / branchCount) : 0
+                  const mthLabels = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']
+                  const peakMthIdx = sd.months.indexOf(Math.max(...sd.months))
+                  const lowMthIdx = sd.months.indexOf(Math.min(...sd.months))
+                  return (
+                    <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                        <div style={{ fontSize:'15px', fontWeight:700, color:'#111827' }}>{spendSel}</div>
+                        <button onClick={() => setSpendSel(null)}
+                          style={{ background:'none', border:'1px solid #E5E7EB', borderRadius:'6px', padding:'4px 10px', fontSize:'11.5px', color:'#6B7280', cursor:'pointer', fontFamily:'inherit' }}>
+                          ← All states
+                        </button>
+                      </div>
+                      {[
+                        { label:'Total Active Branches', value: String(branchCount), sub: 'branches in portfolio' },
+                        { label:'Avg Bill per Branch', value: inr(avgPerBranch), sub: 'per branch this FY' },
+                        { label:'Peak Month', value: mthLabels[peakMthIdx] + ' 2024', sub: inr(sd.months[peakMthIdx] * 100000) + ' highest spend' },
+                        { label:'Lowest Month', value: mthLabels[lowMthIdx] + ' 2024', sub: inr(sd.months[lowMthIdx] * 100000) + ' lowest spend' },
+                      ].map(m => (
+                        <div key={m.label} style={{ background:'#F9FAFB', border:'1px solid #E5E7EB', borderRadius:'10px', padding:'12px 14px' }}>
+                          <div style={{ fontSize:'10.5px', fontWeight:600, color:'#9CA3AF', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'4px' }}>{m.label}</div>
+                          <div style={{ fontSize:'18px', fontWeight:700, color:'#1D4ED8', lineHeight:1, marginBottom:'2px' }}>{m.value}</div>
+                          <div style={{ fontSize:'11.5px', color:'#6B7280' }}>{m.sub}</div>
+                        </div>
+                      ))}
+                      {/* Monthly sparkline */}
+                      <div style={{ background:'#F9FAFB', border:'1px solid #E5E7EB', borderRadius:'10px', padding:'12px 14px' }}>
+                        <div style={{ fontSize:'10.5px', fontWeight:600, color:'#9CA3AF', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'8px' }}>Monthly spend</div>
+                        <div style={{ display:'flex', alignItems:'flex-end', gap:'3px', height:'40px' }}>
+                          {sd.months.map((v,mi) => (
+                            <div key={mi} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'2px' }}>
+                              <div style={{ width:'100%', background: mi===peakMthIdx?'#1D4ED8':'#93C5FD', borderRadius:'2px 2px 0 0',
+                                height: Math.max(4, Math.round(v / Math.max(...sd.months) * 36)) + 'px' }}/>
+                              <div style={{ fontSize:'7px', color:'#9CA3AF' }}>{mthLabels[mi].slice(0,1)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )
                 })()}
