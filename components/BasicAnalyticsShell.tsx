@@ -519,10 +519,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       {/* Heatmap or branches listing based on filter */}
 
       {/* LEFT+RIGHT: spend map and ranked list */}
-      {(() => {
-        const [selectedSpendState, setSelectedSpendState] = useState<string|null>(null)
-        return (
-          <div style={{ display: 'flex', gap: '20px' }}>
+      <div style={{ display: 'flex', gap: '20px' }}>
         {/* LEFT: India spend map */}
         {(() => {
           const PATHS = (() => {
@@ -728,11 +725,11 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       </div>
           )}
         </div>
-        )
-      })()}
-    </div>
+      </div>
+
       <div style={{ marginTop: '24px' }} />
-      {/* Heatmap — India map */}
+
+    {/* India map — leakage choropleth */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
           <div>
