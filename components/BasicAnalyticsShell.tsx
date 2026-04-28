@@ -927,18 +927,18 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                                 <line key={i} x1={PAD.l} x2={W-PAD.r} y1={PAD.t + iH*(1-t)} y2={PAD.t + iH*(1-t)}
                                   stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" />
                               ))}
-                              <path d={areaPath} fill="#DBEAFE" opacity="0.4" />
-                              <path d={linePath} fill="none" stroke="#3B82F6" strokeWidth="1" strokeLinejoin="round" strokeLinecap="round" />
+                              <path d={areaPath} fill="#dbeafe" opacity="0.3" />
+                              <path d={linePath} fill="none" stroke="#1c5af4" strokeWidth="1" strokeLinejoin="round" strokeLinecap="round" />
                               {points.map(([x,y],i) => {
                                 const isPeak = i === peakMthIdx
                                 const isLow  = i === lowMthIdx
                                 return (
                                   <g key={i}>
                                     <circle cx={x} cy={y} r={isPeak ? 3 : 2}
-                                      fill={isPeak ? '#1D4ED8' : '#93C5FD'} stroke="#fff" strokeWidth="1" />
+                                      fill={isPeak ? '#1c5af4' : '#bfdbfe'} stroke="#fff" strokeWidth="1" />
                                     {(isPeak || isLow) && (
-                                      <text x={x} y={y-5} textAnchor="middle" fontSize="8" fontWeight="600"
-                                        fill={isPeak ? '#1D4ED8' : '#6B7280'}>
+                                      <text x={x} y={y-5} textAnchor="middle" fontSize="6" fontWeight="500"
+                                        fill={isPeak ? '#1c5af4' : '#858ea2'}>
                                         {inr(sd.months[i] * 100000)}
                                       </text>
                                     )}
@@ -946,8 +946,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                                 )
                               })}
                               {points.map(([x],i) => (
-                                <text key={i} x={x} y={H-1} textAnchor="middle" fontSize="8"
-                                  fill={i===peakMthIdx ? '#1D4ED8' : '#9CA3AF'}
+                                <text key={i} x={x} y={H-1} textAnchor="middle" fontSize="6"
+                                  fill={i===peakMthIdx ? '#1c5af4' : '#858ea2'}
                                   fontWeight={i===peakMthIdx ? '600' : '400'}>
                                   {mthLabels[i]}
                                 </text>
