@@ -397,6 +397,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   const totalCAs  = allCAs.length
   const showBranches = appState.stateF !== 'all'
   const [rankTab, setRankTab] = useState<'states' | 'branches' | 'cas'>('states')
+  const [selectedSpendState, setSelectedSpendState] = useState<string|null>(null)
 
   // Per-state data
   const stateData = STATES.map(st => {
