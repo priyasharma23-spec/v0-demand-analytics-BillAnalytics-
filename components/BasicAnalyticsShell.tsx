@@ -1441,7 +1441,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Bill Copy Status — by {dbcView}</div>
-                  <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
+                  <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
                 </div>
                 <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
                   {(['Biller','State','Branch'] as const).map(v => (
@@ -1477,7 +1477,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                       </div>
                       {/* Expected */}
                       <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
-                        <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bills
+                        <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bill Copies
                       </div>
                       {/* Stats */}
                       <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
@@ -1510,6 +1510,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
         )
       })()}
+      {/* BBPS_Billers — Basic only, independent copy, do not modify Advanced */}
       {analyticsMode !== 'advanced' && (() => {
         const dbcBasic = [
           { biller: 'MSEDCL',        state: 'Maharashtra', opted: 22, received: 19, pending: 3, failed: 2 },
