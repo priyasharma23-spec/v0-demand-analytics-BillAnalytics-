@@ -721,13 +721,13 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
 
       </>
       )}
-            {/* Spend by state — state × month */}
+            {/* Spend by state */}
       <div style={{ marginTop: '24px' }} />
       {/* Spend heatmap — India map */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Spend by state — state × month</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Spend by state</div>
             <div style={{ fontSize: '12px', color: '#858ea2' }}>Total bill spend per state · click a state to drill in</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#858ea2' }}>
@@ -1003,6 +1003,13 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
 }
 
 function BasicTrends({ appState }: BasicSectionProps) {
+  const [activeTab, setActiveTab] = useState<string>('spend')
+  const TABS = [
+    { key: 'spend',  label: 'Bill Trend',   color: '#4F46E5', bg: '#EEF2FF', bd: '#C7D2FE' },
+    { key: 'yoy',    label: 'YoY Change',   color: '#3B82F6', bg: '#EFF6FF', bd: '#BFDBFE' },
+    { key: 'ca',     label: 'CA Count',     color: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
+    { key: 'prior',  label: 'vs Prior Year',color: '#7C3AED', bg: '#F5F3FF', bd: '#DDD6FE' },
+  ]
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
@@ -1115,7 +1122,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       })
     }, 50)
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
-  }, [appState.stateF, appState.branchF, appState.caF])
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
   // Monthly spend trend chart (simple line chart)
   useEffect(() => {
@@ -1282,7 +1289,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       })
     }, 50)
     return () => { clearTimeout(timer); if (yoyChart.current) yoyChart.current.destroy() }
-  }, [appState.stateF, appState.branchF, appState.caF])
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
   // CA additions line chart — same style as spend chart
   useEffect(() => {
@@ -1364,97 +1371,69 @@ function BasicTrends({ appState }: BasicSectionProps) {
       })
     }, 50)
     return () => { clearTimeout(timer); if (caChart.current) caChart.current.destroy() }
-  }, [appState.stateF, appState.branchF, appState.caF])
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab])
+
+
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       {/* Summary cards */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '0px' }}>
         {[
-          { label: 'Overall YoY change', value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', sub: 'avg monthly spend vs prior year',               subColor: overallYoy > 0 ? '#B45309' : '#15803D' },
+          { label: 'Overall YoY change', value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', sub: 'avg monthly spend vs prior year', subColor: overallYoy > 0 ? '#B45309' : '#15803D' },
           { label: 'Peak month',         value: labels[maxMonthIdx],                              sub: inr(monthlyTotals[maxMonthIdx]) + ' · highest spend', subColor: '#B91C1C' },
           { label: 'Lowest month',       value: labels[minMonthIdx],                              sub: inr(monthlyTotals[minMonthIdx]) + ' · lowest spend',  subColor: '#15803D' },
-          { label: 'Monthly average',    value: inr(avgCurrent),                                  sub: 'vs ' + inr(avgPrior) + ' prior year',           subColor: '#1D4ED8' },
+          { label: 'Monthly average',    value: inr(avgCurrent),                                  sub: 'vs ' + inr(avgPrior) + ' prior year', subColor: '#1D4ED8' },
         ].map((k, i) => (
           <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
             {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
-            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
             <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
           </div>
         ))}
       </div>
 
-      {/* Monthly spend trend */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '2px' }}>Monthly spend trend</div>
-        <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>Total bill amount per month · Apr 2024 – Mar 2025</div>
-        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-          <canvas ref={spendTrendRef}></canvas>
+      {/* Single chart card with tabs */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px 24px' }}>
+
+        {/* Tab pills */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
+            {TABS.map(t => (
+              <button key={t.key} onClick={() => setActiveTab(t.key)}
+                style={{ background: activeTab === t.key ? '#4F46E5' : 'transparent', color: activeTab === t.key ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: activeTab === t.key ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s' }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: '11px', color: '#858ea2' }}>
+            {appState.stateF !== 'all' ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') : 'All states'} · Apr 2024 – Mar 2025
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+
+        {/* Chart area */}
+        <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+          {activeTab === 'spend' && <canvas ref={spendTrendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'prior' && <canvas ref={trendRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'yoy'   && <canvas ref={yoyRef}        style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'ca'    && <canvas ref={caRef}         style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+        </div>
+
+        {/* Stat pills */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '16px' }}>
           {[
-            { label: 'Lowest month', value: inr(Math.min(...monthlyTotals)), color: '#15803D' },
-            { label: 'Monthly avg',  value: inr(Math.round(monthlyTotals.reduce((a:number,v:number)=>a+v,0)/monthlyTotals.length)), color: '#111827' },
-            { label: 'Peak month',   value: inr(Math.max(...monthlyTotals)), color: '#1D4ED8' },
+            { label: 'Lowest month',  value: inr(Math.min(...monthlyTotals)),  bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+            { label: 'Monthly avg',   value: inr(avgCurrent),                  bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
+            { label: 'Peak month',    value: inr(Math.max(...monthlyTotals)),  bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
+            { label: 'YoY change',    value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
           ].map(s => (
-            <div key={s.label} style={{ flex: 1, background: '#F3F4F6', borderRadius: '8px', padding: '12px 16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: s.color }}>{s.value}</div>
-              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '3px' }}>{s.label}</div>
+            <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.bd}`, borderRadius: '6px', padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500 }}>{s.label}</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: s.color }}>{s.value}</div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Monthly spend — current vs prior year */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Monthly spend — current vs prior year</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>
-              {appState.stateF !== 'all'
-                ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · current vs prior year · monthly'
-                : 'All states · current vs prior year · monthly'}
-            </div>
-          </div>
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-          <canvas ref={trendRef}></canvas>
-        </div>
-      </div>
-
-      {/* YoY change — line chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Month-by-month YoY change</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>
-              {appState.stateF !== 'all'
-                ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · % change vs prior year'
-                : 'All states · % change vs same month prior year'}
-            </div>
-          </div>
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-          <canvas ref={yoyRef}></canvas>
-        </div>
-      </div>
-
-      {/* CA additions — line chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>CA additions — current vs prior year</div>
-            <div style={{ fontSize: '12px', color: '#858ea2' }}>
-              {appState.stateF !== 'all'
-                ? appState.stateF + (appState.branchF !== 'all' ? ' · ' + appState.branchF : '') + ' · active CAs per month'
-                : 'All states · active CAs per month'}
-            </div>
-          </div>
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-          <canvas ref={caRef}></canvas>
         </div>
       </div>
 
