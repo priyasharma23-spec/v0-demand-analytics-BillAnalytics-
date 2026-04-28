@@ -1531,13 +1531,10 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>Total CA Breakdown</div>
-                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '3px' }}>By payment type &amp; connection · {total} active CAs</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>Connection Type Breakdown</div>
+                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '3px' }}>Connection type by Active CAs</div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: '#111827' }}>{total}</div>
-                <div style={{ fontSize: '13px', color: '#9CA3AF' }}>Active CAs</div>
-              </div>
+
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
               {/* Donut */}
