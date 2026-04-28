@@ -397,6 +397,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   const totalCAs  = allCAs.length
   const showBranches = appState.stateF !== 'all'
   const [rankTab, setRankTab] = useState<'states' | 'branches' | 'cas'>('states')
+  const [hov, setHov] = useState<string|null>(null)
+  const [sel, setSel] = useState<string|null>(null)
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -489,66 +491,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         </div>
       </div>
 
-      {/* Heatmap or branches listing based on filter */}
-
-      {/* Ranked table */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top by spend</div>
-          <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: '8px', padding: '2px', gap: '2px' }}>
-            {([
-              { id: 'states',   label: 'State'   },
-              { id: 'branches', label: 'Branch'  },
-              { id: 'cas',      label: 'CA'      },
-            ] as const).map(t => (
-              <button key={t.id} onClick={() => setRankTab(t.id)} style={{
-                padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 500,
-                border: 'none', cursor: 'pointer',
-                background: rankTab === t.id ? '#fff' : 'transparent',
-                color: rankTab === t.id ? '#111827' : '#6B7280',
-                boxShadow: rankTab === t.id ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
-              }}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {(rankTab === 'states' ? locationRows : rankTab === 'branches' ? branchRows : caRows).map((row, i, arr) => (
-            <div key={row.name}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0' }}>
-                <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, width: '16px', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', fontFamily: rankTab === 'cas' ? 'monospace' : 'inherit' }}>{row.name}</div>
-
-                  </div>
-                  {rankTab === 'states' && (
-                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>
-                      {(BRANCHES[(row as any).state ?? row.name] ?? []).length} branches · {row.cas} CAs
-                    </div>
-                  )}
-                  {rankTab === 'branches' && (
-                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(row as any).sub} · {row.cas} CAs</div>
-                  )}
-                  {rankTab === 'cas' && (
-                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px' }}>{(row as any).sub} · {(row as any).state}</div>
-                  )}
-                  <div style={{ height: '4px', background: '#F3F4F6', borderRadius: '99px' }}>
-                    <div style={{ height: '100%', width: `${row.total / Math.max(arr[0].total, 1) * 100}%`, background: i === 0 ? '#4F46E5' : '#C7D2FE', borderRadius: '99px' }}/>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{inr(row.total)}</div>
-                  <div style={{ fontSize: '11px', color: row.yoy > 10 ? '#B91C1C' : row.yoy < -10 ? '#B91C1C' : '#9CA3AF' }}>{row.yoy > 0 ? '+' : ''}{row.yoy}% YoY</div>
-                </div>
-              </div>
-              {i < arr.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
-            </div>
-          ))}
-        </div>
-      </div>
-
 
       {/* India map — leakage choropleth */}
       <div style={{ marginTop: '24px' }} />
@@ -612,8 +554,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             'Gujarat':'GJ','Uttar Pradesh':'UP','West Bengal':'WB','Rajasthan':'RJ',
             'Jammu and Kashmir':'J&K',
           }
-          const [hov, setHov] = useState<string|null>(null)
-          const [sel, setSel] = useState<string|null>(null)
           return (
             <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
               <div style={{ position: 'relative', flexShrink: 0 }}>
