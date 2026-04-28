@@ -469,27 +469,27 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       {/* Summary chips */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
         <div style={{ flex: 1.4, padding: '20px 24px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top location</div>
-          <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(topItem as any).name ?? (topItem as any).state ?? '—'}</div>
-          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{inr(topItem.total)} · {Math.round(topItem.total/portfolioTotal*100)}% of portfolio</div>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top location</div>
+          <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(topItem as any).name ?? (topItem as any).state ?? '—'}</div>
+          <div style={{ fontSize: '12px', color: '#858ea2' }}>{inr(topItem.total)} · {Math.round(topItem.total/portfolioTotal*100)}% of portfolio</div>
         </div>
         <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
           <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
-          <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Avg spend per location</div>
-          <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{inr(avgSpend)}</div>
-          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{showBranches ? appState.stateF + ' · current period' : 'across all states · current period'}</div>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Avg spend per location</div>
+          <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px' }}>{inr(avgSpend)}</div>
+          <div style={{ fontSize: '12px', color: '#858ea2' }}>{showBranches ? appState.stateF + ' · current period' : 'across all states · current period'}</div>
         </div>
         <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
           <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
-          <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top branch</div>
-          <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{branchRows[0]?.name ?? '—'}</div>
-          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{branchRows[0] ? '���' + (branchRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top branch</div>
+          <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{branchRows[0]?.name ?? '—'}</div>
+          <div style={{ fontSize: '12px', color: '#858ea2' }}>{branchRows[0] ? '���' + (branchRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
         </div>
         <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
           <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
-          <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top CA</div>
-          <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caRows[0]?.name ?? '—'}</div>
-          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{caRows[0] ? '₹' + (caRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top CA</div>
+          <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caRows[0]?.name ?? '—'}</div>
+          <div style={{ fontSize: '12px', color: '#858ea2' }}>{caRows[0] ? '₹' + (caRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
         </div>
       </div>
 
@@ -655,7 +655,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           <button onClick={() => setSel(null)} style={{ fontSize: '11px', color: '#2500D7', border: 'none', background: 'none', cursor: 'pointer', padding: 0, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             ← All states
                           </button>
-                          <div style={{ fontSize: '15px', fontWeight: 600, color: '#192744' }}>{sel}</div>
+                          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>{sel}</div>
                           <div style={{ fontSize: '11px', color: '#858ea2' }}>{cas[sel] || 0} CAs · Apr 2024 �� Mar 2025</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
@@ -666,11 +666,11 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
                         <div style={{ background: '#f5f6fa', borderRadius: '8px', padding: '10px 12px' }}>
                           <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '2px' }}>Avg leakage % of bill</div>
-                          <div style={{ fontSize: '18px', fontWeight: 600, color: info ? getBg(info.pct) === '#EAF3DE' ? '#27500A' : '#A32D2D' : '#192744' }}>{info ? info.pct : 0}%</div>
+                          <div style={{ fontSize: '20px', fontWeight: 600, color: info ? getBg(info.pct) === '#EAF3DE' ? '#27500A' : '#A32D2D' : '#192744' }}>{info ? info.pct : 0}%</div>
                         </div>
                         <div style={{ background: '#f5f6fa', borderRadius: '8px', padding: '10px 12px' }}>
                           <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '2px' }}>YoY change</div>
-                          <div style={{ fontSize: '18px', fontWeight: 600, color: '#3B6D11' }}>+8%</div>
+                          <div style={{ fontSize: '20px', fontWeight: 600, color: '#3B6D11' }}>+8%</div>
                         </div>
                       </div>
                       {info && (
@@ -859,7 +859,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
               <div style={{ flex:1, minWidth:0 }}>
                 {!spendSel ? (
                   <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
-                    <div style={{ fontSize:'11px', fontWeight:600, color:'#9CA3AF', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'6px' }}>All states</div>
+                    <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'6px' }}>All states</div>
                     {Object.entries(spendData).sort((a,b)=>b[1].total-a[1].total).map(([name, sd], i) => (
                       <div key={name} onClick={() => setSpendSel(name)}
                         style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
@@ -883,9 +883,9 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                   return (
                     <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                        <div style={{ fontSize:'15px', fontWeight:700, color:'#111827' }}>{spendSel}</div>
+                        <div style={{ fontSize:'16px', fontWeight:600, color:'#192744' }}>{spendSel}</div>
                         <button onClick={() => setSpendSel(null)}
-                          style={{ background:'none', border:'1px solid #E5E7EB', borderRadius:'6px', padding:'4px 10px', fontSize:'11.5px', color:'#6B7280', cursor:'pointer', fontFamily:'inherit' }}>
+                          style={{ background:'none', border:'1px solid #E5E7EB', borderRadius:'4px', padding:'4px 10px', fontSize:'11px', color:'#858ea2', cursor:'pointer', fontFamily:'inherit' }}>
                           ← All states
                         </button>
                       </div>
@@ -896,9 +896,9 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         { label:'Lowest Month', value: mthLabels[lowMthIdx] + ' 2024', sub: inr(sd.months[lowMthIdx] * 100000) + ' lowest spend' },
                       ].map(m => (
                         <div key={m.label} style={{ background:'#F9FAFB', border:'1px solid #E5E7EB', borderRadius:'10px', padding:'12px 14px' }}>
-                          <div style={{ fontSize:'10.5px', fontWeight:600, color:'#9CA3AF', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'4px' }}>{m.label}</div>
-                          <div style={{ fontSize:'18px', fontWeight:700, color:'#1D4ED8', lineHeight:1, marginBottom:'2px' }}>{m.value}</div>
-                          <div style={{ fontSize:'11.5px', color:'#6B7280' }}>{m.sub}</div>
+                          <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'4px' }}>{m.label}</div>
+                          <div style={{ fontSize:'20px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'2px' }}>{m.value}</div>
+                          <div style={{ fontSize:'12px', color:'#858ea2' }}>{m.sub}</div>
                         </div>
                       ))}
                       {/* Monthly sparkline */}
