@@ -488,7 +488,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         <div style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
           <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />
           <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Top CA</div>
-          <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caRows[0]?.name ?? '—'}</div>
+          <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caRows[0]?.name ?? '—'}</div>
           <div style={{ fontSize: '12px', color: '#858ea2' }}>{caRows[0] ? '₹' + (caRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
         </div>
       </div>
@@ -881,7 +881,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                   const peakMthIdx = sd.months.indexOf(Math.max(...sd.months))
                   const lowMthIdx = sd.months.indexOf(Math.min(...sd.months))
                   return (
-                    <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <div style={{ fontSize:'16px', fontWeight:600, color:'#192744' }}>{spendSel}</div>
                         <button onClick={() => setSpendSel(null)}
@@ -895,17 +895,17 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         { label:'Peak Month', value: mthLabels[peakMthIdx] + ' 2024', sub: inr(sd.months[peakMthIdx] * 100000) + ' highest spend' },
                         { label:'Lowest Month', value: mthLabels[lowMthIdx] + ' 2024', sub: inr(sd.months[lowMthIdx] * 100000) + ' lowest spend' },
                       ].map(m => (
-                        <div key={m.label} style={{ background:'#F9FAFB', border:'1px solid #E5E7EB', borderRadius:'10px', padding:'12px 14px' }}>
+                        <div key={m.label} style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'12px 14px' }}>
                           <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'4px' }}>{m.label}</div>
                           <div style={{ fontSize:'20px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'2px' }}>{m.value}</div>
                           <div style={{ fontSize:'12px', color:'#858ea2' }}>{m.sub}</div>
                         </div>
                       ))}
                       {/* Monthly sparkline */}
-                      <div style={{ background:'#F9FAFB', border:'1px solid #E5E7EB', borderRadius:'10px', padding:'12px 14px' }}>
+                      <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'12px 14px' }}>
                         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
-                          <div style={{ fontSize:'10px', fontWeight:600, color:'#9CA3AF', textTransform:'uppercase', letterSpacing:'0.07em', fontFamily:'Inter, sans-serif' }}>Monthly spend</div>
-                          <div style={{ display:'flex', gap:'10px', fontSize:'9px', color:'#6B7280', fontFamily:'Inter, sans-serif' }}>
+                          <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em' }}>Monthly spend</div>
+                          <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
                             <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
                             <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
                           </div>
