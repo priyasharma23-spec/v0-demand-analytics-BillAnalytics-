@@ -492,6 +492,77 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       {/* Heatmap or branches listing based on filter */}
 
       {/* Ranked table */}
+      <div style={{ display: 'flex', gap: '28px', alignItems: 'flex-start' }}>
+        {/* LEFT: India spend map */}
+        {(() => {
+          const [spH, setSpH] = useState<string|null>(null)
+          const maxSpend = Math.max(...stateData.map(s => s.total), 1)
+          const getColor = (state: string) => {
+            const sd = stateData.find(s => s.state === state)
+            if (!sd) return '#F3F4F6'
+            const pct = sd.total / maxSpend
+            if (pct === 0) return '#F3F4F6'
+            if (pct < 0.2) return '#C7D2FE'
+            if (pct < 0.4) return '#A5B4FC'
+            if (pct < 0.6) return '#818CF8'
+            if (pct < 0.8) return '#4F46E5'
+            return '#3730A3'
+          }
+          const STATE_ABBR: Record<string, string> = {
+            'Andhra Pradesh': 'AP', 'Bihar': 'BR', 'Chhattisgarh': 'CG', 'Delhi': 'DL',
+            'Goa': 'GA', 'Gujarat': 'GJ', 'Haryana': 'HR', 'Himachal Pradesh': 'HP',
+            'Jammu and Kashmir': 'JK', 'Jharkhand': 'JH', 'Karnataka': 'KA', 'Kerala': 'KL',
+            'Madhya Pradesh': 'MP', 'Maharashtra': 'MH', 'Manipur': 'MN', 'Meghalaya': 'ML',
+            'Mizoram': 'MZ', 'Nagaland': 'NL', 'Odisha': 'OD', 'Punjab': 'PB',
+            'Rajasthan': 'RJ', 'Tamil Nadu': 'TN', 'Telangana': 'TG', 'Tripura': 'TR',
+            'Uttar Pradesh': 'UP', 'Uttarakhand': 'UT', 'West Bengal': 'WB'
+          }
+          const PATHS: Record<string,string> = {
+            'Maharashtra': 'M98.1 189.5L101.2 191.2L104.3 192.5L107.5 191.8L110.6 193.1L113.5 194.9L114.3 199.2L112.8 202.8L110.1 204.7L107.3 206.9L104.8 210.0L102.3 212.8L99.8 214.5L96.9 213.2L94.2 211.5L92.8 207.3L94.1 203.0L95.8 198.9L98.1 195.2L98.1 189.5Z',
+            'Karnataka': 'M99.6 262.0L102.4 264.3L102.9 268.8L101.4 272.7L103.3 276.3L100.7 279.0L101.2 283.4L101.0 287.9L98.7 291.3L101.7 293.0L101.3 297.5L98.2 299.1L97.3 303.4L96.4 307.9L97.3 312.2L94.1 312.1L93.7 316.6L94.5 321.1L96.6 324.7L99.8 324.1L100.0 328.6L96.8 327.6L95.9 331.9L99.0 330.5L101.9 332.4L104.8 330.2L107.9 331.5L110.3 334.4L111.7 338.7L111.5 343.2L109.1 346.6L106.0 345.3L103.5 348.1L102.5 352.5L104.2 356.3L101.6 359.1L98.7 360.9L95.4 361.2L92.7 363.9L89.6 362.7L86.9 360.0L83.7 358.6L81.2 355.7L79.1 352.4L76.9 349.1L74.3 346.4L72.4 342.8L71.7 338.5L71.2 334.0L70.3 329.7L69.1 325.6L68.0 321.3L66.7 317.2L67.1 312.8L67.4 308.3L66.8 303.9L68.3 299.9L69.3 295.6L67.7 291.7L70.6 289.8L73.1 287.0L75.6 284.2L78.9 283.7L81.9 282.3L80.8 277.7L84.0 277.4L87.1 278.9L89.2 275.6L91.3 272.0L94.2 270.1L95.5 265.9L98.3 263.6L99.6 262.0Z',
+            'Tamil Nadu': 'M120.5 325.6L122.8 328.5L125.6 330.2L127.8 333.4L130.2 335.8L132.4 338.9L134.1 342.7L136.4 345.8L138.2 349.5L140.9 351.2L142.1 355.5L140.3 358.9L138.0 360.2L135.3 361.8L132.6 362.5L130.1 365.2L127.8 362.8L125.7 359.7L123.9 356.3L122.5 352.8L121.8 349.0L121.2 345.1L120.9 341.2L120.8 337.4L120.6 333.5L120.5 325.6Z',
+            'Gujarat': 'M43.8 169.4L46.8 171.5L50.0 172.1L53.0 173.7L55.1 177.2L57.8 179.7L58.7 184.0L60.9 187.4L64.0 188.9L66.7 191.3L68.2 195.4L66.7 199.4L66.1 203.8L65.4 208.2L62.7 211.2L62.3 215.7L65.5 215.5L63.5 219.0L60.8 221.5L63.0 224.8L62.4 229.3L59.1 228.7L57.7 232.7L56.2 236.6L53.6 233.9L50.9 236.7L51.6 232.3L51.8 227.8L50.5 223.7L49.0 219.7L50.5 215.7L48.5 212.2L48.3 207.7L51.1 205.5L47.9 205.8L45.7 209.1L45.7 213.6L44.6 217.8L42.8 221.5L39.9 223.4L37.0 225.4L34.0 226.9L30.9 227.9L29.3 223.9L26.6 226.3L23.9 223.9L21.5 220.9L19.4 217.5L17.2 214.3L14.7 211.4L12.3 208.4L10.2 205.1L13.4 204.8L16.2 202.7L19.4 202.6L22.3 200.7L24.5 197.5L26.3 193.8L23.2 194.6L20.1 195.8L17.1 197.5L14.0 196.4L11.0 194.9L8.2 192.7L6.7 188.8L5.2 184.8L7.5 181.6L8.1 176.6L11.4 175.1L14.7 175.0L17.9 175.9L21.1 176.5L24.0 174.2L27.3 172.7L29.8 175.7L32.6 173.7L32.8 169.2L36.0 169.6L39.3 169.4L42.6 169.3L43.8 169.4Z',
+            'Delhi': 'M98.3 106.9L99.3 111.2L96.1 111.2L96.4 106.6L98.3 106.9Z',
+            'Rajasthan': 'M65.2 132.1L68.4 134.0L71.6 135.2L74.7 136.8L77.8 138.2L80.9 139.4L84.1 140.1L87.2 141.5L90.4 142.3L93.5 143.8L96.7 144.6L93.6 145.9L90.4 145.8L87.3 146.9L84.2 147.3L81.1 148.1L78.0 147.6L74.9 148.7L71.8 148.9L68.6 149.8L65.5 150.2L62.4 149.5L59.3 150.9L56.1 151.3L53.0 150.1L50.0 151.8L46.9 152.2L43.8 151.5L40.7 152.8L37.6 153.1L34.6 152.3L31.5 153.6L28.5 154.0L25.4 153.2L22.4 154.5L19.4 154.9L16.4 154.0L19.5 152.0L22.6 151.6L25.7 150.4L28.8 150.1L31.9 148.9L35.0 148.6L38.1 147.4L41.2 147.1L44.3 145.8L47.4 145.5L50.5 144.2L53.6 143.9L56.7 142.6L59.8 142.3L62.9 141.0L65.2 132.1Z',
+            'Uttar Pradesh': 'M127.4 76.8L130.6 78.9L133.7 80.4L136.9 82.1L140.0 83.7L143.2 85.3L146.3 86.9L149.5 88.5L152.6 90.1L155.8 91.7L158.9 93.3L162.1 94.9L165.2 96.5L168.4 98.1L171.5 99.7L174.7 101.3L171.5 102.8L168.3 101.9L165.2 103.4L162.0 102.5L158.9 104.0L155.7 103.1L152.5 104.6L149.3 103.7L146.2 105.2L143.0 104.3L139.8 105.8L136.7 104.9L133.5 106.4L130.3 105.5L127.2 107.0L124.0 106.1L120.8 107.6L117.7 106.7L114.5 108.2L111.3 107.3L108.2 108.8L105.0 107.9L101.8 109.4L98.7 108.5L95.5 110.0L92.4 109.1L89.2 110.6L86.1 109.7L83.0 111.2L79.9 110.3L76.8 111.8L73.7 110.9L70.6 112.4L67.5 111.5L64.4 113.0L63.1 108.6L66.3 107.5L69.4 106.1L72.6 107.2L75.7 105.8L78.9 106.9L82.0 105.5L85.2 106.6L88.3 105.2L91.5 106.3L94.6 104.9L97.8 106.0L100.9 104.6L104.1 105.7L107.2 104.3L110.4 105.4L113.5 104.0L116.7 105.1L119.8 103.7L122.9 104.8L126.1 103.4L129.3 104.5L132.4 103.1L135.6 104.2L138.8 102.8L141.9 103.9L145.1 102.5L148.2 103.6L151.4 102.2L154.5 103.3L157.7 101.9L160.8 103.0L163.9 101.6L167.1 102.7L170.3 101.3L173.4 102.4L176.6 101.0L173.4 100.1L170.2 98.5L167.1 97.0L164.0 95.4L160.8 93.8L157.7 92.3L154.5 90.7L151.4 89.1L148.2 87.6L145.1 86.0L141.9 84.4L138.8 82.9L135.6 81.3L132.5 79.7L129.3 78.1L127.4 76.8Z',
+            'West Bengal': 'M207.8 117.2L211.0 118.8L214.1 120.4L217.3 122.0L220.4 123.6L223.6 125.2L226.7 126.8L229.9 128.4L233.0 130.0L236.2 131.6L239.3 133.2L236.1 134.4L233.0 132.9L229.8 134.1L226.7 132.6L223.5 133.8L220.4 132.3L217.2 133.5L214.1 132.0L211.0 133.2L207.8 131.7L204.7 132.9L201.5 131.4L198.4 132.6L195.2 131.1L192.1 132.3L189.0 130.8L185.8 132.0L182.7 130.5L179.5 131.7L176.4 130.2L173.2 131.4L170.1 129.9L166.9 131.1L163.8 129.6L160.6 130.8L157.5 129.3L154.3 130.5L151.1 129.0L151.9 124.6L154.9 126.0L157.9 124.5L161.0 125.9L164.0 124.4L167.1 125.8L170.1 124.3L173.2 125.7L176.2 124.2L179.3 125.6L182.3 124.1L185.4 125.5L188.4 124.0L191.5 125.4L194.5 123.9L197.6 125.3L200.6 123.8L203.7 125.2L206.7 123.7L207.8 117.2Z'
+          }
+          return (
+            <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <svg width={195} height={268} viewBox="0 0 320 440" style={{ background: '#F8FAFF', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
+                <rect width="320" height="440" fill="#F8FAFF" />
+                {Object.entries(PATHS).map(([state, path]) => (
+                  <path
+                    key={state}
+                    d={path}
+                    fill={getColor(state)}
+                    stroke="#fff"
+                    strokeWidth="0.5"
+                    opacity={spH && spH !== state ? 0.5 : 1}
+                    style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+                    onMouseEnter={() => setSpH(state)}
+                    onMouseLeave={() => setSpH(null)}
+                  />
+                ))}
+              </svg>
+              <div style={{ display: 'flex', gap: '2px', justifyContent: 'center', alignItems: 'center', fontSize: '10px', color: '#6B7280' }}>
+                <span>Low</span>
+                {['#C7D2FE', '#A5B4FC', '#818CF8', '#4F46E5', '#3730A3'].map((c, i) => (
+                  <div key={i} style={{ width: '12px', height: '8px', background: c, borderRadius: '2px' }} />
+                ))}
+                <span>High</span>
+              </div>
+              {spH && (
+                <div style={{ fontSize: '11px', color: '#111827', textAlign: 'center', fontWeight: 500 }}>
+                  {STATE_ABBR[spH] ?? spH.slice(0, 2).toUpperCase()} · {inr(stateData.find(s => s.state === spH)?.total ?? 0)}
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
+        {/* RIGHT: existing ranked list */}
+        <div style={{ flex: 1, minWidth: 0 }}>
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
           <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top by spend</div>
@@ -546,6 +617,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
               {i < arr.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
             </div>
           ))}
+        </div>
+      </div>
         </div>
       </div>
 
