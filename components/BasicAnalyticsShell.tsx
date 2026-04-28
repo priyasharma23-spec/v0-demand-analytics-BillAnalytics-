@@ -192,7 +192,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '16px' }}>
               {[
                 { label: 'Active CAs',      value: totalCAs,                          pct: 100,  color: '#4F46E5', bg: '#EEF2FF', bd: '#C7D2FE' },
-                { label: 'Bills generated', value: Math.round(totalCAs * 0.757),      pct: 75.7, color: '#1D4ED8', bg: '#EFF6FF', bd: '#BFDBFE' },
+                { label: 'Bills generated', value: Math.round(totalCAs * 0.757),      pct: 75.7, color: '#1c5af4', bg: '#EFF6FF', bd: '#BFDBFE' },
                 { label: 'Bills paid',      value: Math.round(totalCAs * 0.60),       pct: 60,   color: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
               ].map((step, i) => (
                 <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
@@ -205,7 +205,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                         <div style={{ background: i === 0 ? '#FFFBEB' : '#FEF2F2', border: `1px solid ${i === 0 ? '#FDE68A' : '#FECACA'}`, borderRadius: '5px', padding: '1px 5px', fontSize: '10px', fontWeight: 700, color: i === 0 ? '#B45309' : '#B91C1C', whiteSpace: 'nowrap' }}>
                           −{i === 0 ? Math.round(totalCAs * 0.243) : Math.round(totalCAs * 0.157)}
                         </div>
-                        <div style={{ color: '#9CA3AF', fontSize: '12px' }}>→</div>
+                        <div style={{ color: '#858ea2', fontSize: '12px' }}>→</div>
                       </div>
                     )}
                   </div>
@@ -215,7 +215,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#F3F4F6', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9CA3AF', flexShrink: 0 }}/>
-              <div style={{ fontSize: '12px', color: '#858ea2' }}><span style={{ fontWeight: 600, color: '#111827' }}>{Math.round(totalCAs * 0.068)} CAs</span> on approval hold — excluded from paid count</div>
+              <div style={{ fontSize: '12px', color: '#858ea2' }}><span style={{ fontWeight: 600, color: '#192744' }}>{Math.round(totalCAs * 0.068)} CAs</span> on approval hold — excluded from paid count</div>
             </div>
           {/* Due date calendar */}
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '16px 18px', marginTop: '16px' }}>
@@ -315,7 +315,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               {[
                 { pct: 60, color: '#22C55E' },
                 { pct: 25, color: '#F59E0B' },
-                { pct: 10, color: '#9CA3AF' },
+                { pct: 10, color: '#858ea2' },
                 { pct: 5,  color: '#EF4444' },
                 { pct: 4,  color: '#4F46E5' },
               ].map((s, i) => <div key={i} style={{ width: s.pct+'%', background: s.color, borderRadius: '99px' }}/>)}
@@ -323,7 +323,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             {[
               { label: 'Paid',    count: Math.round(totalCAs*0.60), pct: 60, color: '#22C55E', textColor: '#15803D' },
               { label: 'Pending', count: Math.round(totalCAs*0.25), pct: 25, color: '#F59E0B', textColor: '#B45309' },
-              { label: 'On hold', count: Math.round(totalCAs*0.10), pct: 10, color: '#9CA3AF', textColor: '#6B7280' },
+              { label: 'On hold', count: Math.round(totalCAs*0.10), pct: 10, color: '#858ea2', textColor: '#6B7280' },
               { label: 'Overdue',   count: Math.round(totalCAs*0.05), pct: 5,  color: '#EF4444', textColor: '#B91C1C' },
               { label: 'Adjusted', count: Math.round(totalCAs*0.04), pct: 4,  color: '#4F46E5', textColor: '#4338CA' },
             ].map((s, i, arr) => (
@@ -848,11 +848,11 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                   })()}
                 </svg>
                 <div style={{ display:'flex', alignItems:'center', gap:'3px', justifyContent:'center' }}>
-                  <span style={{ fontSize:'9px', color:'#9CA3AF' }}>Low</span>
+                  <span style={{ fontSize:'9px', color:'#858ea2' }}>Low</span>
                   {['#DBEAFE','#93C5FD','#3B82F6','#1D4ED8','#1E3A8A'].map((bg,bi)=>(
                     <div key={bi} style={{ width:'14px', height:'6px', borderRadius:'2px', background:bg }}/>
                   ))}
-                  <span style={{ fontSize:'9px', color:'#9CA3AF' }}>High</span>
+                  <span style={{ fontSize:'9px', color:'#858ea2' }}>High</span>
                 </div>
               </div>
               {/* State list or drill-down panel */}
@@ -865,9 +865,9 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
                         onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
                         onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
-                        <div style={{ fontSize:'11px', color:'#9CA3AF', fontWeight:600, width:'14px' }}>{i+1}</div>
-                        <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#111827' }}>{name}</div>
-                        <div style={{ fontSize:'12px', fontWeight:700, color:'#1D4ED8' }}>{inr(sd.total * 100000)}</div>
+                        <div style={{ fontSize:'11px', color:'#858ea2', fontWeight:600, width:'14px' }}>{i+1}</div>
+                        <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
+                        <div style={{ fontSize:'12px', fontWeight:700, color:'#1c5af4' }}>{inr(sd.total * 100000)}</div>
                       </div>
                     ))}
                   </div>
@@ -1431,7 +1431,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
           ].map(s => (
             <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.bd}`, borderRadius: '6px', padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500 }}>{s.label}</div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: s.color }}>{s.value}</div>
             </div>
           ))}
         </div>
@@ -1528,8 +1528,8 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>Connection Type Breakdown</div>
-                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '3px' }}>Connection type by Active CAs</div>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Connection Type Breakdown</div>
+                <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>Connection type by Active CAs</div>
               </div>
 
             </div>
@@ -1558,7 +1558,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#93C5FD' }}/>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>Prepaid</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>Prepaid</div>
                       <div style={{ fontSize: '12px', color: '#858ea2' }}>· no connection type</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
@@ -1575,7 +1575,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#4F46E5' }}/>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>Postpaid</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>Postpaid</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
                       <div style={{ fontSize: '20px', fontWeight: 600, color: '#4F46E5' }}>{postpaid}</div>
@@ -1670,10 +1670,10 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             {/* Page header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px' }}>
               <div>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>Digital Bill Copy — Postpaid Billers</div>
-                <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>Bill Copies Status — Current month</div>
+                <div style={{ fontSize: '18px', fontWeight: 600, color: '#192744' }}>Digital Bill Copy — Postpaid Billers</div>
+                <div style={{ fontSize: '13px', color: '#858ea2', marginTop: '4px' }}>Bill Copies Status — Current month</div>
               </div>
-              <div style={{ fontSize: '11.5px', color: '#9CA3AF' }}>Updated daily · Apr 2025</div>
+              <div style={{ fontSize: '11.5px', color: '#858ea2' }}>Updated daily · Apr 2025</div>
             </div>
 
             {/* Funnel cards — 4 col grid */}
@@ -1727,13 +1727,13 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 <div key={ci} style={{ background: '#fff', border: `1px solid #E5E7EB`, borderLeft: `3px solid ${card.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
-                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
+                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                     <div style={{ fontSize: '28px', fontWeight: 700, color: card.accentD, lineHeight: 1 }}>{card.value}</div>
                     <div style={{ fontSize: '11.5px', color: card.accentD, opacity: 0.65 }}>{card.sub}</div>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5, flex: 1 }}>{card.detail}</div>
+                  <div style={{ fontSize: '12px', color: '#858ea2', lineHeight: 1.5, flex: 1 }}>{card.detail}</div>
                   <button style={{ alignSelf: 'flex-start', background: '#fff', border: `1px solid ${card.accentBd}`, borderRadius: '6px', color: card.accentD, fontSize: '11px', fontWeight: 600, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
                     {card.cta} →
                   </button>
@@ -1745,8 +1745,8 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Bill Copy Status — by {dbcView}</div>
-                  <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>Bill Copy Status — by {dbcView}</div>
+                  <div style={{ fontSize: '11.5px', color: '#858ea2', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
                 </div>
                 <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
                   {(['Biller','State','Branch'] as const).map(v => (
@@ -1777,28 +1777,28 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                       </div>
                       {/* Name */}
                       <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>{b.name}</div>
-                        {b.sub && <div style={{ fontSize: '10.5px', color: '#9CA3AF', marginTop: '3px' }}>{b.sub}</div>}
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744', lineHeight: 1.3 }}>{b.name}</div>
+                        {b.sub && <div style={{ fontSize: '10.5px', color: '#858ea2', marginTop: '3px' }}>{b.sub}</div>}
                       </div>
                       {/* Expected */}
-                      <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
-                        <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bill Copies
+                      <div style={{ fontSize: '12px', color: '#858ea2', textAlign: 'center' }}>
+                        <span style={{ fontWeight: 700, color: '#192744' }}>{b.opted}</span> Expected Bill Copies
                       </div>
                       {/* Stats */}
                       <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '13px', fontWeight: 700, color: '#15803D' }}>{b.received}</div>
-                          <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>rcvd</div>
+                          <div style={{ fontSize: '9.5px', color: '#858ea2' }}>rcvd</div>
                         </div>
                         <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '13px', fontWeight: 700, color: '#B45309' }}>{b.pending}</div>
-                          <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>pend</div>
+                          <div style={{ fontSize: '9.5px', color: '#858ea2' }}>pend</div>
                         </div>
                         <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '13px', fontWeight: 700, color: '#B91C1C' }}>{b.failed}</div>
-                          <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>fail</div>
+                          <div style={{ fontSize: '9.5px', color: '#858ea2' }}>fail</div>
                         </div>
                       </div>
                       {/* Stacked bar */}
@@ -1852,8 +1852,8 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Bill Status — by {basicDbcView}</div>
-                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill Status — by {basicDbcView}</div>
+                <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>BBPS fetch status</div>
               </div>
               <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
                 {(['Biller','State','Branch'] as const).map(v => (
@@ -1879,26 +1879,26 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                       <div style={{ position: 'absolute', fontSize: '13px', fontWeight: 700, color: textC }}>{pct}%</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#111827' }}>{b.biller}</div>
-                      <div style={{ fontSize: '10.5px', color: '#9CA3AF', marginTop: '3px' }}>{b.state}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{b.biller}</div>
+                      <div style={{ fontSize: '10.5px', color: '#858ea2', marginTop: '3px' }}>{b.state}</div>
                     </div>
-                    <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
-                      <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bills
+                    <div style={{ fontSize: '12px', color: '#858ea2', textAlign: 'center' }}>
+                      <span style={{ fontWeight: 700, color: '#192744' }}>{b.opted}</span> Expected Bills
                     </div>
                     <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: '#15803D' }}>{b.received}</div>
-                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>rcvd</div>
+                        <div style={{ fontSize: '9.5px', color: '#858ea2' }}>rcvd</div>
                       </div>
                       <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: '#B45309' }}>{b.pending}</div>
-                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>pend</div>
+                        <div style={{ fontSize: '9.5px', color: '#858ea2' }}>pend</div>
                       </div>
                       <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: '#B91C1C' }}>{b.failed}</div>
-                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>fail</div>
+                        <div style={{ fontSize: '9.5px', color: '#858ea2' }}>fail</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', height: '4px', borderRadius: '99px', overflow: 'hidden', background: '#F3F4F6', gap: '1px', width: '100%' }}>
