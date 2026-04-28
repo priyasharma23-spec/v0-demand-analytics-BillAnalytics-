@@ -517,8 +517,11 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
 
       {/* Heatmap or branches listing based on filter */}
 
-      {/* Ranked table */}
-      <div style={{ display: 'flex', gap: '28px', alignItems: 'flex-start' }}>
+      {/* LEFT+RIGHT: spend map and ranked list */}
+      {(() => {
+        const [selectedSpendState, setSelectedSpendState] = useState<string|null>(null)
+        return (
+          <div style={{ display: 'flex', gap: '20px' }}>
         {/* LEFT: India spend map */}
         {(() => {
           const PATHS = (() => {
@@ -549,7 +552,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             return PATHS
           })()
           const [spH, setSpH] = useState<string|null>(null)
-          const [selectedSpendState, setSelectedSpendState] = useState<string|null>(null)
           const maxSpend = Math.max(...stateData.map(s => s.total), 1)
           const getColor = (state: string) => {
             const sd = stateData.find(s => s.state === state)
