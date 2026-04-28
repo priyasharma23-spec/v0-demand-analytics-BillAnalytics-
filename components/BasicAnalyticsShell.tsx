@@ -944,7 +944,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           </div>
                         </div>
                         {(() => {
-                          const W = 280, H = 50, PAD = { t:14, r:20, b:12, l:20 }
+                          const W = 400, H = 100, PAD = { t:18, r:24, b:24, l:24 }
                           const iW = W - PAD.l - PAD.r
                           const iH = H - PAD.t - PAD.b
                           const maxV = Math.max(...sd.months)
@@ -955,7 +955,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           const linePath = points.map(([x,y],i) => (i===0?`M${x},${y}`:`L${x},${y}`)).join(' ')
                           const areaPath = `${linePath} L${points[11][0]},${PAD.t+iH} L${points[0][0]},${PAD.t+iH} Z`
                           return (
-                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'Inter, sans-serif', maxWidth:'280px', display:'block' }}>
+                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'Inter, sans-serif', width:'100%', display:'block' }}>
                               {[0,0.5,1].map((t,i) => (
                                 <line key={i} x1={PAD.l} x2={W-PAD.r} y1={PAD.t + iH*(1-t)} y2={PAD.t + iH*(1-t)}
                                   stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" />
@@ -970,7 +970,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                                     <circle cx={x} cy={y} r={isPeak ? 3 : 2}
                                       fill={isPeak ? '#1c5af4' : '#bfdbfe'} stroke="#fff" strokeWidth="1" />
                                     {(isPeak || isLow) && (
-                                      <text x={x} y={y-5} textAnchor="middle" fontSize="6" fontWeight="500"
+                                      <text x={x} y={isPeak ? y-5 : y+9} textAnchor="middle" fontSize="6" fontWeight="500"
                                         fill={isPeak ? '#1c5af4' : '#858ea2'}>
                                         {inr(sd.months[i] * 100000)}
                                       </text>
