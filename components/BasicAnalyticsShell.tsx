@@ -150,7 +150,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
       {/* Welcome banner */}
       <div style={{ background: 'linear-gradient(135deg, #1c5af4 0%, #7B6FE8 100%)', borderRadius: '8px', padding: '20px 24px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '5px' }}>Bill Payments — Basic Analytics</div>
+          <div style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginBottom: '5px' }}>Bill Payments — Basic Analytics</div>
           <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', maxWidth: '480px' }}>
             Portfolio overview across {totalStates} states · {totalCAs} CAs · Apr 2024 – Mar 2025. Connect bill copy data to unlock leakage detection and savings recommendations.
           </div>
@@ -170,9 +170,9 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         ].map((kpi, i) => (
           <div key={kpi.label} style={{ flex: i === 0 ? 1.4 : 1, padding: '20px 24px', position: 'relative' }}>
             {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
-            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{kpi.label}</div>
-            <div style={{ fontSize: '26px', fontWeight: 700, color: kpi.accent, letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{kpi.value}</div>
-            <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{kpi.sub}</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{kpi.label}</div>
+            <div style={{ fontSize: '20px', fontWeight: 600, color: kpi.accent, letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px' }}>{kpi.value}</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>{kpi.sub}</div>
           </div>
         ))}
       </div>
@@ -186,8 +186,8 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           {/* Bill generation funnel */}
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Bill generation funnel</div>
-              <div style={{ fontSize: '12px', color: '#6B7280' }}>Overall conversion: <span style={{ fontWeight: 700, color: '#15803D' }}>60%</span></div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Bill generation funnel</div>
+              <div style={{ fontSize: '12px', color: '#858ea2' }}>Overall conversion: <span style={{ fontWeight: 700, color: '#15803D' }}>60%</span></div>
             </div>
             <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '16px' }}>
               {[
@@ -197,9 +197,9 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               ].map((step, i) => (
                 <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
                   <div style={{ flex: 1, background: step.bg, border: `1px solid ${step.bd}`, borderRadius: '10px', padding: '12px 14px', position: 'relative' }}>
-                    <div style={{ fontSize: '28px', fontWeight: 700, color: step.color, lineHeight: 1 }}>{step.value}</div>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: step.color, marginTop: '5px' }}>{step.label}</div>
-                    <div style={{ fontSize: '11px', color: step.color, opacity: 0.55, marginTop: '2px' }}>{step.pct}% of {totalCAs}</div>
+                    <div style={{ fontSize: '20px', fontWeight: 600, color: step.color, lineHeight: 1 }}>{step.value}</div>
+                    <div style={{ fontSize: '12px', fontWeight: 500, color: step.color, marginTop: '5px' }}>{step.label}</div>
+                    <div style={{ fontSize: '11px', color: step.color, opacity: 0.6, marginTop: '2px' }}>{step.pct}% of {totalCAs}</div>
                     {i < 2 && (
                       <div style={{ position: 'absolute', top: '50%', right: '-22px', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', zIndex: 2 }}>
                         <div style={{ background: i === 0 ? '#FFFBEB' : '#FEF2F2', border: `1px solid ${i === 0 ? '#FDE68A' : '#FECACA'}`, borderRadius: '5px', padding: '1px 5px', fontSize: '10px', fontWeight: 700, color: i === 0 ? '#B45309' : '#B91C1C', whiteSpace: 'nowrap' }}>
@@ -215,12 +215,12 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#F3F4F6', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9CA3AF', flexShrink: 0 }}/>
-              <div style={{ fontSize: '12px', color: '#6B7280' }}><span style={{ fontWeight: 600, color: '#111827' }}>{Math.round(totalCAs * 0.068)} CAs</span> on approval hold — excluded from paid count</div>
+              <div style={{ fontSize: '12px', color: '#858ea2' }}><span style={{ fontWeight: 600, color: '#111827' }}>{Math.round(totalCAs * 0.068)} CAs</span> on approval hold — excluded from paid count</div>
             </div>
           {/* Due date calendar */}
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '16px 18px', marginTop: '16px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '2px' }}>Due date calendar</div>
-            <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '14px' }}>Bills due per day · current month</div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Due date calendar</div>
+            <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Bills due per day · current month</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {calendarDays.map(day => {
                 const dayCAs  = byDay[day] ?? []
@@ -249,12 +249,12 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', overflow: 'hidden', marginTop: '16px' }}>
             <div style={{ padding: '16px 20px 14px', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827', marginBottom: '3px' }}>Weekly capital plan</div>
-                <div style={{ fontSize: '12px', color: '#6B7280' }}>Current month · plan ahead</div>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Weekly capital plan</div>
+                <div style={{ fontSize: '12px', color: '#858ea2' }}>Current month · plan ahead</div>
               </div>
               <div style={{ background: '#EEF2FF', border: '1.5px solid #C7D2FE', borderRadius: '10px', padding: '6px 14px', textAlign: 'right' }}>
-                <div style={{ fontSize: '10px', color: '#4F46E5', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>Month total</div>
-                <div style={{ fontSize: '18px', fontWeight: 800, color: '#4338CA' }}>{inr(totalUnpaid)}</div>
+                <div style={{ fontSize: '11px', color: '#4F46E5', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>Month total</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#4338CA' }}>{inr(totalUnpaid)}</div>
               </div>
             </div>
             <div style={{ padding: '16px 20px 8px' }}>
@@ -287,10 +287,10 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 const pct   = Math.round(w.unpaid / Math.max(totalUnpaid,1) * 100)
                 return (
                   <div key={wi} onClick={() => setActiveWeek(isAct ? null : wi)} style={{ flex: '1 1 0', minWidth: 0, background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#fff', border: '1.5px solid '+(isAct ? (hasOD ? '#FECACA' : '#C7D2FE') : '#E5E7EB'), borderRadius: '10px', padding: '10px 12px', cursor: 'pointer' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827' }}>{w.label}</div>
-                    <div style={{ fontSize: '10px', color: '#9CA3AF' }}>{w.count} bills</div>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: hasOD ? '#EF4444' : '#4338CA', margin: '4px 0' }}>{inr(w.unpaid)}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#9CA3AF' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{w.label}</div>
+                    <div style={{ fontSize: '11px', color: '#858ea2' }}>{w.count} bills</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: hasOD ? '#EF4444' : '#4338CA', margin: '4px 0' }}>{inr(w.unpaid)}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#858ea2' }}>
                       <span>{w.unpaidCount} unpaid</span><span>{pct}%</span>
                     </div>
                   </div>
@@ -308,7 +308,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           {/* Payment status */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Payment status</div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Payment status</div>
               <span style={{ fontSize: '11px', color: '#9CA3AF' }}>of {Math.round(totalCAs * 0.757)} approved</span>
             </div>
             <div style={{ display: 'flex', height: '6px', borderRadius: '99px', overflow: 'hidden', gap: '2px' }}>
@@ -330,9 +330,9 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               <div key={s.label}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0' }}>
                   <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: s.color, flexShrink: 0 }}/>
-                  <div style={{ flex: 1, fontSize: '13px', fontWeight: 500, color: '#4F46E5', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: '#C7D2FE', textUnderlineOffset: '3px' }}>{s.label}</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: s.textColor, lineHeight: 1 }}>{s.count}</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', width: '34px', textAlign: 'right' }}>{s.pct}%</div>
+                  <div style={{ flex: 1, fontSize: '13px', fontWeight: 500, color: '#192744', cursor: 'pointer' }}>{s.label}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 600, color: s.textColor, lineHeight: 1 }}>{s.count}</div>
+                  <div style={{ fontSize: '11px', color: '#858ea2', width: '34px', textAlign: 'right' }}>{s.pct}%</div>
                 </div>
                 {i < arr.length - 1 && <div style={{ height: '1px', background: '#F3F4F6' }}/>}
               </div>
@@ -343,7 +343,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
 
           {/* Approval queue */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Approval queue</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Approval queue</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
               {[
                 { label: 'Pending',  count: 48,  textColor: '#B45309', bg: '#FFFBEB', bd: '#FDE68A' },
@@ -352,7 +352,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 { label: 'Rejected', count: 12,  textColor: '#B91C1C', bg: '#FEF2F2', bd: '#FECACA' },
               ].map(a => (
                 <div key={a.label} style={{ display: 'flex', alignItems: 'baseline', gap: '8px', padding: '10px 12px', borderRadius: '8px', background: a.bg, border: `1px solid ${a.bd}`, cursor: 'pointer' }}>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: a.textColor, lineHeight: 1 }}>{a.count}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 600, color: a.textColor, lineHeight: 1 }}>{a.count}</div>
                   <div style={{ fontSize: '12px', fontWeight: 500, color: a.textColor }}>{a.label}</div>
                 </div>
               ))}
@@ -363,7 +363,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
 
           {/* Action required */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Action required</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Action required</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               {[
                 { label: 'Fetch failed',    sub: 'BBPS error · payment blocked',  count: 34,  tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
@@ -376,9 +376,9 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                     <div style={{ width: '3px', alignSelf: 'stretch', borderRadius: '2px', background: a.tone.accent, flexShrink: 0 }}/>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: a.tone.text }}>{a.label}</div>
-                      <div style={{ fontSize: '11px', color: a.tone.text, opacity: 0.7 }}>{a.sub}</div>
+                      <div style={{ fontSize: '12px', color: a.tone.text, opacity: 0.7 }}>{a.sub}</div>
                     </div>
-                    <div style={{ fontSize: '22px', fontWeight: 700, color: a.tone.text, lineHeight: 1 }}>{a.count}</div>
+                    <div style={{ fontSize: '20px', fontWeight: 600, color: a.tone.text, lineHeight: 1 }}>{a.count}</div>
                   </div>
                 </div>
               ))}
