@@ -584,7 +584,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                     return (
                       <text key={name} x={x} y={y} textAnchor="middle"
                         fontSize={name === 'Jammu and Kashmir' ? 7 : 8}
-                        fontWeight="700" fontFamily="sans-serif"
+                        fontWeight="700" fontFamily="Inter, sans-serif"
                         style={{ pointerEvents: 'none' }}
                         fill={info ? (isDk(info.pct) ? '#fff' : '#192744') : '#aaa'}>
                         {ABBR[name] || name.substring(0,2)}
@@ -596,7 +596,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                     return (
                       <g style={{ pointerEvents: 'none' }}>
                         <rect x={tx-42} y={ty+6} width="84" height="20" rx="4" fill="#192744" opacity="0.9" />
-                        <text x={tx} y={ty+19} textAnchor="middle" fontSize="10" fill="#fff" fontFamily="sans-serif">{hov.split(' ')[0]} · {leakData[hov].pct}%</text>
+                        <text x={tx} y={ty+19} textAnchor="middle" fontSize="10" fill="#fff" fontFamily="Inter, sans-serif">{hov.split(' ')[0]} · {leakData[hov].pct}%</text>
                       </g>
                     )
                   })()}
@@ -829,7 +829,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                     if (!sd) return null
                     return (
                       <text key={name} x={x} y={y} textAnchor="middle" fontSize="8" fontWeight="700"
-                        fontFamily="sans-serif" style={{ pointerEvents:'none' }}
+                        fontFamily="Inter, sans-serif" style={{ pointerEvents:'none' }}
                         fill={isDkSpend(sd.total) ? '#fff' : '#1e3a8a'}>
                         {ABBR[name] ?? name.slice(0,2).toUpperCase()}
                       </text>
@@ -840,7 +840,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                     return (
                       <g style={{ pointerEvents:'none' }}>
                         <rect x={tx-44} y={ty+5} width="88" height="18" rx="3" fill="#1E3A8A" opacity="0.92"/>
-                        <text x={tx} y={ty+17} textAnchor="middle" fontSize="9" fill="#fff" fontFamily="sans-serif">
+                        <text x={tx} y={ty+17} textAnchor="middle" fontSize="9" fill="#fff" fontFamily="Inter, sans-serif">
                           {spendHov} · {inr(spendData[spendHov].total * 100000)}
                         </text>
                       </g>
