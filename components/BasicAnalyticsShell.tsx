@@ -1521,14 +1521,32 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           { biller: 'WBSEDCL',       state: 'West Bengal', opted: 14, received: 11, pending: 1, failed: 2 },
           { biller: 'JVVNL',         state: 'Rajasthan',   opted: 13, received: 11, pending: 1, failed: 1 },
         ]
+        const [basicDbcView, setBasicDbcView] = useState<'Biller'|'State'>('Biller')
+        const basicStateData = Object.entries(
+          dbcBasic.reduce((acc, r) => {
+            if (!acc[r.state]) acc[r.state] = { state: r.state, opted: 0, received: 0, pending: 0, failed: 0 }
+            acc[r.state].opted += r.opted; acc[r.state].received += r.received
+            acc[r.state].pending += r.pending; acc[r.state].failed += r.failed
+            return acc
+          }, {} as Record<string, { state: string; opted: number; received: number; pending: number; failed: number }>)
+        ).map(([, v]) => ({ biller: v.state, ...v, state: '' }))
+        const basicItems = basicDbcView === 'Biller' ? dbcBasic : basicStateData
+        const basicCols = basicItems.length <= 5 ? basicItems.length : basicItems.length <= 8 ? 4 : 5
         return (
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Bill Status — by Biller</div>
-              <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Bill Status — by {basicDbcView}</div>
+                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
+              </div>
+              <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
+                {(['Biller','State'] as const).map(v => (
+                  <button key={v} onClick={() => setBasicDbcView(v)} style={{ background: basicDbcView === v ? '#4F46E5' : 'transparent', color: basicDbcView === v ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: basicDbcView === v ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s' }}>{v}</button>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-              {dbcBasic.map((b) => {
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${basicCols}, 1fr)`, gap: '12px' }}>
+              {basicItems.map((b) => {
                 const pct = b.opted > 0 ? Math.round(b.received / b.opted * 100) : 0
                 const color = pct >= 85 ? '#22C55E' : pct >= 75 ? '#F59E0B' : '#EF4444'
                 const textC = pct >= 85 ? '#15803D' : pct >= 75 ? '#B45309' : '#B91C1C'
