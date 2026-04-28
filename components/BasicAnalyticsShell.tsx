@@ -494,6 +494,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       </div>
 
 
+      {analyticsMode === 'advanced' && (
+      <>
       {/* India map — leakage choropleth */}
       <div style={{ marginTop: '24px' }} />
       {/* Heatmap — India map */}
@@ -717,7 +719,9 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         })()}
       </div>
 
-      {/* Spend by state — state × month */}
+      </>
+      )}
+            {/* Spend by state — state × month */}
       <div style={{ marginTop: '24px' }} />
       {/* Spend heatmap — India map */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
@@ -899,16 +903,58 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                       ))}
                       {/* Monthly sparkline */}
                       <div style={{ background:'#F9FAFB', border:'1px solid #E5E7EB', borderRadius:'10px', padding:'12px 14px' }}>
-                        <div style={{ fontSize:'10.5px', fontWeight:600, color:'#9CA3AF', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'8px' }}>Monthly spend</div>
-                        <div style={{ display:'flex', alignItems:'flex-end', gap:'3px', height:'40px' }}>
-                          {sd.months.map((v,mi) => (
-                            <div key={mi} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'2px' }}>
-                              <div style={{ width:'100%', background: mi===peakMthIdx?'#1D4ED8':'#93C5FD', borderRadius:'2px 2px 0 0',
-                                height: Math.max(4, Math.round(v / Math.max(...sd.months) * 36)) + 'px' }}/>
-                              <div style={{ fontSize:'7px', color:'#9CA3AF' }}>{mthLabels[mi].slice(0,1)}</div>
-                            </div>
-                          ))}
+                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
+                          <div style={{ fontSize:'10px', fontWeight:600, color:'#9CA3AF', textTransform:'uppercase', letterSpacing:'0.07em', fontFamily:'Inter, sans-serif' }}>Monthly spend</div>
+                          <div style={{ display:'flex', gap:'10px', fontSize:'9px', color:'#6B7280', fontFamily:'Inter, sans-serif' }}>
+                            <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
+                            <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
+                          </div>
                         </div>
+                        {(() => {
+                          const W = 280, H = 60, PAD = { t:16, r:20, b:14, l:20 }
+                          const iW = W - PAD.l - PAD.r
+                          const iH = H - PAD.t - PAD.b
+                          const maxV = Math.max(...sd.months)
+                          const minV = Math.min(...sd.months)
+                          const xPos = (i: number) => PAD.l + (i / 11) * iW
+                          const yPos = (v: number) => PAD.t + iH - ((v - minV) / Math.max(maxV - minV, 1)) * iH
+                          const points = sd.months.map((v,i) => [xPos(i), yPos(v)] as [number,number])
+                          const linePath = points.map(([x,y],i) => (i===0?`M${x},${y}`:`L${x},${y}`)).join(' ')
+                          const areaPath = `${linePath} L${points[11][0]},${PAD.t+iH} L${points[0][0]},${PAD.t+iH} Z`
+                          return (
+                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'Inter, sans-serif' }}>
+                              {[0,0.5,1].map((t,i) => (
+                                <line key={i} x1={PAD.l} x2={W-PAD.r} y1={PAD.t + iH*(1-t)} y2={PAD.t + iH*(1-t)}
+                                  stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" />
+                              ))}
+                              <path d={areaPath} fill="#DBEAFE" opacity="0.4" />
+                              <path d={linePath} fill="none" stroke="#3B82F6" strokeWidth="1" strokeLinejoin="round" strokeLinecap="round" />
+                              {points.map(([x,y],i) => {
+                                const isPeak = i === peakMthIdx
+                                const isLow  = i === lowMthIdx
+                                return (
+                                  <g key={i}>
+                                    <circle cx={x} cy={y} r={isPeak ? 3 : 2}
+                                      fill={isPeak ? '#1D4ED8' : '#93C5FD'} stroke="#fff" strokeWidth="1" />
+                                    {(isPeak || isLow) && (
+                                      <text x={x} y={y-5} textAnchor="middle" fontSize="8" fontWeight="600"
+                                        fill={isPeak ? '#1D4ED8' : '#6B7280'}>
+                                        {inr(sd.months[i] * 100000)}
+                                      </text>
+                                    )}
+                                  </g>
+                                )
+                              })}
+                              {points.map(([x],i) => (
+                                <text key={i} x={x} y={H-1} textAnchor="middle" fontSize="8"
+                                  fill={i===peakMthIdx ? '#1D4ED8' : '#9CA3AF'}
+                                  fontWeight={i===peakMthIdx ? '600' : '400'}>
+                                  {mthLabels[i]}
+                                </text>
+                              ))}
+                            </svg>
+                          )
+                        })()}
                       </div>
                     </div>
                   )
