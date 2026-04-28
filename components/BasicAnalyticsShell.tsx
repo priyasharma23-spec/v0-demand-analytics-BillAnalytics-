@@ -881,7 +881,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                   const peakMthIdx = sd.months.indexOf(Math.max(...sd.months))
                   const lowMthIdx = sd.months.indexOf(Math.min(...sd.months))
                   return (
-                    <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <div style={{ fontSize:'16px', fontWeight:600, color:'#192744' }}>{spendSel}</div>
                         <button onClick={() => setSpendSel(null)}
@@ -895,14 +895,14 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         { label:'Peak Month', value: mthLabels[peakMthIdx] + ' 2024', sub: inr(sd.months[peakMthIdx] * 100000) + ' highest spend' },
                         { label:'Lowest Month', value: mthLabels[lowMthIdx] + ' 2024', sub: inr(sd.months[lowMthIdx] * 100000) + ' lowest spend' },
                       ].map(m => (
-                        <div key={m.label} style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'12px 14px' }}>
-                          <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'4px' }}>{m.label}</div>
-                          <div style={{ fontSize:'20px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'2px' }}>{m.value}</div>
+                        <div key={m.label} style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'8px 12px' }}>
+                          <div style={{ fontSize:'10px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'2px' }}>{m.label}</div>
+                          <div style={{ fontSize:'16px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'1px' }}>{m.value}</div>
                           <div style={{ fontSize:'12px', color:'#858ea2' }}>{m.sub}</div>
                         </div>
                       ))}
                       {/* Monthly sparkline */}
-                      <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'12px 14px' }}>
+                      <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'8px 12px' }}>
                         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
                           <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em' }}>Monthly spend</div>
                           <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
@@ -911,7 +911,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           </div>
                         </div>
                         {(() => {
-                          const W = 280, H = 60, PAD = { t:16, r:20, b:14, l:20 }
+                          const W = 280, H = 50, PAD = { t:14, r:20, b:12, l:20 }
                           const iW = W - PAD.l - PAD.r
                           const iH = H - PAD.t - PAD.b
                           const maxV = Math.max(...sd.months)
