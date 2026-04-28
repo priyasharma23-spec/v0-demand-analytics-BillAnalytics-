@@ -237,7 +237,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 )
               })}
             </div>
-            <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '11px', color: '#6B7280', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '11px', color: '#858ea2', flexWrap: 'wrap' }}>
               {[{ color: '#FECACA', label: 'Overdue' },{ color: '#FDE68A', label: 'Due soon' },{ color: '#BBF7D0', label: 'Paid' },{ color: '#E5E7EB', label: 'No bills' }].map(item => (
                 <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: item.color, display: 'inline-block' }} />{item.label}
@@ -269,12 +269,12 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                   return (
                     <div key={wi} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', cursor: 'pointer' }}
                       onMouseEnter={() => setActiveWeek(wi)} onMouseLeave={() => setActiveWeek(null)}>
-                      <div style={{ fontSize: '10px', fontWeight: isAct ? 700 : 500, color: isAct ? '#111827' : '#6B7280' }}>{inr(w.unpaid)}</div>
+                      <div style={{ fontSize: '11px', fontWeight: isAct ? 600 : 400, color: isAct ? '#192744' : '#858ea2' }}>{inr(w.unpaid)}</div>
                       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '72px', borderRadius: '5px', overflow: 'hidden', background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#F3F4F6' }}>
                         {safeH > 0 && <div style={{ height: safeH+'px', background: isAct ? '#7B6FE8' : '#C7D2FE' }} />}
                         {overdueH > 0 && <div style={{ height: overdueH+'px', background: isAct ? '#EF4444' : '#FECACA' }} />}
                       </div>
-                      <div style={{ fontSize: '10px', color: isAct ? '#4F46E5' : '#9CA3AF' }}>W{wi+1}</div>
+                      <div style={{ fontSize: '11px', color: isAct ? '#4F46E5' : '#858ea2' }}>W{wi+1}</div>
                     </div>
                   )
                 })}
@@ -309,7 +309,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Payment status</div>
-              <span style={{ fontSize: '11px', color: '#9CA3AF' }}>of {Math.round(totalCAs * 0.757)} approved</span>
+              <span style={{ fontSize: '11px', color: '#858ea2' }}>of {Math.round(totalCAs * 0.757)} approved</span>
             </div>
             <div style={{ display: 'flex', height: '6px', borderRadius: '99px', overflow: 'hidden', gap: '2px' }}>
               {[
@@ -1536,7 +1536,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 </svg>
                 <div style={{ position: 'absolute', textAlign: 'center' }}>
                   <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', lineHeight: 1 }}>{total}</div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '2px' }}>CAs</div>
+                  <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '2px' }}>CAs</div>
                 </div>
               </div>
               {/* Bars */}
