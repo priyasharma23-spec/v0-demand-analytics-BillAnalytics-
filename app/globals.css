@@ -149,7 +149,7 @@
 }
 
 @theme inline {
-  --font-sans:  'Inter', 'Inter Fallback', system-ui, sans-serif;
+  --font-sans:  var(--font-inter), 'Inter', system-ui, sans-serif;
   --font-mono:  'Geist Mono', 'Geist Mono Fallback';
 
   --color-background:                var(--background);
