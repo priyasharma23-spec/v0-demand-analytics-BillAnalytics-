@@ -1335,35 +1335,37 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Delivery funnel</span>
               <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
               {([
-                { label: 'Opted in',  sublabel: 'bill_copy_enabled = true', count: optedIn,  pct: undefined,                                        tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
+                { label: 'Bill Copy Active', sublabel: `${optedIn} of ${TOTAL_CAS_DBC} active CAs`, count: optedIn,  pct: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100), tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
                 { label: 'Received',  sublabel: 'Bills fetched from biller', count: received, pct: Math.round(received/Math.max(optedIn,1)*100),     tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
                 { label: 'Pending',   sublabel: 'Fetch in progress',         count: pending,  pct: Math.round(pending/Math.max(optedIn,1)*100),      tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
-                { label: 'Failed',    sublabel: 'Fetch error · needs fix',   count: failed,   pct: Math.round(failed/Math.max(optedIn,1)*100),       tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
-              ] as const).map((step, i, arr) => {
+                { label: 'Failed',    sublabel: 'Fetch error · needs fix',   count: failed,   pct: Math.round(failed/Math.max(optedIn,1)*100),  tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+              ] as const).map((step, i) => {
                 const r = 18, stroke = 4, size = 44
                 const circ = 2 * Math.PI * r
-                const dash = step.pct !== undefined ? (step.pct / 100) * circ : 0
+                const dash = (step.pct / 100) * circ
                 return (
-                  <div key={step.label} style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
-                    <div style={{ flex: 1, background: step.tone.bg, border: `1px solid ${step.tone.border}`, borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div key={step.label} style={{ background: step.tone.bg, border: `1px solid ${step.tone.border}`, borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                      <div>
                         <div style={{ fontSize: '36px', fontWeight: 700, color: step.tone.text, lineHeight: 1 }}>{step.count}</div>
-                        {step.pct !== undefined && (
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
-                              <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
-                              <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
-                            </svg>
-                            <div style={{ position: 'absolute', fontSize: '10px', fontWeight: 600, color: step.tone.text }}>{step.pct}%</div>
-                          </div>
-                        )}
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: '6px' }}>{step.label}</div>
+                        <div style={{ fontSize: '11.5px', color: step.tone.text, opacity: 0.6, marginTop: '3px' }}>{step.sublabel}</div>
                       </div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{step.label}</div>
-                      <div style={{ fontSize: '12px', color: step.tone.text, opacity: 0.6 }}>{step.sublabel}</div>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+                          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
+                          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
+                        </svg>
+                        <div style={{ position: 'absolute', fontSize: '10px', fontWeight: 700, color: step.tone.text }}>{step.pct}%</div>
+                      </div>
                     </div>
-                    {i < arr.length - 1 && <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px', flexShrink: 0, color: '#D1D5DB', fontSize: '16px' }}>→</div>}
+                    {i > 0 && (
+                      <div style={{ height: '3px', borderRadius: '99px', background: step.tone.accent + '22', overflow: 'hidden' }}>
+                        <div style={{ width: `${step.pct}%`, height: '100%', background: step.tone.accent, borderRadius: '99px' }}/>
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -1381,8 +1383,8 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 { tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' }, title: 'Multi-bill billers', value: String(multiBillCount), valueLabel: 'billers',                                                                                              detail: multiBillCAs + ' CAs received more than 1 bill this month. Review for duplicates.', action: 'Check duplicates' },
               ] as const).map((card, ci) => (
                 <div key={ci}
-                  style={{ flex: 1, background: '#fff', border: `1px solid ${card.tone.border}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 0 3px ${card.tone.accent}18` }}
+                  style={{ flex: 1, background: '#fff', border: `1px solid #E5E7EB`, borderLeft: `3px solid ${card.tone.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = `0 4px 16px ${card.tone.accent}18` }}
                   onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.tone.accent, flexShrink: 0 }} />
@@ -1393,17 +1395,30 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                     {card.valueLabel && <div style={{ fontSize: '12px', color: card.tone.text, opacity: 0.65, fontWeight: 500 }}>{card.valueLabel}</div>}
                   </div>
                   <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5, flex: 1 }}>{card.detail}</div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: card.tone.accent, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                    {card.action} <span style={{ fontSize: '14px' }}>→</span>
-                  </div>
+                  <button style={{ alignSelf: 'flex-start', background: '#fff', border: `1px solid ${card.tone.border}`, borderRadius: '6px', color: card.tone.text, fontSize: '11px', fontWeight: 600, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit', marginTop: '2px' }}>
+                    {card.action} →
+                  </button>
                 </div>
               ))}
             </div>
-            <div style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Bill copy status by biller</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Bill copy status</div>
+              <div style={{ display: 'flex', gap: '4px', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px' }}>
+                {(['Biller','State'] as const).map(v => (
+                  <button key={v} style={{ background: v === 'Biller' ? '#4F46E5' : 'transparent', color: v === 'Biller' ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: v === 'Biller' ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit' }}>{v}</button>
+                ))}
+              </div>
+            </div>
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                <thead>
-                  <tr>
+              <div style={{ display: 'grid', gridTemplateColumns: '180px 90px repeat(3,70px) 1fr 80px', padding: '8px 12px', borderBottom: '1px solid #E5E7EB', fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <div>Biller / State</div><div style={{ textAlign:'center' }}>Opted</div>
+                <div style={{ textAlign:'center', color:'#15803D' }}>Received</div>
+                <div style={{ textAlign:'center', color:'#B45309' }}>Pending</div>
+                <div style={{ textAlign:'center', color:'#B91C1C' }}>Failed</div>
+                <div style={{ paddingLeft:'12px' }}>Delivery</div>
+                <div style={{ textAlign:'right' }}>Coverage</div>
+              </div>
+              <table style={{ display: 'none' }}><thead><tr>
                     {['Biller','State','Opted','Received','Pending','Failed','Success rate','Status'].map(h => (
                       <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
                     ))}
