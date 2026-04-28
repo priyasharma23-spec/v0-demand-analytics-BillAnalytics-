@@ -1510,6 +1510,112 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
         )
       })()}
+      {/* CA Breakdown — shown in both Basic and Advanced */}
+      {(() => {
+        const total = totalCAs
+        const prepaid  = Math.round(total * 0.39)
+        const postpaid = total - prepaid
+        const lt = Math.round(postpaid * 0.66)
+        const ht = postpaid - lt
+        const prepaidPct  = Math.round(prepaid / total * 100)
+        const postpaidPct = Math.round(postpaid / total * 100)
+        const ltPct = Math.round(lt / postpaid * 100)
+        const htPct = Math.round(ht / postpaid * 100)
+        // Donut ring
+        const R = 52, STROKE = 10, SIZE = 120
+        const circ = 2 * Math.PI * R
+        const dashPrepaid  = (prepaidPct / 100) * circ
+        const dashPostpaid = (postpaidPct / 100) * circ
+        return (
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginBottom: '16px' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>Total CA Breakdown</div>
+                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '3px' }}>By payment type &amp; connection · {total} active CAs</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: '#111827' }}>{total}</div>
+                <div style={{ fontSize: '13px', color: '#9CA3AF' }}>Active CAs</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
+              {/* Donut */}
+              <div style={{ flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ transform: 'rotate(-90deg)' }}>
+                  <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke="#E5E7EB" strokeWidth={STROKE}/>
+                  {/* Postpaid — darker blue */}
+                  <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke="#4F46E5" strokeWidth={STROKE}
+                    strokeDasharray={`${dashPostpaid} ${circ - dashPostpaid}`} strokeLinecap="round"/>
+                  {/* Prepaid — lighter blue, offset after postpaid */}
+                  <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke="#93C5FD" strokeWidth={STROKE}
+                    strokeDasharray={`${dashPrepaid} ${circ - dashPrepaid}`}
+                    strokeDashoffset={-dashPostpaid} strokeLinecap="round"/>
+                </svg>
+                <div style={{ position: 'absolute', textAlign: 'center' }}>
+                  <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', lineHeight: 1 }}>{total}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '2px' }}>CAs</div>
+                </div>
+              </div>
+              {/* Bars */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Prepaid row */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#93C5FD' }}/>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>Prepaid</div>
+                      <div style={{ fontSize: '12px', color: '#9CA3AF' }}>· no connection type</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#4F46E5' }}>{prepaid}</div>
+                      <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{prepaidPct}%</div>
+                    </div>
+                  </div>
+                  <div style={{ height: '6px', background: '#EEF2FF', borderRadius: '99px', overflow: 'hidden' }}>
+                    <div style={{ width: `${prepaidPct}%`, height: '100%', background: 'linear-gradient(90deg, #818CF8, #4F46E5)', borderRadius: '99px' }}/>
+                  </div>
+                </div>
+                {/* Postpaid row */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#4F46E5' }}/>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>Postpaid</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#4F46E5' }}>{postpaid}</div>
+                      <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{postpaidPct}%</div>
+                    </div>
+                  </div>
+                  <div style={{ height: '6px', background: '#EEF2FF', borderRadius: '99px', overflow: 'hidden', marginBottom: '10px' }}>
+                    <div style={{ width: `${postpaidPct}%`, height: '100%', background: 'linear-gradient(90deg, #4F46E5, #3730A3)', borderRadius: '99px' }}/>
+                  </div>
+                  {/* LT / HT sub-cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '8px' }}>
+                    {[
+                      { key: 'LT', label: 'Low Tension',  count: lt, pct: ltPct, bg: '#EEF2FF', color: '#4F46E5', bd: '#C7D2FE' },
+                      { key: 'HT', label: 'High Tension', count: ht, pct: htPct, bg: '#F5F3FF', color: '#7C3AED', bd: '#DDD6FE' },
+                    ].map(t => (
+                      <div key={t.key} style={{ background: t.bg, border: `1px solid ${t.bd}`, borderRadius: '10px', padding: '12px 14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: t.color, background: '#fff', border: `1px solid ${t.bd}`, borderRadius: '4px', padding: '1px 6px' }}>{t.key}</div>
+                          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{t.pct}%</div>
+                        </div>
+                        <div style={{ fontSize: '24px', fontWeight: 700, color: t.color, lineHeight: 1, marginBottom: '3px' }}>{t.count}</div>
+                        <div style={{ fontSize: '12px', color: t.color, opacity: 0.7 }}>{t.label}</div>
+                        <div style={{ height: '4px', background: '#fff', borderRadius: '99px', overflow: 'hidden', marginTop: '8px' }}>
+                          <div style={{ width: `${t.pct}%`, height: '100%', background: t.color, borderRadius: '99px', opacity: 0.6 }}/>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
       {/* BBPS_Billers — Basic only, independent copy, do not modify Advanced */}
       {analyticsMode !== 'advanced' && (() => {
         const dbcBasic = [
