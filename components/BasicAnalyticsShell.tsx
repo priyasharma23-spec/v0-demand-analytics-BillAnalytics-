@@ -1306,6 +1306,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         ))}
       </div>
       {analyticsMode === 'advanced' && (() => {
+        // Digital bill copy block v2 — redesigned 2026-04-28
         const TOTAL_CAS_DBC = totalCAs
         const optedIn  = Math.round(TOTAL_CAS_DBC * 0.75)
         const received = Math.round(TOTAL_CAS_DBC * 0.59)
