@@ -1316,48 +1316,73 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         const multiBillCount = 4
         const multiBillCAs = 8
         const dbcTableData = [
-          { biller: 'MSEDCL',        state: 'Maharashtra', opted: 18, received: 14, pending: 2, failed: 2 },
-          { biller: 'BEST',          state: 'Maharashtra', opted: 6,  received: 5,  pending: 1, failed: 0 },
-          { biller: 'BESCOM',        state: 'Karnataka',   opted: 16, received: 12, pending: 2, failed: 2 },
-          { biller: 'TNEB',          state: 'Tamil Nadu',  opted: 16, received: 13, pending: 2, failed: 1 },
-          { biller: 'DGVCL',         state: 'Gujarat',     opted: 10, received: 8,  pending: 1, failed: 1 },
-          { biller: 'UGVCL',         state: 'Gujarat',     opted: 8,  received: 6,  pending: 1, failed: 1 },
-          { biller: 'TPDDL',         state: 'Delhi',       opted: 11, received: 9,  pending: 1, failed: 1 },
-          { biller: 'BSES Rajdhani', state: 'Delhi',       opted: 9,  received: 7,  pending: 1, failed: 1 },
+          { biller: 'MSEDCL',        state: 'Maharashtra', opted: 22, received: 19, pending: 3, failed: 2 },
+          { biller: 'BSES Rajdhani', state: 'Delhi',       opted: 18, received: 15, pending: 4, failed: 1 },
+          { biller: 'BESCOM',        state: 'Karnataka',   opted: 17, received: 14, pending: 2, failed: 3 },
+          { biller: 'TNEB',          state: 'Tamil Nadu',  opted: 19, received: 17, pending: 3, failed: 1 },
+          { biller: 'UGVCL',         state: 'Gujarat',     opted: 16, received: 13, pending: 2, failed: 2 },
+          { biller: 'DVVNL',         state: 'Uttar Pradesh', opted: 15, received: 11, pending: 3, failed: 3 },
+          { biller: 'WBSEDCL',       state: 'West Bengal', opted: 14, received: 11, pending: 1, failed: 2 },
+          { biller: 'JVVNL',         state: 'Rajasthan',   opted: 13, received: 11, pending: 1, failed: 1 },
+          { biller: 'BBMB Rajpur',   state: 'Multiple',    opted: 7,  received: 7,  pending: 1, failed: 0 },
         ]
+        const [dbcView, setDbcView] = useState<'Biller'|'State'|'Branch'>('Biller')
+
+        // Aggregate by state for State view
+        const stateData = Object.entries(
+          dbcTableData.reduce((acc, r) => {
+            const k = r.state === 'Multiple' ? 'Multiple' : r.state
+            if (!acc[k]) acc[k] = { state: k, opted: 0, received: 0, pending: 0, failed: 0 }
+            acc[k].opted += r.opted; acc[k].received += r.received
+            acc[k].pending += r.pending; acc[k].failed += r.failed
+            return acc
+          }, {} as Record<string, { state: string; opted: number; received: number; pending: number; failed: number }>)
+        ).map(([, v]) => ({ ...v, pct: v.opted > 0 ? Math.round(v.received / v.opted * 100) : 0 }))
+
+        const items = dbcView === 'Biller'
+          ? dbcTableData.map(r => ({ ...r, name: r.biller, sub: r.state, pct: r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0 }))
+          : stateData.map(r => ({ ...r, name: r.state, sub: '', pct: r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0 }))
+
+        const cols = items.length <= 5 ? items.length : items.length <= 8 ? 4 : 5
+
         return (
-          <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Digital bill copy status</div>
-              <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>CAs opted for digital bill copy · bill_copy_enabled flag driven · current month</div>
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '20px 24px', marginBottom: '12px' }}>
+
+            {/* Page header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px' }}>
+              <div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>Digital Bill Copy</div>
+                <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>Bill Copies Status — Current month</div>
+              </div>
+              <div style={{ fontSize: '11.5px', color: '#9CA3AF' }}>Updated daily · Apr 2025</div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0 14px' }}>
-              <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Delivery funnel</span>
-              <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+
+            {/* Funnel cards — 4 col grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
               {([
-                { label: 'Bill Copy Active', sublabel: `${optedIn} of ${TOTAL_CAS_DBC} active CAs`, count: optedIn,  pct: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100), tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
-                { label: 'Received',  sublabel: 'Bills fetched from biller', count: received, pct: Math.round(received/Math.max(optedIn,1)*100),     tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
-                { label: 'Pending',   sublabel: 'Fetch in progress',         count: pending,  pct: Math.round(pending/Math.max(optedIn,1)*100),      tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
-                { label: 'Failed',    sublabel: 'Fetch error · needs fix',   count: failed,   pct: Math.round(failed/Math.max(optedIn,1)*100),  tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+                { label: 'Bill Copy Active', sublabel: `${TOTAL_CAS_DBC} Active CAs`, count: optedIn, pct: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100), tone: { bg: '#EEF2FF', border: '#C7D2FE', text: '#4338CA', accent: '#4F46E5' } },
+                { label: 'Received',         sublabel: 'Bill copy fetched',           count: received, pct: Math.round(received/Math.max(optedIn,1)*100),     tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+                { label: 'Pending',          sublabel: 'Fetch in progress',           count: pending,  pct: Math.round(pending/Math.max(optedIn,1)*100),      tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+                { label: 'Failed',           sublabel: 'Fetch error · needs fix',count: failed,   pct: Math.round(failed/Math.max(optedIn,1)*100),       tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
               ] as const).map((step, i) => {
-                const r = 18, stroke = 4, size = 44
-                const circ = 2 * Math.PI * r
+                const r2 = 18, stroke = 4, size = 44
+                const circ = 2 * Math.PI * r2
                 const dash = (step.pct / 100) * circ
                 return (
                   <div key={step.label} style={{ background: step.tone.bg, border: `1px solid ${step.tone.border}`, borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                       <div>
-                        <div style={{ fontSize: '36px', fontWeight: 700, color: step.tone.text, lineHeight: 1 }}>{step.count}</div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                          <div style={{ fontSize: '36px', fontWeight: 700, color: step.tone.text, lineHeight: 1 }}>{step.count}</div>
+                          {i === 0 && <div style={{ fontSize: '13px', fontWeight: 500, color: step.tone.text, opacity: 0.5 }}>/ {TOTAL_CAS_DBC}</div>}
+                        </div>
                         <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: '6px' }}>{step.label}</div>
                         <div style={{ fontSize: '11.5px', color: step.tone.text, opacity: 0.6, marginTop: '3px' }}>{step.sublabel}</div>
                       </div>
                       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
-                          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
-                          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
+                          <circle cx={size/2} cy={size/2} r={r2} fill="none" stroke={step.tone.accent + '33'} strokeWidth={stroke}/>
+                          <circle cx={size/2} cy={size/2} r={r2} fill="none" stroke={step.tone.accent} strokeWidth={stroke} strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"/>
                         </svg>
                         <div style={{ position: 'absolute', fontSize: '10px', fontWeight: 700, color: step.tone.text }}>{step.pct}%</div>
                       </div>
@@ -1371,92 +1396,102 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 )
               })}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0 14px' }}>
-              <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Attention needed</span>
-              <div style={{ height: '1px', background: '#f3f4f6', flex: 1 }} />
-            </div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+
+            {/* Attention needed cards — white + borderLeft */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
               {([
-                { tone: { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', accent: '#EF4444' }, title: 'Failed bill copies',  value: String(failed),   valueLabel: failedPct + '% failure rate',                                                                                    detail: 'Check biller API connectivity. Repeated failures may block payment.',         action: 'View failed CAs'  },
-                { tone: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', accent: '#F59E0B' }, title: 'Pending > 48 hrs',   value: String(Math.round(pending * 0.44)), valueLabel: 'of ' + pending + ' pending',                                                              detail: 'Bills waiting over 48 hours — need manual intervention to unblock.',          action: 'Review stalled'   },
-                { tone: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', accent: '#22C55E' }, title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', valueLabel: undefined,                                                             detail: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs opted in. ' + (TOTAL_CAS_DBC - optedIn) + ' yet to opt.', action: 'View not opted' },
-                { tone: { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' }, title: 'Multi-bill billers', value: String(multiBillCount), valueLabel: 'billers',                                                                                              detail: multiBillCAs + ' CAs received more than 1 bill this month. Review for duplicates.', action: 'Check duplicates' },
+                { accent: '#EF4444', accentL: '#FEF2F2', accentBd: '#FECACA', accentD: '#B91C1C', title: 'Failed bill copies', value: String(failed),   sub: failedPct + '% failure rate',                                          detail: 'Check biller API. Repeated failures block payment.',           cta: 'Fix now' },
+                { accent: '#F59E0B', accentL: '#FFFBEB', accentBd: '#FDE68A', accentD: '#B45309', title: 'Pending > 48 hrs',   value: String(Math.round(pending * 0.44)), sub: 'of ' + pending + ' pending',                     detail: 'Bills stalled over 48 hrs — manual intervention needed.', cta: 'Review' },
+                { accent: '#22C55E', accentL: '#F0FDF4', accentBd: '#BBF7D0', accentD: '#15803D', title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', sub: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs', detail: (TOTAL_CAS_DBC - optedIn) + ' CAs yet to opt in. Consider nudging.', cta: 'View' },
+                { accent: '#3B82F6', accentL: '#EFF6FF', accentBd: '#BFDBFE', accentD: '#1D4ED8', title: 'Multi-bill billers', value: String(multiBillCount), sub: 'billers',                                                     detail: multiBillCAs + ' CAs received 2+ bills. Review for duplicates.', cta: 'Check' },
               ] as const).map((card, ci) => (
-                <div key={ci}
-                  style={{ flex: 1, background: '#fff', border: `1px solid #E5E7EB`, borderLeft: `3px solid ${card.tone.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = `0 4px 16px ${card.tone.accent}18` }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.tone.accent, flexShrink: 0 }} />
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
+                <div key={ci} style={{ background: '#fff', border: `1px solid #E5E7EB`, borderLeft: `3px solid ${card.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
+                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                    <div style={{ fontSize: '32px', fontWeight: 700, color: card.tone.text, lineHeight: 1 }}>{card.value}</div>
-                    {card.valueLabel && <div style={{ fontSize: '12px', color: card.tone.text, opacity: 0.65, fontWeight: 500 }}>{card.valueLabel}</div>}
+                    <div style={{ fontSize: '28px', fontWeight: 700, color: card.accentD, lineHeight: 1 }}>{card.value}</div>
+                    <div style={{ fontSize: '11.5px', color: card.accentD, opacity: 0.65 }}>{card.sub}</div>
                   </div>
                   <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5, flex: 1 }}>{card.detail}</div>
-                  <button style={{ alignSelf: 'flex-start', background: '#fff', border: `1px solid ${card.tone.border}`, borderRadius: '6px', color: card.tone.text, fontSize: '11px', fontWeight: 600, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit', marginTop: '2px' }}>
-                    {card.action} →
+                  <button style={{ alignSelf: 'flex-start', background: '#fff', border: `1px solid ${card.accentBd}`, borderRadius: '6px', color: card.accentD, fontSize: '11px', fontWeight: 600, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    {card.cta} →
                   </button>
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Bill copy status</div>
-              <div style={{ display: 'flex', gap: '4px', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px' }}>
-                {(['Biller','State'] as const).map(v => (
-                  <button key={v} style={{ background: v === 'Biller' ? '#4F46E5' : 'transparent', color: v === 'Biller' ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: v === 'Biller' ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit' }}>{v}</button>
-                ))}
+
+            {/* Bill copy status — donut grid */}
+            <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Bill Copy Status — by {dbcView}</div>
+                  <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
+                </div>
+                <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
+                  {(['Biller','State','Branch'] as const).map(v => (
+                    <button key={v} onClick={() => setDbcView(v)} style={{ background: dbcView === v ? '#4F46E5' : 'transparent', color: dbcView === v ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: dbcView === v ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s' }}>{v}</button>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div style={{ overflowX: 'auto' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '180px 90px repeat(3,70px) 1fr 80px', padding: '8px 12px', borderBottom: '1px solid #E5E7EB', fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                <div>Biller / State</div><div style={{ textAlign:'center' }}>Opted</div>
-                <div style={{ textAlign:'center', color:'#15803D' }}>Received</div>
-                <div style={{ textAlign:'center', color:'#B45309' }}>Pending</div>
-                <div style={{ textAlign:'center', color:'#B91C1C' }}>Failed</div>
-                <div style={{ paddingLeft:'12px' }}>Delivery</div>
-                <div style={{ textAlign:'right' }}>Coverage</div>
+
+              {/* Donut cards grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '12px' }}>
+                {items.map((b, i) => {
+                  const color = b.pct >= 85 ? '#22C55E' : b.pct >= 75 ? '#F59E0B' : '#EF4444'
+                  const bg    = b.pct >= 85 ? '#F0FDF4' : b.pct >= 75 ? '#FFFBEB' : '#FEF2F2'
+                  const bd    = b.pct >= 85 ? '#BBF7D0' : b.pct >= 75 ? '#FDE68A' : '#FECACA'
+                  const textC = b.pct >= 85 ? '#15803D' : b.pct >= 75 ? '#B45309' : '#B91C1C'
+                  const r3 = 26, stroke3 = 5, size3 = 64
+                  const circ3 = 2 * Math.PI * r3
+                  const dash3 = (b.pct / 100) * circ3
+                  return (
+                    <div key={b.name} style={{ background: '#fff', border: `1px solid #E5E7EB`, borderRadius: '12px', padding: '16px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                      {/* Donut */}
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width={size3} height={size3} viewBox={`0 0 ${size3} ${size3}`} style={{ transform: 'rotate(-90deg)' }}>
+                          <circle cx={size3/2} cy={size3/2} r={r3} fill="none" stroke={color + '33'} strokeWidth={stroke3}/>
+                          <circle cx={size3/2} cy={size3/2} r={r3} fill="none" stroke={color} strokeWidth={stroke3} strokeDasharray={`${dash3} ${circ3 - dash3}`} strokeLinecap="round"/>
+                        </svg>
+                        <div style={{ position: 'absolute', fontSize: '13px', fontWeight: 700, color: textC }}>{b.pct}%</div>
+                      </div>
+                      {/* Name */}
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>{b.name}</div>
+                        {b.sub && <div style={{ fontSize: '10.5px', color: '#9CA3AF', marginTop: '3px' }}>{b.sub}</div>}
+                      </div>
+                      {/* Expected */}
+                      <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
+                        <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bill Copies
+                      </div>
+                      {/* Stats */}
+                      <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#15803D' }}>{b.received}</div>
+                          <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>rcvd</div>
+                        </div>
+                        <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#B45309' }}>{b.pending}</div>
+                          <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>pend</div>
+                        </div>
+                        <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#B91C1C' }}>{b.failed}</div>
+                          <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>fail</div>
+                        </div>
+                      </div>
+                      {/* Stacked bar */}
+                      <div style={{ display: 'flex', height: '4px', borderRadius: '99px', overflow: 'hidden', background: '#F3F4F6', gap: '1px', width: '100%' }}>
+                        <div style={{ width: `${(b.received/Math.max(b.opted,1))*100}%`, background: '#22C55E' }}/>
+                        <div style={{ width: `${(b.pending/Math.max(b.opted,1))*100}%`, background: '#F59E0B' }}/>
+                        <div style={{ width: `${(b.failed/Math.max(b.opted,1))*100}%`, background: '#EF4444' }}/>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-              <table style={{ display: 'none' }}><thead><tr>
-                    {['Biller','State','Opted','Received','Pending','Failed','Success rate','Status'].map(h => (
-                      <th key={h} style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textAlign: 'left', padding: '8px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {dbcTableData.map(r => {
-                    const rate = r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0
-                    const failRate = r.opted > 0 ? r.failed / r.opted : 0
-                    const barColor = rate >= 80 ? '#1D9E75' : rate >= 70 ? '#EF9F27' : '#E24B4A'
-                    const badge = failRate > 0.10 ? { bg: '#FCEBEB', color: '#A32D2D', label: 'High failure' } : failRate > 0.06 ? { bg: '#FAEEDA', color: '#633806', label: 'Check API' } : { bg: '#EAF3DE', color: '#27500A', label: 'Healthy' }
-                    return (
-                      <tr key={r.biller}
-                        onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#f9f9f9'}
-                        onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
-                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#192744' }}>{r.biller}</td>
-                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#858ea2' }}>{r.state}</td>
-                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#192744' }}>{r.opted}</td>
-                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#3B6D11' }}>{r.received}</td>
-                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', color: '#854F0B' }}>{r.pending}</td>
-                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontWeight: 500, color: '#A32D2D' }}>{r.failed}</td>
-                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '12px', fontWeight: 500, color: barColor }}>{rate}%</span>
-                            <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#f0f0f0', overflow: 'hidden', minWidth: '60px' }}>
-                              <div style={{ width: `${rate}%`, height: '100%', borderRadius: '3px', background: barColor }} />
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '9px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px', background: badge.bg, color: badge.color }}>{badge.label}</span>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
             </div>
           </div>
         )
