@@ -1365,7 +1365,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             {/* Page header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px' }}>
               <div>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>Digital Bill Copy</div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>Digital Bill Copy — Postpaid Billers</div>
                 <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>Bill Copies Status — Current month</div>
               </div>
               <div style={{ fontSize: '11.5px', color: '#9CA3AF' }}>Updated daily · Apr 2025</div>
@@ -1744,3 +1744,4 @@ function TopPerformers({ totalBill, appState }: { totalBill: number; appState: B
     </div>
   )
 }
+// cache bust Tue Apr 28 13:22:56 UTC 2026
