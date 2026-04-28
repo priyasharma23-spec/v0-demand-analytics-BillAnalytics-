@@ -1521,7 +1521,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           { biller: 'WBSEDCL',       state: 'West Bengal', opted: 14, received: 11, pending: 1, failed: 2 },
           { biller: 'JVVNL',         state: 'Rajasthan',   opted: 13, received: 11, pending: 1, failed: 1 },
         ]
-        const [basicDbcView, setBasicDbcView] = useState<'Biller'|'State'|'Branch'>('Biller')
+        const [basicDbcView, setBasicDbcView] = useState<'Biller'|'State'>('Biller')
         const basicStateData = Object.entries(
           dbcBasic.reduce((acc, r) => {
             if (!acc[r.state]) acc[r.state] = { state: r.state, opted: 0, received: 0, pending: 0, failed: 0 }
@@ -1530,17 +1530,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             return acc
           }, {} as Record<string, { state: string; opted: number; received: number; pending: number; failed: number }>)
         ).map(([, v]) => ({ biller: v.state, ...v, state: '' }))
-        const basicBranchData = Object.entries(BRANCHES)
-          .filter(([st]) => appState.stateF === 'all' || st === appState.stateF)
-          .flatMap(([st, brs]) => brs.map(br => {
-            const cas = CAS[br]?.length ?? 0
-            const opted = Math.round(cas * 0.75)
-            const received = Math.round(opted * 0.787)
-            const pending = Math.round(opted * 0.138)
-            const failed = opted - received - pending
-            return { biller: br, state: st, opted, received, pending, failed }
-          })).sort((a, b) => b.opted - a.opted).slice(0, 8)
-        const basicItems = basicDbcView === 'Biller' ? dbcBasic : basicDbcView === 'Branch' ? basicBranchData : basicStateData
+        const basicItems = basicDbcView === 'Biller' ? dbcBasic : basicStateData
         const basicCols = basicItems.length <= 5 ? basicItems.length : basicItems.length <= 8 ? 4 : 5
         return (
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
@@ -1550,7 +1540,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
               </div>
               <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
-                {(['Biller','State','Branch'] as const).map(v => (
+                {(['Biller','State'] as const).map(v => (
                   <button key={v} onClick={() => setBasicDbcView(v)} style={{ background: basicDbcView === v ? '#4F46E5' : 'transparent', color: basicDbcView === v ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: basicDbcView === v ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s' }}>{v}</button>
                 ))}
               </div>
