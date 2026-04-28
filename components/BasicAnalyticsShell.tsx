@@ -725,12 +725,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           ))}
         </div>
       </div>
-          )}
-        </div>
-          )
-        })()}
-      </div>
-
 
       {/* India map — leakage choropleth */}
       <div style={{ marginTop: '24px' }} />
