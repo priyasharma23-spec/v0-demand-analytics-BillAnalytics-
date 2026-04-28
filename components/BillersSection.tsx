@@ -140,8 +140,8 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
                   <div style={{ fontSize: '11px', fontWeight: 600, color: step.tone.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>{step.label}</div>
                   <div style={{ fontSize: '11.5px', color: '#6B7280' }}>{step.sublabel}</div>
                 </div>
-                {step.pct !== undefined && (
-                  <div style={{ height: '4px', background: '#e5e7eb', borderRadius: '2px', overflow: 'hidden' }}>
+                {idx > 0 && step.pct !== undefined && (
+                  <div style={{ height: '4px', background: '#e5e7eb', borderRadius: '99px', overflow: 'hidden', marginTop: '4px' }}>
                     <div style={{ height: '100%', width: `${step.pct}%`, background: step.tone.accent }} />
                   </div>
                 )}
@@ -188,12 +188,11 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
                 background: statusView === tab.toLowerCase() ? '#4F46E5' : '#fff',
                 color: statusView === tab.toLowerCase() ? '#fff' : '#6B7280',
                 border: `1px solid ${statusView === tab.toLowerCase() ? '#4F46E5' : '#E5E7EB'}`,
-                borderRadius: '20px',
+                borderRadius: '99px',
                 padding: '6px 16px',
                 fontSize: '12px',
                 fontWeight: 500,
                 cursor: 'pointer',
-                transition: 'all 0.2s',
               }}
             >
               {tab}
@@ -265,7 +264,7 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
                           </div>
                         </td>
                         <td style={{ padding: '12px' }}>
-                          <span style={{ background: coverageBg, color: coverageColor, padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 500 }}>{coverage}%</span>
+                          <span style={{ background: coverageBg, color: coverageColor, padding: '2px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 500 }}>{coverage}%</span>
                         </td>
                       </>
                     ) : (
@@ -283,7 +282,7 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
                           </div>
                         </td>
                         <td style={{ padding: '12px' }}>
-                          <span style={{ background: coverageBg, color: coverageColor, padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 500 }}>{coverage}%</span>
+                          <span style={{ background: coverageBg, color: coverageColor, padding: '2px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 500 }}>{coverage}%</span>
                         </td>
                       </>
                     )}
