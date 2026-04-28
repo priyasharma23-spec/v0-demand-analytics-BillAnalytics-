@@ -1510,6 +1510,75 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
         )
       })()}
+      {analyticsMode !== 'advanced' && (() => {
+        const dbcBasic = [
+          { biller: 'MSEDCL',        state: 'Maharashtra', opted: 22, received: 19, pending: 3, failed: 2 },
+          { biller: 'BSES Rajdhani', state: 'Delhi',       opted: 18, received: 15, pending: 4, failed: 1 },
+          { biller: 'BESCOM',        state: 'Karnataka',   opted: 17, received: 14, pending: 2, failed: 3 },
+          { biller: 'TNEB',          state: 'Tamil Nadu',  opted: 19, received: 17, pending: 3, failed: 1 },
+          { biller: 'UGVCL',         state: 'Gujarat',     opted: 16, received: 13, pending: 2, failed: 2 },
+          { biller: 'DVVNL',         state: 'Uttar Pradesh', opted: 15, received: 11, pending: 3, failed: 3 },
+          { biller: 'WBSEDCL',       state: 'West Bengal', opted: 14, received: 11, pending: 1, failed: 2 },
+          { biller: 'JVVNL',         state: 'Rajasthan',   opted: 13, received: 11, pending: 1, failed: 1 },
+        ]
+        return (
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Bill Copy Status — by Biller</div>
+              <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+              {dbcBasic.map((b) => {
+                const pct = b.opted > 0 ? Math.round(b.received / b.opted * 100) : 0
+                const color = pct >= 85 ? '#22C55E' : pct >= 75 ? '#F59E0B' : '#EF4444'
+                const textC = pct >= 85 ? '#15803D' : pct >= 75 ? '#B45309' : '#B91C1C'
+                const r2 = 26, stroke2 = 5, size2 = 64
+                const circ2 = 2 * Math.PI * r2
+                const dash2 = (pct / 100) * circ2
+                return (
+                  <div key={b.biller} style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width={size2} height={size2} viewBox={`0 0 ${size2} ${size2}`} style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx={size2/2} cy={size2/2} r={r2} fill="none" stroke={color + '33'} strokeWidth={stroke2}/>
+                        <circle cx={size2/2} cy={size2/2} r={r2} fill="none" stroke={color} strokeWidth={stroke2} strokeDasharray={`${dash2} ${circ2 - dash2}`} strokeLinecap="round"/>
+                      </svg>
+                      <div style={{ position: 'absolute', fontSize: '13px', fontWeight: 700, color: textC }}>{pct}%</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#111827' }}>{b.biller}</div>
+                      <div style={{ fontSize: '10.5px', color: '#9CA3AF', marginTop: '3px' }}>{b.state}</div>
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
+                      <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bill Copies
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#15803D' }}>{b.received}</div>
+                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>rcvd</div>
+                      </div>
+                      <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#B45309' }}>{b.pending}</div>
+                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>pend</div>
+                      </div>
+                      <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#B91C1C' }}>{b.failed}</div>
+                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>fail</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', height: '4px', borderRadius: '99px', overflow: 'hidden', background: '#F3F4F6', gap: '1px', width: '100%' }}>
+                      <div style={{ width: `${(b.received/Math.max(b.opted,1))*100}%`, background: '#22C55E' }}/>
+                      <div style={{ width: `${(b.pending/Math.max(b.opted,1))*100}%`, background: '#F59E0B' }}/>
+                      <div style={{ width: `${(b.failed/Math.max(b.opted,1))*100}%`, background: '#EF4444' }}/>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
