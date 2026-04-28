@@ -549,6 +549,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             return PATHS
           })()
           const [spH, setSpH] = useState<string|null>(null)
+          const [selectedSpendState, setSelectedSpendState] = useState<string|null>(null)
           const maxSpend = Math.max(...stateData.map(s => s.total), 1)
           const getColor = (state: string) => {
             const sd = stateData.find(s => s.state === state)
@@ -572,21 +573,26 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           }
           return (
             <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <svg width={195} height={268} viewBox="0 0 320 440" style={{ background: '#F8FAFF', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
+              <svg width={280} height={385} viewBox="0 0 320 440" style={{ background: '#F8FAFF', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
                 <rect width="320" height="440" fill="#F8FAFF" />
-                {Object.entries(PATHS).map(([state, path]) => (
-                  <path
-                    key={state}
-                    d={path}
-                    fill={getColor(state)}
-                    stroke="#fff"
-                    strokeWidth="0.5"
-                    opacity={spH && spH !== state ? 0.5 : 1}
-                    style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
-                    onMouseEnter={() => setSpH(state)}
-                    onMouseLeave={() => setSpH(null)}
-                  />
-                ))}
+                {Object.entries(PATHS).map(([state, path]) => {
+                  const isSelected = selectedSpendState === state
+                  const isHovered = spH === state && !selectedSpendState
+                  return (
+                    <path
+                      key={state}
+                      d={path}
+                      fill={getColor(state)}
+                      stroke={isSelected ? '#1E3A5F' : '#fff'}
+                      strokeWidth={isSelected ? 2 : 0.5}
+                      opacity={isSelected ? 1 : isHovered || !selectedSpendState ? 1 : selectedSpendState && spH === state ? 0.75 : 0.45}
+                      style={{ cursor: 'pointer', transition: 'stroke 0.2s, opacity 0.2s' }}
+                      onMouseEnter={() => !selectedSpendState && setSpH(state)}
+                      onMouseLeave={() => !selectedSpendState && setSpH(null)}
+                      onClick={() => setSelectedSpendState(selectedSpendState === state ? null : state)}
+                    />
+                  )
+                })}
               </svg>
               <div style={{ display: 'flex', gap: '2px', justifyContent: 'center', alignItems: 'center', fontSize: '10px', color: '#6B7280' }}>
                 <span>Low</span>
@@ -595,7 +601,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                 ))}
                 <span>High</span>
               </div>
-              {spH && (
+              {!selectedSpendState && spH && (
                 <div style={{ fontSize: '11px', color: '#111827', textAlign: 'center', fontWeight: 500 }}>
                   {STATE_ABBR[spH] ?? spH.slice(0, 2).toUpperCase()} · {inr(stateData.find(s => s.state === spH)?.total ?? 0)}
                 </div>
