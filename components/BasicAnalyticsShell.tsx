@@ -1339,8 +1339,22 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           }, {} as Record<string, { state: string; opted: number; received: number; pending: number; failed: number }>)
         ).map(([, v]) => ({ ...v, pct: v.opted > 0 ? Math.round(v.received / v.opted * 100) : 0 }))
 
+        // Branch data derived from CAS/BRANCHES
+        const branchData = Object.entries(BRANCHES)
+          .filter(([st]) => appState.stateF === 'all' || st === appState.stateF)
+          .flatMap(([st, brs]) => brs.map(br => {
+            const cas = CAS[br]?.length ?? 0
+            const opted = Math.round(cas * 0.75)
+            const received = Math.round(opted * 0.787)
+            const pending = Math.round(opted * 0.138)
+            const failed = opted - received - pending
+            return { name: br, sub: st, opted, received, pending, failed, pct: opted > 0 ? Math.round(received / opted * 100) : 0 }
+          })).sort((a, b) => b.opted - a.opted).slice(0, 10)
+
         const items = dbcView === 'Biller'
           ? dbcTableData.map(r => ({ ...r, name: r.biller, sub: r.state, pct: r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0 }))
+          : dbcView === 'Branch'
+          ? branchData
           : stateData.map(r => ({ ...r, name: r.state, sub: '', pct: r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0 }))
 
         const cols = items.length <= 5 ? items.length : items.length <= 8 ? 4 : 5
