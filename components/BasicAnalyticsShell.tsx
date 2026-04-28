@@ -610,9 +610,64 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           )
         })()}
 
-        {/* RIGHT: existing ranked list */}
+        {/* RIGHT: ranked list or state detail panel */}
         <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
+          {selectedSpendState ? (
+            (() => {
+              const branchCount = (BRANCHES[selectedSpendState] ?? []).length
+              const stateTotal = stateData.find(s => s.state === selectedSpendState)?.total ?? 0
+              const avgBillPerBranch = branchCount > 0 ? Math.round(stateTotal / branchCount) : 0
+              const filteredCAs = caRows.filter(([caNum, caData]) => {
+                const branchList = BRANCHES[selectedSpendState] ?? []
+                return branchList.includes(caData.sub)
+              })
+              const highestCA = filteredCAs.length > 0 ? filteredCAs.reduce((max, curr) => (curr[1].total > max[1].total ? curr : max)) : null
+              const lowestCA = filteredCAs.length > 0 ? filteredCAs.reduce((min, curr) => (curr[1].total < min[1].total ? curr : min)) : null
+              return (
+                <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '20px', minHeight: '400px' }}>
+                  <div>
+                    <div style={{ fontSize: '24px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>{selectedSpendState}</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Total Active Branches</div>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>{branchCount}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Avg Bill Amount per Branch</div>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>{inr(avgBillPerBranch)}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Highest Bill</div>
+                      {highestCA ? (
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                          <div style={{ fontSize: '14px', fontFamily: 'monospace', fontWeight: 600, color: '#111827' }}>{highestCA[0]}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{inr(highestCA[1].total)}</div>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '14px', color: '#9CA3AF' }}>—</div>
+                      )}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Lowest Bill</div>
+                      {lowestCA ? (
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                          <div style={{ fontSize: '14px', fontFamily: 'monospace', fontWeight: 600, color: '#111827' }}>{lowestCA[0]}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{inr(lowestCA[1].total)}</div>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '14px', color: '#9CA3AF' }}>—</div>
+                      )}
+                    </div>
+                  </div>
+                  <button onClick={() => setSelectedSpendState(null)} style={{ marginTop: 'auto', padding: '10px 16px', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '8px', fontSize: '13px', fontWeight: 500, color: '#111827', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    ← All states
+                  </button>
+                </div>
+              )
+            })()
+          ) : (
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '22px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
           <div style={{ fontSize: '11px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Top by spend</div>
           <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: '8px', padding: '2px', gap: '2px' }}>
@@ -668,6 +723,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           ))}
         </div>
       </div>
+          )}
         </div>
       </div>
 
