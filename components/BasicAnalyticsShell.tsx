@@ -1441,7 +1441,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>Bill Copy Status — by {dbcView}</div>
-                  <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
+                  <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
                 </div>
                 <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
                   {(['Biller','State','Branch'] as const).map(v => (
@@ -1477,7 +1477,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                       </div>
                       {/* Expected */}
                       <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
-                        <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bill Copies
+                        <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bills
                       </div>
                       {/* Stats */}
                       <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
@@ -1506,6 +1506,93 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                   )
                 })}
               </div>
+            </div>
+          </div>
+        )
+      })()}
+      {analyticsMode !== 'advanced' && (() => {
+        const dbcBasic = [
+          { biller: 'MSEDCL',        state: 'Maharashtra', opted: 22, received: 19, pending: 3, failed: 2 },
+          { biller: 'BSES Rajdhani', state: 'Delhi',       opted: 18, received: 15, pending: 4, failed: 1 },
+          { biller: 'BESCOM',        state: 'Karnataka',   opted: 17, received: 14, pending: 2, failed: 3 },
+          { biller: 'TNEB',          state: 'Tamil Nadu',  opted: 19, received: 17, pending: 3, failed: 1 },
+          { biller: 'UGVCL',         state: 'Gujarat',     opted: 16, received: 13, pending: 2, failed: 2 },
+          { biller: 'DVVNL',         state: 'Uttar Pradesh', opted: 15, received: 11, pending: 3, failed: 3 },
+          { biller: 'WBSEDCL',       state: 'West Bengal', opted: 14, received: 11, pending: 1, failed: 2 },
+          { biller: 'JVVNL',         state: 'Rajasthan',   opted: 13, received: 11, pending: 1, failed: 1 },
+        ]
+        const [basicDbcView, setBasicDbcView] = useState<'Biller'|'State'>('Biller')
+        const basicStateData = Object.entries(
+          dbcBasic.reduce((acc, r) => {
+            if (!acc[r.state]) acc[r.state] = { state: r.state, opted: 0, received: 0, pending: 0, failed: 0 }
+            acc[r.state].opted += r.opted; acc[r.state].received += r.received
+            acc[r.state].pending += r.pending; acc[r.state].failed += r.failed
+            return acc
+          }, {} as Record<string, { state: string; opted: number; received: number; pending: number; failed: number }>)
+        ).map(([, v]) => ({ biller: v.state, ...v, state: '' }))
+        const basicItems = basicDbcView === 'Biller' ? dbcBasic : basicStateData
+        const basicCols = basicItems.length <= 5 ? basicItems.length : basicItems.length <= 8 ? 4 : 5
+        return (
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>Bill Status — by {basicDbcView}</div>
+                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>BBPS fetch status</div>
+              </div>
+              <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
+                {(['Biller','State'] as const).map(v => (
+                  <button key={v} onClick={() => setBasicDbcView(v)} style={{ background: basicDbcView === v ? '#4F46E5' : 'transparent', color: basicDbcView === v ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: basicDbcView === v ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s' }}>{v}</button>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${basicCols}, 1fr)`, gap: '12px' }}>
+              {basicItems.map((b) => {
+                const pct = b.opted > 0 ? Math.round(b.received / b.opted * 100) : 0
+                const color = pct >= 85 ? '#22C55E' : pct >= 75 ? '#F59E0B' : '#EF4444'
+                const textC = pct >= 85 ? '#15803D' : pct >= 75 ? '#B45309' : '#B91C1C'
+                const r2 = 26, stroke2 = 5, size2 = 64
+                const circ2 = 2 * Math.PI * r2
+                const dash2 = (pct / 100) * circ2
+                return (
+                  <div key={b.biller} style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width={size2} height={size2} viewBox={`0 0 ${size2} ${size2}`} style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx={size2/2} cy={size2/2} r={r2} fill="none" stroke={color + '33'} strokeWidth={stroke2}/>
+                        <circle cx={size2/2} cy={size2/2} r={r2} fill="none" stroke={color} strokeWidth={stroke2} strokeDasharray={`${dash2} ${circ2 - dash2}`} strokeLinecap="round"/>
+                      </svg>
+                      <div style={{ position: 'absolute', fontSize: '13px', fontWeight: 700, color: textC }}>{pct}%</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#111827' }}>{b.biller}</div>
+                      <div style={{ fontSize: '10.5px', color: '#9CA3AF', marginTop: '3px' }}>{b.state}</div>
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#6B7280', textAlign: 'center' }}>
+                      <span style={{ fontWeight: 700, color: '#111827' }}>{b.opted}</span> Expected Bills
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#15803D' }}>{b.received}</div>
+                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>rcvd</div>
+                      </div>
+                      <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#B45309' }}>{b.pending}</div>
+                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>pend</div>
+                      </div>
+                      <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#B91C1C' }}>{b.failed}</div>
+                        <div style={{ fontSize: '9.5px', color: '#9CA3AF' }}>fail</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', height: '4px', borderRadius: '99px', overflow: 'hidden', background: '#F3F4F6', gap: '1px', width: '100%' }}>
+                      <div style={{ width: `${(b.received/Math.max(b.opted,1))*100}%`, background: '#22C55E' }}/>
+                      <div style={{ width: `${(b.pending/Math.max(b.opted,1))*100}%`, background: '#F59E0B' }}/>
+                      <div style={{ width: `${(b.failed/Math.max(b.opted,1))*100}%`, background: '#EF4444' }}/>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )
