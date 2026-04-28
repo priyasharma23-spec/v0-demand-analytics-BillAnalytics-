@@ -889,18 +889,51 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           ← All states
                         </button>
                       </div>
-                      {[
-                        { label:'Total Active Branches', value: String(branchCount), sub: 'branches in portfolio' },
-                        { label:'Avg Bill per Branch', value: inr(avgPerBranch), sub: 'per branch this FY' },
-                        { label:'Peak Month', value: mthLabels[peakMthIdx] + ' 2024', sub: inr(sd.months[peakMthIdx] * 100000) + ' highest spend' },
-                        { label:'Lowest Month', value: mthLabels[lowMthIdx] + ' 2024', sub: inr(sd.months[lowMthIdx] * 100000) + ' lowest spend' },
-                      ].map(m => (
-                        <div key={m.label} style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'8px 12px' }}>
-                          <div style={{ fontSize:'10px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'2px' }}>{m.label}</div>
-                          <div style={{ fontSize:'16px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'1px' }}>{m.value}</div>
-                          <div style={{ fontSize:'12px', color:'#858ea2' }}>{m.sub}</div>
-                        </div>
-                      ))}
+                      {/* 3×2 stat grid */}
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'6px' }}>
+                        {[
+                          { label:'Branches', value: String(branchCount), sub: 'in portfolio' },
+                          { label:'Total CAs', value: String((BRANCHES[spendSel]??[]).reduce((s,br)=>s+(CAS[br]?.length??0),0)), sub: 'active CAs' },
+                          { label:'Avg / Branch', value: inr(avgPerBranch), sub: 'this FY' },
+                          { label:'Peak Month', value: mthLabels[peakMthIdx], sub: inr(sd.months[peakMthIdx] * 100000) },
+                          { label:'Lowest Month', value: mthLabels[lowMthIdx], sub: inr(sd.months[lowMthIdx] * 100000) },
+                          { label:'Total Spend', value: inr(sd.total * 100000), sub: 'Apr 24–Mar 25' },
+                        ].map(m => (
+                          <div key={m.label} style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'6px 10px' }}>
+                            <div style={{ fontSize:'9px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'2px' }}>{m.label}</div>
+                            <div style={{ fontSize:'13px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'1px' }}>{m.value}</div>
+                            <div style={{ fontSize:'10px', color:'#858ea2' }}>{m.sub}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {/* CA insights row */}
+                      {(() => {
+                        const stCAs = (BRANCHES[spendSel] ?? []).flatMap(br => CAS[br] ?? [])
+                        const seed0 = spendSel.charCodeAt(0)
+                        const lastPaidCA = stCAs[seed0 % Math.max(stCAs.length,1)] ?? '—'
+                        const lastPaidDate = `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][(seed0 * 3) % 12]} ${((seed0 * 7) % 28) + 1}`
+                        const highCA = stCAs[(seed0 * 5) % Math.max(stCAs.length,1)] ?? '—'
+                        const lowCA  = stCAs[(seed0 * 11) % Math.max(stCAs.length,1)] ?? '—'
+                        return (
+                          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'6px' }}>
+                            <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'6px 10px' }}>
+                              <div style={{ fontSize:'9px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'4px' }}>Last Bill Paid</div>
+                              <div style={{ fontSize:'12px', fontWeight:600, color:'#192744', marginBottom:'2px' }}>{lastPaidDate}</div>
+                              <div style={{ fontSize:'10px', fontFamily:'monospace', color:'#858ea2', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{lastPaidCA}</div>
+                            </div>
+                            <div style={{ background:'#e8f8f1', border:'1px solid #bbf7d0', borderRadius:'4px', padding:'6px 10px' }}>
+                              <div style={{ fontSize:'9px', fontWeight:600, color:'#36b37e', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'4px' }}>Highest Bill Amount</div>
+                              <div style={{ fontSize:'12px', fontWeight:600, color:'#192744', lineHeight:1, marginBottom:'2px' }}>{inr((sd.months[peakMthIdx] * 100000 * 0.12).toFixed(0) as any * 1)}</div>
+                              <div style={{ fontSize:'10px', fontFamily:'monospace', color:'#858ea2', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{highCA}</div>
+                            </div>
+                            <div style={{ background:'#fce8e8', border:'1px solid #fecaca', borderRadius:'4px', padding:'6px 10px' }}>
+                              <div style={{ fontSize:'9px', fontWeight:600, color:'#ec2127', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'4px' }}>Lowest Bill Amount</div>
+                              <div style={{ fontSize:'12px', fontWeight:600, color:'#192744', lineHeight:1, marginBottom:'2px' }}>{inr((sd.months[lowMthIdx] * 100000 * 0.04).toFixed(0) as any * 1)}</div>
+                              <div style={{ fontSize:'10px', fontFamily:'monospace', color:'#858ea2', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{lowCA}</div>
+                            </div>
+                          </div>
+                        )
+                      })()}
                       {/* Monthly sparkline */}
                       <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'8px 12px' }}>
                         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
@@ -1489,8 +1522,8 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         ].map((k, i) => (
           <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
             {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
-            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
             <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
           </div>
         ))}
@@ -1535,7 +1568,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                     strokeDashoffset={-dashPostpaid} strokeLinecap="round"/>
                 </svg>
                 <div style={{ position: 'absolute', textAlign: 'center' }}>
-                  <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', lineHeight: 1 }}>{total}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', lineHeight: 1 }}>{total}</div>
                   <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '2px' }}>CAs</div>
                 </div>
               </div>
@@ -1547,11 +1580,11 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#93C5FD' }}/>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>Prepaid</div>
-                      <div style={{ fontSize: '12px', color: '#9CA3AF' }}>· no connection type</div>
+                      <div style={{ fontSize: '12px', color: '#858ea2' }}>· no connection type</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#4F46E5' }}>{prepaid}</div>
-                      <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{prepaidPct}%</div>
+                      <div style={{ fontSize: '20px', fontWeight: 600, color: '#4F46E5' }}>{prepaid}</div>
+                      <div style={{ fontSize: '12px', color: '#858ea2' }}>{prepaidPct}%</div>
                     </div>
                   </div>
                   <div style={{ height: '6px', background: '#EEF2FF', borderRadius: '99px', overflow: 'hidden' }}>
@@ -1566,8 +1599,8 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>Postpaid</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#4F46E5' }}>{postpaid}</div>
-                      <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{postpaidPct}%</div>
+                      <div style={{ fontSize: '20px', fontWeight: 600, color: '#4F46E5' }}>{postpaid}</div>
+                      <div style={{ fontSize: '12px', color: '#858ea2' }}>{postpaidPct}%</div>
                     </div>
                   </div>
                   <div style={{ height: '6px', background: '#EEF2FF', borderRadius: '99px', overflow: 'hidden', marginBottom: '10px' }}>
@@ -1579,12 +1612,12 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                       { key: 'LT', label: 'Low Tension',  count: lt, pct: ltPct, bg: '#EEF2FF', color: '#4F46E5', bd: '#C7D2FE' },
                       { key: 'HT', label: 'High Tension', count: ht, pct: htPct, bg: '#F5F3FF', color: '#7C3AED', bd: '#DDD6FE' },
                     ].map(t => (
-                      <div key={t.key} style={{ background: t.bg, border: `1px solid ${t.bd}`, borderRadius: '10px', padding: '12px 14px' }}>
+                      <div key={t.key} style={{ background: t.bg, border: `1px solid ${t.bd}`, borderRadius: '4px', padding: '10px 12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                           <div style={{ fontSize: '11px', fontWeight: 700, color: t.color, background: '#fff', border: `1px solid ${t.bd}`, borderRadius: '4px', padding: '1px 6px' }}>{t.key}</div>
-                          <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{t.pct}%</div>
+                          <div style={{ fontSize: '12px', color: '#858ea2' }}>{t.pct}%</div>
                         </div>
-                        <div style={{ fontSize: '24px', fontWeight: 700, color: t.color, lineHeight: 1, marginBottom: '3px' }}>{t.count}</div>
+                        <div style={{ fontSize: '20px', fontWeight: 600, color: t.color, lineHeight: 1, marginBottom: '3px' }}>{t.count}</div>
                         <div style={{ fontSize: '12px', color: t.color, opacity: 0.7 }}>{t.label}</div>
                         <div style={{ height: '4px', background: '#fff', borderRadius: '99px', overflow: 'hidden', marginTop: '8px' }}>
                           <div style={{ width: `${t.pct}%`, height: '100%', background: t.color, borderRadius: '99px', opacity: 0.6 }}/>
