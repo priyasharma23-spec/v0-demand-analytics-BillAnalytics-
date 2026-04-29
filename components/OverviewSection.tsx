@@ -447,6 +447,81 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
         </div>
       </div>
 
+      {/* Action Queue */}
+      <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: '#192744' }}>Bill copy status</div>
+            <div style={{ fontSize: '12px', color: '#858ea2' }}>Action queue across all CAs · click to drill in</div>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+          {approvalQueueItems.map((item) => (
+            <div
+              key={item.key}
+              onClick={() => onSectionChange(item.key as any)}
+              style={{
+                border: `1px solid ${item.borderColor}`,
+                borderRadius: '12px',
+                padding: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                background: '#fff',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLDivElement;
+                el.style.background = '#fafafa';
+                el.style.borderColor = item.countColor;
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLDivElement;
+                el.style.background = '#fff';
+                el.style.borderColor = item.borderColor;
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: item.iconBg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+                    {item.iconPath}
+                  </svg>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: item.countColor, lineHeight: 1 }}>
+                    {item.count}
+                  </div>
+                  <div style={{
+                    fontSize: '9px',
+                    fontWeight: 600,
+                    color: item.tagColor,
+                    background: item.tagBg,
+                    padding: '2px 6px',
+                    borderRadius: '3px',
+                    marginTop: '4px',
+                  }}>
+                    {item.tag}
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744', marginBottom: '4px' }}>
+                {item.title}
+              </div>
+              <div style={{ fontSize: '12px', color: '#858ea2', lineHeight: 1.4 }}>
+                {item.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Heatmap — India map */}
       <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
