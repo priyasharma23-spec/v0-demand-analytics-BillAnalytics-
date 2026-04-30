@@ -401,6 +401,9 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   const [sel, setSel] = useState<string|null>(null)
   const [spendHov, setSpendHov] = useState<string|null>(null)
   const [spendSel, setSpendSel] = useState<string|null>(null)
+  const [selBranch, setSelBranch] = useState<string|null>(null)
+  const [spendView, setSpendView] = useState<'all' | 'top' | 'bottom'>('all')
+  const [drillPage, setDrillPage] = useState<'branches'|'cas'|'peak'|'lowest'|'avg'|'spend'|null>(null)
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -465,6 +468,77 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
 
   return (
     <div>
+      {/* Full-screen drill-down overlay */}
+      {drillPage && (
+        <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 50, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          {/* Header with back button */}
+          <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+            <button onClick={() => setDrillPage(null)}
+              style={{ background: 'none', border: 'none', color: '#1c5af4', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              ← Back to {spendSel}
+            </button>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              {drillPage === 'branches' ? 'Branches' : drillPage === 'cas' ? 'Certified Agents' : drillPage === 'peak' ? 'Peak Month' : drillPage === 'lowest' ? 'Lowest Month' : drillPage === 'avg' ? 'Average / Branch' : 'Total Spend'}
+            </div>
+            <div style={{ width: '80px' }} />
+          </div>
+          {/* Content */}
+          <div style={{ flex: 1, padding: '20px 24px' }}>
+            {drillPage === 'branches' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {(BRANCHES[spendSel] ?? []).map(br => {
+                  const brCAs = CAS[br] ?? []
+                  const brTotal = brCAs.reduce((sum: number, ca: string) => {
+                    const bills = getCABills(ca, 'monthly')
+                    return sum + bills.reduce((s: number, d: any) => s + d.totalBill, 0)
+                  }, 0)
+                  const paidCAs = brCAs.filter((_: string, i: number) => (br.charCodeAt(0) + i) % 10 < 6).length
+                  return (
+                    <div key={br} style={{ background: '#f5f6fa', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>{br}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#1c5af4' }}>{inr(brTotal)}</div>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#858ea2' }}>{brCAs.length} CAs · {paidCAs} paid</div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            {drillPage === 'cas' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {(BRANCHES[spendSel] ?? []).flatMap(br => (CAS[br] ?? []).map((ca: string) => {
+                  const bills = getCABills(ca, 'monthly')
+                  const avg = bills.reduce((s: number, d: any) => s + d.totalBill, 0) / bills.length || 0
+                  return (
+                    <div key={ca} style={{ background: '#f5f6fa', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '13px', fontFamily: 'monospace', color: '#192744', fontWeight: 600 }}>{ca}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#1c5af4' }}>{inr(avg)}</div>
+                    </div>
+                  )
+                }))}
+              </div>
+            )}
+            {(drillPage === 'peak' || drillPage === 'lowest') && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                {drillPage === 'peak' 
+                  ? `${mthLabels[peakMthIdx]} had the highest spend at ₹${(sd.months[peakMthIdx] * 100000 / 100000).toFixed(1)}L`
+                  : `${mthLabels[lowMthIdx]} had the lowest spend at ₹${(sd.months[lowMthIdx] * 100000 / 100000).toFixed(1)}L`}
+              </div>
+            )}
+            {drillPage === 'avg' && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                Average spend per branch: {inr(avgPerBranch)}
+              </div>
+            )}
+            {drillPage === 'spend' && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                Total spend Apr 24–Mar 25: {inr(sd.total * 100000)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Summary chips */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
@@ -859,20 +933,91 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
               <div style={{ flex:1, minWidth:0 }}>
                 {!spendSel ? (
                   <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
-                    <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'6px' }}>All states</div>
-                    {Object.entries(spendData).sort((a,b)=>b[1].total-a[1].total).map(([name, sd], i) => (
-                      <div key={name} onClick={() => setSpendSel(name)}
-                        style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
-                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
-                        <div style={{ fontSize:'11px', color:'#858ea2', fontWeight:600, width:'14px' }}>{i+1}</div>
-                        <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
-                        <div style={{ fontSize:'12px', fontWeight:700, color:'#1c5af4' }}>{inr(sd.total * 100000)}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>
+                          {spendView === 'all' 
+                            ? 'All states by spend'
+                            : spendView === 'top'
+                            ? 'Highest spend states · focus area'
+                            : 'Lowest spend states · savings benchmark'}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#858ea2' }}>
+                          {spendView === 'all' 
+                            ? 'Complete state ranking by total bill outflow'
+                            : spendView === 'top'
+                            ? 'These states drive most of your bill outflow'
+                            : 'These states show efficient bill management'}
+                        </div>
                       </div>
-                    ))}
+                      <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '99px', padding: '2px', gap: '2px' }}>
+                        {([
+                          { key: 'all',    label: 'All states' },
+                          { key: 'top',    label: 'Highest Spend' },
+                          { key: 'bottom', label: 'Lowest Spend' },
+                        ] as const).map(p => (
+                          <button key={p.key} onClick={() => setSpendView(p.key)}
+                            style={{
+                              background: spendView === p.key ? '#1c5af4' : 'transparent',
+                              color: spendView === p.key ? '#fff' : '#858ea2',
+                              border: 'none', borderRadius: '99px',
+                              padding: '4px 14px',
+                              fontSize: '11px',
+                              fontWeight: spendView === p.key ? 600 : 400,
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              transition: 'all .12s',
+                            }}>
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {(() => {
+                      const sortedStates = Object.entries(spendData).sort((a, b) => b[1].total - a[1].total)
+                      const displayStates = spendView === 'top'
+                        ? sortedStates.slice(0, 5)
+                        : spendView === 'bottom'
+                        ? sortedStates.slice(-5).reverse()
+                        : sortedStates
+                      
+                      return displayStates.map(([name, sd], i) => {
+                        const rankColor = '#858ea2'
+                        const valueColor = spendView === 'all' ? '#1c5af4' : spendView === 'top' ? '#ec2127' : '#15803D'
+                        const showBadge = spendView !== 'all'
+                        const badgeBg = spendView === 'top' ? '#fce8e8' : '#e8f8f1'
+                        const badgeColor = spendView === 'top' ? '#ec2127' : '#36b37e'
+                        const badgeText = spendView === 'top' ? '↑ High spend' : '↓ Low spend'
+                        
+                        return (
+                          <div key={name} onClick={() => setSpendSel(name)}
+                            style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
+                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
+                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
+                            <div style={{ fontSize:'11px', fontWeight:600, width:'14px', color: rankColor }}>{i+1}</div>
+                            <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
+                            {showBadge && (
+                              <div style={{ fontSize:'12px', fontWeight:700, padding:'2px 8px', borderRadius:'4px', background: badgeBg, color: badgeColor }}>
+                                {badgeText}
+                              </div>
+                            )}
+                            <div style={{ fontSize:'12px', fontWeight:700, color: valueColor }}>{inr(sd.total * 100000)}</div>
+                          </div>
+                        )
+                      })
+                    })()}
+                    {spendView !== 'all' && (
+                      <div style={{ marginTop: '6px', textAlign: 'center' }}>
+                        <button onClick={() => setSpendView('all')}
+                          style={{ background: 'none', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '6px 16px', fontSize: '11px', fontWeight: 500, color: '#1c5af4', cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+                          View all states
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (() => {
                   const sd = spendData[spendSel]
+                  if (!sd) return <div style={{ padding: '10px', color: '#858ea2' }}>No data available</div>
                   const branches = BRANCHES[spendSel] ?? []
                   const branchCount = branches.length
                   const totalBill = sd.total * 100000
@@ -892,14 +1037,17 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                       {/* 3×2 stat grid */}
                       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'6px' }}>
                         {[
-                          { label:'Branches', value: String(branchCount), sub: 'in portfolio' },
-                          { label:'Total CAs', value: String((BRANCHES[spendSel]??[]).reduce((s,br)=>s+(CAS[br]?.length??0),0)), sub: 'active CAs' },
-                          { label:'Avg / Branch', value: inr(avgPerBranch), sub: 'this FY' },
-                          { label:'Peak Month', value: mthLabels[peakMthIdx], sub: inr(sd.months[peakMthIdx] * 100000) },
-                          { label:'Lowest Month', value: mthLabels[lowMthIdx], sub: inr(sd.months[lowMthIdx] * 100000) },
-                          { label:'Total Spend', value: inr(sd.total * 100000), sub: 'Apr 24–Mar 25' },
+                          { label:'Branches', value: String(branchCount), sub: 'in portfolio', page: 'branches' as const },
+                          { label:'Total CAs', value: String((BRANCHES[spendSel]??[]).reduce((s,br)=>s+(CAS[br]?.length??0),0)), sub: 'active CAs', page: 'cas' as const },
+                          { label:'Avg / Branch', value: inr(avgPerBranch), sub: 'this FY', page: 'avg' as const },
+                          { label:'Peak Month', value: mthLabels[peakMthIdx], sub: inr(sd.months[peakMthIdx] * 100000), page: 'peak' as const },
+                          { label:'Lowest Month', value: mthLabels[lowMthIdx], sub: inr(sd.months[lowMthIdx] * 100000), page: 'lowest' as const },
+                          { label:'Total Spend', value: inr(sd.total * 100000), sub: 'Apr 24–Mar 25', page: 'spend' as const },
                         ].map(m => (
-                          <div key={m.label} style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'6px 10px' }}>
+                          <div key={m.label} onClick={() => setDrillPage(m.page)}
+                            style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'6px 10px', cursor:'pointer', transition:'background .12s' }}
+                            onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#EFF6FF'}
+                            onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}>
                             <div style={{ fontSize:'9px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'2px' }}>{m.label}</div>
                             <div style={{ fontSize:'13px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'1px' }}>{m.value}</div>
                             <div style={{ fontSize:'10px', color:'#858ea2' }}>{m.sub}</div>
@@ -934,16 +1082,12 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           </div>
                         )
                       })()}
-                      {/* Monthly sparkline */}
-                      <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'8px 12px' }}>
-                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
-                          <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em' }}>Monthly spend</div>
-                          <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
-                            <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
-                            <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
-                          </div>
-                        </div>
-                        {(() => {
+                      {/* Monthly spend */}
+                      <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
+                        <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
+                        <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
+                      </div>
+                      {(() => {
                           const W = 400, H = 100, PAD = { t:18, r:24, b:24, l:24 }
                           const iW = W - PAD.l - PAD.r
                           const iH = H - PAD.t - PAD.b
@@ -955,10 +1099,10 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           const linePath = points.map(([x,y],i) => (i===0?`M${x},${y}`:`L${x},${y}`)).join(' ')
                           const areaPath = `${linePath} L${points[11][0]},${PAD.t+iH} L${points[0][0]},${PAD.t+iH} Z`
                           return (
-                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'Inter, sans-serif', width:'100%', display:'block' }}>
+                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'system-ui, sans-serif', width:'100%', display:'block' }}>
                               {[0,0.5,1].map((t,i) => (
                                 <line key={i} x1={PAD.l} x2={W-PAD.r} y1={PAD.t + iH*(1-t)} y2={PAD.t + iH*(1-t)}
-                                  stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" />
+                                  stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />
                               ))}
                               <path d={areaPath} fill="#dbeafe" opacity="0.3" />
                               <path d={linePath} fill="none" stroke="#1c5af4" strokeWidth="1" strokeLinejoin="round" strokeLinecap="round" />
@@ -988,7 +1132,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                             </svg>
                           )
                         })()}
-                      </div>
                     </div>
                   )
                 })()}
@@ -1005,19 +1148,21 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
 function BasicTrends({ appState }: BasicSectionProps) {
   const [activeTab, setActiveTab] = useState<string>('spend')
   const TABS = [
-    { key: 'spend',  label: 'Bill Trend',   color: '#4F46E5', bg: '#EEF2FF', bd: '#C7D2FE' },
-    { key: 'yoy',    label: 'YoY Change',   color: '#3B82F6', bg: '#EFF6FF', bd: '#BFDBFE' },
-    { key: 'ca',     label: 'CA Count',     color: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
-    { key: 'prior',  label: 'vs Prior Year',color: '#7C3AED', bg: '#F5F3FF', bd: '#DDD6FE' },
+    { key: 'spend',   label: 'Bill Trend',    color: '#4F46E5', bg: '#EEF2FF', bd: '#C7D2FE' },
+    { key: 'yoy',     label: 'YoY Change',    color: '#3B82F6', bg: '#EFF6FF', bd: '#BFDBFE' },
+    { key: 'ca',      label: 'CA Count',      color: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
+    { key: 'overdue', label: 'Overdue Trend', color: '#ec2127', bg: '#FEF2F2', bd: '#FECACA' },
   ]
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
-  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
+  const overdueRef = useRef<HTMLCanvasElement>(null)
+  const caCompRef   = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
-  const spendTrendChart = useRef<Chart | null>(null)
+  const overdueChart = useRef<Chart | null>(null)
+  const caCompChart = useRef<Chart | null>(null)
 
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -1124,135 +1269,43 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
-  // Monthly spend trend chart (simple line chart)
+  // Bill Trend chart - single current year line with last year avg as dashed reference line
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!spendTrendRef.current) return
-      const ctx = spendTrendRef.current.getContext('2d')
+      if (!trendRef.current) return
+      const ctx = trendRef.current.getContext('2d')
       if (!ctx) return
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-      const padding = (maxVal - minVal) * 0.15
-      spendTrendChart.current = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            type: 'line' as const,
-            label: 'Total bill',
-            data: monthlyTotals,
-            borderColor: '#4F46E5',
-            borderWidth: 2,
-            backgroundColor: 'rgba(79,70,229,0.06)',
-            pointBackgroundColor: monthlyTotals.map((_, i) =>
-              i === maxMonthIdx ? '#4F46E5' : i === minMonthIdx ? '#15803D' : '#fff'
-            ),
-            pointBorderColor: '#4F46E5',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBorderWidth: 2,
-            tension: 0.35,
-            fill: true,
-            yAxisID: 'y',
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#f5f6fa',
-              titleColor: '#192744',
-              bodyColor: '#5e687d',
-              borderColor: '#f3f4f6',
-              borderWidth: 1,
-              padding: 10,
-              cornerRadius: 4,
-              displayColors: false,
-              callbacks: {
-                title: items => items[0].label,
-                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
-                afterLabel: item => {
-                  const i = item.dataIndex
-                  const lines = []
-                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
-                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
-                  else {
-                    const prev = monthlyTotals[i - 1]
-                    if (prev) {
-                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
-                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
-                    }
-                  }
-                  return lines.join('\n')
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              border: { display: false },
-              ticks: { color: '#858ea2', font: { size: 11 } },
-            },
-            y: {
-              type: 'linear' as const,
-              position: 'left' as const,
-              border: { display: false },
-              grid: { color: '#f3f4f6' },
-              min: Math.floor((minVal - padding) / 100000) * 100000,
-              max: Math.ceil((maxVal + padding) / 100000) * 100000,
-              ticks: {
-                color: '#858ea2',
-                font: { size: 11 },
-                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
-              },
-            },
-          },
-        },
-      })
-    }, 100)
-    return () => {
-      clearTimeout(timer)
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-    }
-  }, [labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx])
-
-  // YoY change line chart — same style as spend chart
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!yoyRef.current) return
-      const ctx = yoyRef.current.getContext('2d')
-      if (!ctx) return
-      if (yoyChart.current) yoyChart.current.destroy()
-      yoyChart.current = new Chart(ctx, {
+      if (trendChart.current) trendChart.current.destroy()
+      
+      const billChg = avgCurrent > avgPrior 
+        ? Math.round((avgCurrent - avgPrior) / avgPrior * 100)
+        : Math.round((avgCurrent - avgPrior) / avgPrior * 100)
+      
+      trendChart.current = new Chart(ctx, {
         type: 'line',
         data: {
           labels,
           datasets: [
             {
-              label: 'Current year',
-              data: yoyChanges,
-              borderColor: '#2500D7',
-              backgroundColor: 'rgba(37,0,215,0.06)',
+              label: 'Monthly outflow',
+              data: monthlyTotals,
+              borderColor: '#1c5af4',
+              backgroundColor: 'rgba(28,90,244,0.06)',
               borderWidth: 2.5,
-              pointBackgroundColor: '#2500D7',
+              pointBackgroundColor: '#1c5af4',
               pointRadius: 4,
               pointHoverRadius: 6,
               tension: 0.35,
               fill: true,
             },
             {
-              label: 'Prior year',
-              data: priorYoyChanges,
-              borderColor: '#C4BFFF',
+              label: 'Last year avg',
+              data: Array(12).fill(avgPrior),
+              borderColor: '#F59E0B',
+              borderDash: [6, 4],
               backgroundColor: 'transparent',
               borderWidth: 1.5,
-              borderDash: [5, 4],
-              pointBackgroundColor: '#C4BFFF',
-              pointRadius: 2,
-              pointHoverRadius: 4,
+              pointRadius: 0,
               tension: 0.35,
               fill: false,
             },
@@ -1276,7 +1329,84 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
-                label: item => '  ' + item.dataset.label + ': ' + (item.raw as number > 0 ? '+' : '') + item.raw + '%',
+                label: (item) => {
+                  if (item.datasetIndex === 0) {
+                    const curr = item.raw as number
+                    const i = item.dataIndex
+                    const prev = i > 0 ? monthlyTotals[i - 1] : 0
+                    const momChg = prev > 0 ? Math.round((curr - prev) / prev * 100) : 0
+                    const vsAvg = avgPrior > 0 ? Math.round((curr - avgPrior) / avgPrior * 100) : 0
+                    return `Monthly outflow: ₹${inrK(curr)}  (${momChg > 0 ? '+' : ''}${momChg}% vs last month)\n(${Math.abs(vsAvg)}% ${vsAvg > 0 ? "above" : "below"} last year's avg)`
+                  } else {
+                    return `Last year avg: ₹${inrK(item.raw as number)}`
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: { border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v)/100000).toFixed(1) + 'L' } },
+          },
+        },
+      })
+    }, 50)
+    return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab, monthlyTotals, avgCurrent, avgPrior])
+
+  // YoY change line chart — red line, colored dots (red if positive/cost up, green if negative/cost down)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!yoyRef.current) return
+      const ctx = yoyRef.current.getContext('2d')
+      if (!ctx) return
+      if (yoyChart.current) yoyChart.current.destroy()
+      yoyChart.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'YoY Change',
+              data: yoyChanges,
+              borderColor: '#ec2127',
+              backgroundColor: 'rgba(236,33,39,0.06)',
+              borderWidth: 2.5,
+              pointBackgroundColor: yoyChanges.map(v => v > 0 ? '#ec2127' : '#36b37e'),
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.35,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#192744',
+              titleColor: '#fff',
+              bodyColor: 'rgba(255,255,255,0.85)',
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: (item) => {
+                  const val = item.raw as number
+                  const caChange = Math.round(Math.random() * 10)
+                  const billChange = Math.round(Math.random() * 10)
+                  return val > 0 
+                    ? `↑ Cost increased: +${val}% vs same month last year`
+                    : `↓ Cost decreased: ${val}%`
+                },
+                afterLabel: (item) => {
+                  const caChange = Math.round(Math.random() * 10)
+                  const billChange = Math.round(Math.random() * 10)
+                  return `Active CAs: ${caChange > 0 ? '+' : ''}${caChange}%\nAvg bill/CA: ${billChange > 0 ? '+' : ''}${billChange}%`
+                }
               }
             }
           },
@@ -1289,7 +1419,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
       })
     }, 50)
     return () => { clearTimeout(timer); if (yoyChart.current) yoyChart.current.destroy() }
-  }, [appState.stateF, appState.branchF, appState.caF, activeTab])
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab, yoyChanges])
 
   // CA additions line chart — same style as spend chart
   useEffect(() => {
@@ -1373,27 +1503,229 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (caChart.current) caChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
+  // Overdue Trend useEffect - bar chart for overdue amounts (red bars) and line chart for overdue CA count (amber line, y2 axis)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!overdueRef.current) return
+      const ctx = overdueRef.current.getContext('2d')
+      if (!ctx) return
+      if (overdueChart.current) overdueChart.current.destroy()
+      
+      // Generate mock overdue data
+      const overdueAmounts = monthlyTotals.map((v, i) => Math.round(v * (0.065 + Math.random() * 0.02)))
+      const overdueCACounts = caCounts.map((_, i) => Math.round(Math.random() * 25 + 5))
+      
+      overdueChart.current = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              type: 'bar' as const,
+              label: 'Overdue amount',
+              data: overdueAmounts,
+              backgroundColor: 'rgba(236,33,39,0.15)',
+              borderColor: '#ec2127',
+              borderWidth: 1.5,
+              borderRadius: 4,
+              yAxisID: 'y',
+            },
+            {
+              type: 'line' as const,
+              label: 'Overdue CAs',
+              data: overdueCACounts,
+              borderColor: '#F59E0B',
+              backgroundColor: 'transparent',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#F59E0B',
+              pointRadius: 3,
+              tension: 0.35,
+              yAxisID: 'y1',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, position: 'top' as const, align: 'end' as const, labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 12 }, padding: 16 } },
+            tooltip: {
+              backgroundColor: '#192744',
+              titleColor: '#fff',
+              bodyColor: 'rgba(255,255,255,0.85)',
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: (item) => {
+                  return item.datasetIndex === 0 
+                    ? `Overdue: ₹${inrK(item.raw as number)}`
+                    : `Overdue CAs: ${item.raw}`
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: { 
+              type: 'linear' as const,
+              position: 'left' as const,
+              border: { display: false }, 
+              grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v)/100000).toFixed(1) + 'L' } 
+            },
+            y1: {
+              type: 'linear' as const,
+              position: 'right' as const,
+              border: { display: false },
+              grid: { display: false },
+              ticks: { color: '#F59E0B', font: { size: 11 } },
+            },
+          },
+        },
+      })
+    }, 50)
+    return () => { clearTimeout(timer); if (overdueChart.current) overdueChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab, monthlyTotals, caCounts])
 
+  // CA comparison chart — bar for this year, line for last year (shows on spend tab)
+  useEffect(() => {
+    if (activeTab !== 'spend') return
+    const timer = setTimeout(() => {
+      if (!caCompRef.current) return
+      const ctx = caCompRef.current.getContext('2d')
+      if (!ctx) return
+      if (caCompChart.current) caCompChart.current.destroy()
+      caCompChart.current = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              type: 'bar' as const,
+              label: 'CAs this year',
+              data: caCounts,
+              backgroundColor: 'rgba(28,90,244,0.15)',
+              borderColor: '#1c5af4',
+              borderWidth: 1.5,
+              borderRadius: 3,
+              yAxisID: 'y',
+            },
+            {
+              type: 'line' as const,
+              label: 'CAs last year',
+              data: priorCACounts,
+              borderColor: '#C4BFFF',
+              backgroundColor: 'transparent',
+              borderWidth: 1.5,
+              borderDash: [5, 4],
+              pointRadius: 2,
+              pointBackgroundColor: '#C4BFFF',
+              tension: 0.35,
+              yAxisID: 'y',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index' as const, intersect: false },
+          plugins: {
+            legend: { display: true, position: 'top' as const, align: 'end' as const,
+              labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 11 }, padding: 12 } },
+            tooltip: {
+              backgroundColor: '#192744', titleColor: '#fff', bodyColor: 'rgba(255,255,255,0.85)',
+              padding: 10, cornerRadius: 4, displayColors: false,
+              callbacks: {
+                title: (items: any[]) => items[0].label,
+                label: (item: any) => item.datasetIndex === 0
+                  ? `  CAs this year: ${item.raw}`
+                  : `  CAs last year: ${item.raw}`,
+                afterLabel: (item: any) => {
+                  if (item.datasetIndex !== 0) return ''
+                  const i = item.dataIndex
+                  const curr = caCounts[i]
+                  const prior = priorCACounts[i]
+                  const diff = curr - prior
+                  const pct = Math.round(diff / Math.max(prior, 1) * 100)
+                  const outflowCurr = monthlyTotals[i]
+                  const outflowPrior = priorYear[i]
+                  const outflowChg = Math.round((outflowCurr - outflowPrior) / Math.max(outflowPrior, 1) * 100)
+                  const caDriver = Math.abs(pct) > Math.abs(outflowChg - pct)
+                  return [
+                    `  CA change: ${diff > 0 ? '+' : ''}${diff} (${pct > 0 ? '+' : ''}${pct}% vs last year)`,
+                    `  Outflow change: ${outflowChg > 0 ? '+' : ''}${outflowChg}% — driven by ${caDriver ? '👥 CA additions' : '📈 avg bill increase'}`,
+                  ].join('\n')
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 10 } } },
+            y: { border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 10 }, callback: (v: any) => v + ' CAs' } },
+          },
+        },
+      })
+    }, 50)
+    return () => { clearTimeout(timer); if (caCompChart.current) caCompChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-      {/* Summary cards */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '0px' }}>
-        {[
-          { label: 'Overall YoY change', value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', sub: 'avg monthly spend vs prior year', subColor: overallYoy > 0 ? '#B45309' : '#15803D' },
-          { label: 'Peak month',         value: labels[maxMonthIdx],                              sub: inr(monthlyTotals[maxMonthIdx]) + ' · highest spend', subColor: '#B91C1C' },
-          { label: 'Lowest month',       value: labels[minMonthIdx],                              sub: inr(monthlyTotals[minMonthIdx]) + ' · lowest spend',  subColor: '#15803D' },
-          { label: 'Monthly average',    value: inr(avgCurrent),                                  sub: 'vs ' + inr(avgPrior) + ' prior year', subColor: '#1D4ED8' },
-        ].map((k, i) => (
-          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
-            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
-            <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
-            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+      {/* Summary cards - tab-aware */}
+      {(() => {
+        const billChg = Math.round((avgCurrent - avgPrior) / Math.max(avgPrior, 1) * 100)
+        const avgYoy = Math.round(yoyChanges.reduce((a: number, v: number) => a + v, 0) / yoyChanges.length)
+        const bestYoy = Math.max(...yoyChanges)
+        const worstYoy = Math.min(...yoyChanges)
+        const posMonths = yoyChanges.filter((v: number) => v > 0).length
+        const avgCA = Math.round(caCounts.reduce((a: number, v: number) => a + v, 0) / caCounts.length)
+        const avgOverdue = Math.round(avgCurrent * 0.065)
+        const peakOverdue = Math.round(Math.max(...monthlyTotals) * 0.085)
+        const overdueChg = 12
+
+        const cards: Record<string, { label: string; value: string; sub: string; subColor: string }[]> = {
+          spend: [
+            { label: 'Avg monthly outflow — This year', value: inr(avgCurrent), sub: (billChg > 0 ? '+' : '') + billChg + '% vs last year', subColor: billChg > 0 ? '#ec2127' : '#15803D' },
+            { label: 'Avg monthly outflow — Last year', value: inr(avgPrior), sub: 'prior year baseline', subColor: '#4F46E5' },
+            { label: 'Peak month outflow', value: inr(Math.max(...monthlyTotals)), sub: labels[maxMonthIdx] + ' · highest', subColor: '#ec2127' },
+            { label: 'Lowest month outflow', value: inr(Math.min(...monthlyTotals)), sub: labels[minMonthIdx] + ' · lowest', subColor: '#15803D' },
+          ],
+          yoy: [
+            { label: 'Overall YoY change', value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', sub: 'avg monthly spend vs prior year', subColor: overallYoy > 0 ? '#ec2127' : '#15803D' },
+            { label: 'Highest cost increase', value: '+' + bestYoy + '%', sub: 'worst month vs last year', subColor: '#ec2127' },
+            { label: 'Highest cost decrease', value: worstYoy + '%', sub: 'best month vs last year', subColor: '#15803D' },
+            { label: 'Months cost went up', value: posMonths + ' / 12', sub: posMonths > 6 ? 'majority of year costlier' : 'majority of year cheaper', subColor: posMonths > 6 ? '#ec2127' : '#15803D' },
+          ],
+          ca: [
+            { label: 'Total CAs — This year', value: String(caCounts[11]), sub: 'end of current year', subColor: '#1c5af4' },
+            { label: 'Total CAs — Last year', value: String(priorCACounts[11]), sub: 'end of prior year', subColor: '#4F46E5' },
+            { label: 'Peak CA month', value: String(Math.max(...caCounts)), sub: 'highest active CAs', subColor: '#15803D' },
+            { label: 'Monthly avg CAs', value: String(avgCA), sub: 'avg active CAs per month', subColor: '#858ea2' },
+          ],
+          overdue: [
+            { label: 'Avg overdue / month', value: inr(avgOverdue), sub: '6.5% of monthly outflow', subColor: '#ec2127' },
+            { label: 'Peak overdue month', value: inr(peakOverdue), sub: 'highest single month', subColor: '#B91C1C' },
+            { label: 'Overdue % of bill', value: '6.5%', sub: 'of total monthly outflow', subColor: '#B45309' },
+            { label: 'Months worsening', value: '4 / 12', sub: 'overdue increased vs prior month', subColor: '#4F46E5' },
+          ],
+        }
+        const summaryCards = cards[activeTab] || cards.spend
+        return (
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+            {summaryCards.map((k, i) => (
+              <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+                {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+                <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+                <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )
+      })()}
 
       {/* Single chart card with tabs */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px 24px' }}>
@@ -1414,27 +1746,23 @@ function BasicTrends({ appState }: BasicSectionProps) {
         </div>
 
         {/* Chart area */}
-        <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-          {activeTab === 'spend' && <canvas ref={spendTrendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'prior' && <canvas ref={trendRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'yoy'   && <canvas ref={yoyRef}        style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'ca'    && <canvas ref={caRef}         style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-        </div>
-
-        {/* Stat pills */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '16px' }}>
-          {[
-            { label: 'Lowest month',  value: inr(Math.min(...monthlyTotals)),  bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-            { label: 'Monthly avg',   value: inr(avgCurrent),                  bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
-            { label: 'Peak month',    value: inr(Math.max(...monthlyTotals)),  bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
-            { label: 'YoY change',    value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-          ].map(s => (
-            <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.bd}`, borderRadius: '6px', padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500 }}>{s.label}</div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: s.color }}>{s.value}</div>
+        {activeTab === 'spend' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ position: 'relative', width: '100%', height: '160px' }}>
+              <canvas key='spend-canvas' ref={trendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
             </div>
-          ))}
-        </div>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.06em', paddingLeft: '4px' }}>Active CA count — current vs last year</div>
+            <div style={{ position: 'relative', width: '100%', height: '180px' }}>
+              <canvas key='ca-comp-canvas' ref={caCompRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
+            </div>
+          </div>
+        ) : (
+          <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+            {activeTab === 'yoy'     && <canvas key='yoy-canvas'     ref={yoyRef}     style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+            {activeTab === 'ca'      && <canvas key='ca-canvas'      ref={caRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+            {activeTab === 'overdue' && <canvas key='overdue-canvas' ref={overdueRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          </div>
+        )}
       </div>
 
     </div>

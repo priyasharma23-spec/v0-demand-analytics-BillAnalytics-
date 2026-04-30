@@ -278,28 +278,92 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
   return (
     <div style={{ background: '#f0f5fa', padding: '20px' }}>
 
-      {/* Summary metric cards */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+      {/* Summary metric cards — Alert insight style */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
         {[
-          { label: 'Total leakages',      value: inr(leakSummary.totalLeak),   sub: `${Math.round(leakSummary.totalLeak   / Math.max(leakSummary.totalBill, 1) * 100)}% of total bill`,  subColor: '#B91C1C' },
-          { label: 'Excess demand',        value: inr(leakSummary.totalExcess), sub: `${Math.round(leakSummary.totalExcess / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`,    subColor: '#B91C1C' },
-          { label: 'PF penalty',           value: inr(leakSummary.totalPF),     sub: `${Math.round(leakSummary.totalPF     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`,    subColor: '#B45309' },
-          { label: 'Late payment charges', value: inr(leakSummary.totalLP),     sub: `${Math.round(leakSummary.totalLP     / Math.max(leakSummary.totalLeak, 1) * 100)}% of leakages`,    subColor: '#B45309' },
-        ].map((k, i) => (
-          <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
-            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
-            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
-            <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
+          { 
+            label: 'Leakage ratio',
+            value: `${Math.round((leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1)) * 100)}%`,
+            sub: `${inrK(leakSummary.totalLeak)} of ${inrK(leakSummary.totalBill)} bill`,
+            variant: leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1) > 0.2 ? 'danger' : 
+                    leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1) > 0.1 ? 'warn' : 'good'
+          },
+          {
+            label: 'Biggest driver',
+            value: leakSummary.totalExcess >= leakSummary.totalPF && leakSummary.totalExcess >= leakSummary.totalLP ? 'Excess demand' :
+                   leakSummary.totalPF >= leakSummary.totalLP ? 'Power factor' : 'Late payment',
+            sub: leakSummary.totalExcess >= leakSummary.totalPF && leakSummary.totalExcess >= leakSummary.totalLP ? `${inrK(leakSummary.totalExcess)} in excess charges` :
+                 leakSummary.totalPF >= leakSummary.totalLP ? `${inrK(leakSummary.totalPF)} in PF penalties` :
+                 `${inrK(leakSummary.totalLP)} in late fees`,
+            variant: 'warn'
+          },
+          {
+            label: 'Frequency',
+            value: `${leakSummary.periodsWithLeak}/${leakSummary.totalPeriods}`,
+            sub: `${Math.round((leakSummary.periodsWithLeak / Math.max(leakSummary.totalPeriods, 1)) * 100)}% of periods`,
+            variant: 'info'
+          },
+          {
+            label: 'Avg per period',
+            value: inr(leakSummary.totalLeak / Math.max(leakSummary.totalPeriods, 1)),
+            sub: 'Mean avoidable cost',
+            variant: 'info'
+          },
+        ].map((card, i) => {
+          const bgColor = card.variant === 'danger' ? '#FEF2F2' : 
+                         card.variant === 'warn' ? '#FFFBEB' : '#F0FDF4';
+          const borderColor = card.variant === 'danger' ? '#FECACA' : 
+                             card.variant === 'warn' ? '#FDE68A' : '#BBF7D0';
+          const valueColor = card.variant === 'danger' ? '#DC2626' : 
+                            card.variant === 'warn' ? '#D97706' : '#15803D';
+          return (
+            <div key={card.label} style={{ 
+              background: bgColor,
+              border: `1px solid ${borderColor}`,
+              borderRadius: '8px',
+              padding: '12px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px'
+            }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                {card.label}
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: valueColor, lineHeight: 1 }}>
+                {card.value}
+              </div>
+              <div style={{ fontSize: '11px', color: '#6B7280' }}>
+                {card.sub}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Inline stats strip */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', display: 'flex', gap: '24px' }}>
+        {[
+          { label: 'Total bill', value: inr(leakSummary.totalBill) },
+          { label: 'Excess demand share', value: `${Math.round((leakSummary.totalExcess / Math.max(leakSummary.totalLeak, 1)) * 100)}%` },
+          { label: 'PF penalty share', value: `${Math.round((leakSummary.totalPF / Math.max(leakSummary.totalLeak, 1)) * 100)}%` },
+          { label: 'Late payment share', value: `${Math.round((leakSummary.totalLP / Math.max(leakSummary.totalLeak, 1)) * 100)}%` },
+        ].map(stat => (
+          <div key={stat.label} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              {stat.label}
+            </div>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: '#192744' }}>
+              {stat.value}
+            </div>
           </div>
         ))}
       </div>
 
       {/* Surfaced anomalies */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginBottom: '16px' }}>
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>Surfaced anomalies</div>
-          <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>Ranked by avoidable cost · leakage-related signals</div>
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '16px', marginBottom: '16px' }}>
+        <div style={{ marginBottom: '14px' }}>
+          <div style={{ fontSize: '16px', fontWeight: 700, color: '#192744' }}>Surfaced anomalies</div>
+          <div style={{ fontSize: '13px', color: '#858ea2', marginTop: '2px' }}>Ranked by avoidable cost · leakage-related signals</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           {[
@@ -327,7 +391,7 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
             },
             {
               anomalyKey: 'recurring_late_payment',
-              title: 'Late payment surcharge recurring in 19 CAs — 3+ consecutive months',
+              title: 'Late payment surcharge recurring in 19 CAs �� 3+ consecutive months',
               where: 'WB · GJ',
               amount: '₹1.3L',
               amountLabel: 'avoidable / yr',
@@ -349,27 +413,29 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
             },
           ].map((a, idx) => {
             return (
-              <div key={a.anomalyKey} style={{ background: '#fff', border: '1.5px solid #F3F4F6', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', cursor: 'pointer', transition: 'all .16s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.border = '1.5px solid #4F46E5'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 16px rgba(0,0,0,.07)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.border = '1.5px solid #F3F4F6'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
+              <div key={a.anomalyKey} style={{ background: '#f9fafb', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer', transition: 'all .16s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.border = '1px solid #C7D2FE'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(79,70,229,0.08)'; (e.currentTarget as HTMLDivElement).style.background = '#FAFBFF' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.border = '1px solid #E5E7EB'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; (e.currentTarget as HTMLDivElement).style.background = '#f9fafb' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: a.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: a.iconColor, flexShrink: 0 }}>
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: a.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: a.iconColor, flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
                       <path d="M9 2.5L1.5 15.5h15L9 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="currentColor" fillOpacity="0.15" />
                       <path d="M9 7v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                       <circle cx="9" cy="13" r="0.8" fill="currentColor" />
                     </svg>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '22px', fontWeight: 800, color: a.amountColor, letterSpacing: '-0.5px' }}>{a.amount}</div>
-                    <div style={{ fontSize: '11px', color: '#858ea2' }}>{a.amountLabel}</div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: a.amountColor, letterSpacing: '-0.5px' }}>{a.amount}</div>
+                    <div style={{ fontSize: '10px', color: '#858ea2', fontWeight: 500 }}>{a.amountLabel}</div>
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', lineHeight: 1.4 }}>{a.title}</div>
-                  {a.where && <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '6px' }}>{a.where}</div>}
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744', lineHeight: 1.4 }}>{a.title}</div>
+                  {a.where && <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '6px' }}>{a.where}</div>}
                 </div>
-                <button style={{ alignSelf: 'flex-start', background: '#EEF2FF', color: '#4F46E5', border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button style={{ alignSelf: 'flex-start', background: 'none', color: '#4F46E5', border: '1px solid #E5E7EB', borderRadius: '6px', padding: '6px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#EEF2FF'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#C7D2FE' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#E5E7EB' }}>
                   {a.cta} →
                 </button>
               </div>
@@ -378,10 +444,10 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
         </div>
       </div>
       {/* Stacked leakage chart */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px', marginBottom: '12px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Total leakage charges by type</div>
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '16px', marginBottom: '12px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>Total leakage charges by type</div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>₹ · stacked by penalty category · monthly</div>
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '10px', flexWrap: 'wrap', fontSize: '12px', color: '#6b6b67' }}>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '10px', flexWrap: 'wrap', fontSize: '11px', color: '#858ea2' }}>
           {[
             { color: '#E24B4A', label: 'Excess demand' },
             { color: '#EF9F27', label: 'PF penalty' },
@@ -389,29 +455,29 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
             { color: '#D85A30', label: 'LV surcharge' },
             { color: '#888780', label: 'Late payment' },
           ].map(item => (
-            <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: item.color, display: 'inline-block' }} />
+            <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '1px', background: item.color, display: 'inline-block' }} />
               {item.label}
             </span>
           ))}
         </div>
-        <div style={{ position: 'relative', width: '100%', height: '260px' }}>
+        <div style={{ position: 'relative', width: '100%', height: '250px' }}>
           <canvas ref={stackChartRef}></canvas>
         </div>
       </div>
 
       {/* Pct + Donut row */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Leakage as % of total bill</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>Penalty ÷ total bill · colour = severity</div>
+        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '16px' }}>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>Leakage as % of bill</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>Monthly leakage intensity · colour indicates severity</div>
           <div style={{ position: 'relative', width: '100%', height: '200px' }}>
             <canvas ref={pctChartRef}></canvas>
           </div>
         </div>
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Leakage type breakdown</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>Share of total penalties across the period</div>
+        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '16px' }}>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>Leakage type breakdown</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '10px' }}>Share of total penalties · by category</div>
           <div style={{ position: 'relative', width: '100%', height: '200px' }}>
             <canvas ref={donutChartRef}></canvas>
           </div>
@@ -419,14 +485,14 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
       </div>
 
       {/* KPI insight cards */}
-      <div style={{ fontSize: '11px', fontWeight: 500, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Insights</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px', marginBottom: '16px' }}>
+      <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>Insights</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px', marginBottom: '16px' }}>
         {kpis.map((kpi, i) => <KpiCard key={i} variant={kpi.variant} label={kpi.label} value={kpi.value} desc={kpi.desc} />)}
       </div>
 
       {/* State breakdown table */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>State breakdown — all states</div>
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '16px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>State breakdown — all states</div>
         <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '12px' }}>Ranked by total leakage · click a row to drill down</div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
