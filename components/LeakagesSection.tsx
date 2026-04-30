@@ -132,11 +132,11 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
           data: {
             labels,
             datasets: [
-              { label: 'Excess demand', data: data.map((d: any) => d.excessCharge),  backgroundColor: '#E24B4A', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85 },
-              { label: 'PF penalty',    data: data.map((d: any) => d.pfPenalty),     backgroundColor: '#EF9F27', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85 },
-              { label: 'TOD violation', data: data.map((d: any) => d.todViolation),  backgroundColor: '#7F77DD', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85 },
-              { label: 'LV surcharge',  data: data.map((d: any) => d.lvSurcharge),   backgroundColor: '#D85A30', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85 },
-              { label: 'Late payment',  data: data.map((d: any) => d.latePayment),   backgroundColor: '#888780', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85,
+              { label: 'Excess demand', data: data.map((d: any) => d.excessCharge),  backgroundColor: '#4a7ef7', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85 },
+              { label: 'PF penalty',    data: data.map((d: any) => d.pfPenalty),     backgroundColor: '#f6b83f', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85 },
+              { label: 'TOD violation', data: data.map((d: any) => d.todViolation),  backgroundColor: '#f07070', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85 },
+              { label: 'LV surcharge',  data: data.map((d: any) => d.lvSurcharge),   backgroundColor: '#9f76e8', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85 },
+              { label: 'Late payment',  data: data.map((d: any) => d.latePayment),   backgroundColor: '#7ab67a', borderSkipped: false, barPercentage: 0.75, categoryPercentage: 0.85,
                 borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 } },
             ]
           },
