@@ -401,6 +401,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   const [sel, setSel] = useState<string|null>(null)
   const [spendHov, setSpendHov] = useState<string|null>(null)
   const [spendSel, setSpendSel] = useState<string|null>(null)
+  const [selBranch, setSelBranch] = useState<string|null>(null)
+  const [showBottom, setShowBottom] = useState(false)
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -859,17 +861,35 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
               <div style={{ flex:1, minWidth:0 }}>
                 {!spendSel ? (
                   <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
-                    <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'6px' }}>All states</div>
-                    {Object.entries(spendData).sort((a,b)=>b[1].total-a[1].total).map(([name, sd], i) => (
-                      <div key={name} onClick={() => setSpendSel(name)}
-                        style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
-                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
-                        <div style={{ fontSize:'11px', color:'#858ea2', fontWeight:600, width:'14px' }}>{i+1}</div>
-                        <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
-                        <div style={{ fontSize:'12px', fontWeight:700, color:'#1c5af4' }}>{inr(sd.total * 100000)}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                        {showBottom ? 'Bottom states by spend' : 'Top states by spend'}
                       </div>
-                    ))}
+                      <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '99px', padding: '2px' }}>
+                        <button onClick={() => setShowBottom(false)}
+                          style={{ background: !showBottom ? '#fff' : 'transparent', border: 'none', borderRadius: '99px', padding: '3px 12px', fontSize: '11px', fontWeight: !showBottom ? 600 : 400, color: !showBottom ? '#192744' : '#858ea2', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          Top 5
+                        </button>
+                        <button onClick={() => setShowBottom(true)}
+                          style={{ background: showBottom ? '#fff' : 'transparent', border: 'none', borderRadius: '99px', padding: '3px 12px', fontSize: '11px', fontWeight: showBottom ? 600 : 400, color: showBottom ? '#192744' : '#858ea2', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          Bottom 5
+                        </button>
+                      </div>
+                    </div>
+                    {(() => {
+                      const sortedStates = Object.entries(spendData).sort((a, b) => b[1].total - a[1].total)
+                      const displayStates = showBottom ? sortedStates.slice(-5).reverse() : sortedStates.slice(0, 5)
+                      return displayStates.map(([name, sd], i) => (
+                        <div key={name} onClick={() => setSpendSel(name)}
+                          style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
+                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
+                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
+                          <div style={{ fontSize:'11px', color:'#858ea2', fontWeight:600, width:'14px' }}>{i+1}</div>
+                          <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
+                          <div style={{ fontSize:'12px', fontWeight:700, color: showBottom ? '#ec2127' : '#1c5af4' }}>{inr(sd.total * 100000)}</div>
+                        </div>
+                      ))
+                    })()}
                   </div>
                 ) : (() => {
                   const sd = spendData[spendSel]
@@ -934,7 +954,49 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           </div>
                         )
                       })()}
-                      {/* Monthly sparkline */}
+                      {/* Branch drill-down section */}
+                      <div style={{ marginTop: '8px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Branches</div>
+                        {(BRANCHES[spendSel] ?? []).map(br => {
+                          const brCAs = CAS[br] ?? []
+                          const brTotal = getCABills(brCAs, 'monthly').reduce((s: number, d: any) => s + d.totalBill, 0)
+                          const paidCAs = brCAs.filter((_: string, i: number) => (br.charCodeAt(0) + i) % 10 < 6).length
+                          const isOpen = selBranch === br
+                          return (
+                            <div key={br}>
+                              <div onClick={() => setSelBranch(isOpen ? null : br)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', background: isOpen ? '#EFF6FF' : '#f9fafb', border: '1px solid #f3f4f6', marginBottom: '4px' }}
+                                onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#EFF6FF'}
+                                onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = isOpen ? '#EFF6FF' : '#f9fafb'}>
+                                <div style={{ flex: 1, fontSize: '12px', fontWeight: 600, color: '#192744' }}>{br}</div>
+                                <div style={{ fontSize: '11px', color: '#858ea2' }}>{brCAs.length} CAs</div>
+                                <div style={{ fontSize: '11px', color: '#36b37e' }}>{paidCAs} paid</div>
+                                <div style={{ fontSize: '12px', fontWeight: 700, color: '#1c5af4' }}>{inr(brTotal)}</div>
+                                <div style={{ fontSize: '10px', color: '#858ea2' }}>{isOpen ? '▲' : '▼'}</div>
+                              </div>
+                              {isOpen && (
+                                <div style={{ marginLeft: '12px', marginBottom: '6px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                  {brCAs.map((ca: string, ci: number) => {
+                                    const isPaid = (br.charCodeAt(0) + ci) % 10 < 6
+                                    const amt = Math.round(180000 + (ca.charCodeAt(0) % 50) * 4200)
+                                    return (
+                                      <div key={ca} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 10px', borderRadius: '4px', background: '#fff', border: '1px solid #f3f4f6' }}>
+                                        <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#192744', flex: 1 }}>{ca}</div>
+                                        <div style={{ fontSize: '11px', fontWeight: 600, color: '#192744' }}>{inr(amt)}</div>
+                                        <div style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px',
+                                          background: isPaid ? '#e8f8f1' : '#fce8e8',
+                                          color: isPaid ? '#36b37e' : '#ec2127' }}>
+                                          {isPaid ? 'Paid' : 'Unpaid'}
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
                       <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'8px 12px' }}>
                         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
                           <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em' }}>Monthly spend</div>
