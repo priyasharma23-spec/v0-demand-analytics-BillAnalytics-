@@ -192,6 +192,44 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
         ))}
       </div>
 
+      {/* Security deposit impact of contract revision */}
+      {edMetrics.recommended > edMetrics.avgCont && (
+        <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Security deposit impact</div>
+              <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>If contracted demand revised from {edMetrics.avgCont} kVA → {edMetrics.recommended} kVA</div>
+            </div>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', background: '#f5f6fa', padding: '4px 10px', borderRadius: '4px' }}>Based on 2-month demand charge formula</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0', background: '#f5f6fa', borderRadius: '6px', overflow: 'hidden' }}>
+            {(() => {
+              const avgDemandRate = Math.round(edMetrics.totalExcess > 0 ? 500 : 500)
+              const currentSD = edMetrics.avgCont * avgDemandRate * 2
+              const revisedSD = edMetrics.recommended * avgDemandRate * 2
+              const additionalSD = revisedSD - currentSD
+              const fmtL = (v: number) => '₹' + (v / 100000).toFixed(1) + 'L'
+              const cols = [
+                { label: 'Current security deposit', value: fmtL(currentSD), sub: edMetrics.avgCont + ' kVA × ₹500/kVA × 2 months', color: '#192744' },
+                { label: 'Revised security deposit', value: fmtL(revisedSD), sub: edMetrics.recommended + ' kVA × ₹500/kVA × 2 months', color: '#1c5af4' },
+                { label: 'Additional deposit required', value: fmtL(additionalSD), sub: 'One-time outflow to utility', color: '#f59e0b' },
+                { label: 'Annual savings vs deposit', value: (edMetrics.netSavings / additionalSD).toFixed(1) + 'x', sub: 'Savings recover deposit in ' + Math.ceil(additionalSD / Math.max(edMetrics.netSavings / 12, 1)) + ' months', color: '#36b37e' },
+              ]
+              return cols.map((c, i) => (
+                <div key={i} style={{ padding: '14px 18px', borderRight: i < cols.length - 1 ? '1px solid #e5e7eb' : 'none', background: '#fff' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{c.label}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: c.color, lineHeight: 1, marginBottom: '4px' }}>{c.value}</div>
+                  <div style={{ fontSize: '11px', color: '#9aa0b0' }}>{c.sub}</div>
+                </div>
+              ))
+            })()}
+          </div>
+          <div style={{ marginTop: '12px', padding: '10px 14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', fontSize: '12px', color: '#92400e' }}>
+            💡 The additional security deposit of {(() => { const r = edMetrics.recommended * 500 * 2; const c = edMetrics.avgCont * 500 * 2; return '₹' + ((r - c) / 100000).toFixed(1) + 'L' })()} is a one-time outflow but is refundable when the connection is surrendered. Annual savings of {'₹' + (Math.abs(edMetrics.netSavings) / 100000).toFixed(1) + 'L'} will recover this within {Math.ceil((edMetrics.recommended * 500 * 2 - edMetrics.avgCont * 500 * 2) / Math.max(edMetrics.netSavings / 12, 1))} months.
+          </div>
+        </div>
+      )}
+
       {/* Contracted vs MDI chart */}
       <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
@@ -212,7 +250,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
             </div>
           </div>
           <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-            <canvas ref={edMainRef}></canvas>
+            <canvas ref={edMainRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}></canvas>
           </div>
         </div>
       </div>
@@ -225,7 +263,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
         </div>
         <div style={{ padding: '16px 20px 12px' }}>
           <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-            <canvas ref={edExcessRef}></canvas>
+            <canvas ref={edExcessRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}></canvas>
           </div>
         </div>
       </div>
