@@ -1355,7 +1355,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab, monthlyTotals, avgCurrent, avgPrior])
 
-  // YoY decomposition chart — stacked bars (CA effect + rate effect) + dashed total line
+  // YoY chart — current year vs prior year bill spend
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!yoyRef.current) return
@@ -1363,63 +1363,36 @@ function BasicTrends({ appState }: BasicSectionProps) {
       if (!ctx) return
       if (yoyChart.current) yoyChart.current.destroy()
 
-      // Decompose YoY = Volume effect (CA count change) + Spend effect (avg bill per CA change)
-      const avgBillCY = monthlyTotals.map((total, i) => Math.round(total / Math.max(caCounts[i], 1)))
-      const avgBillPY = priorYear.map((total, i) => Math.round(total / Math.max(priorCACounts[i], 1)))
-
-      // Volume effect: how much of YoY change is from CA count changing (using PY avg bill as base)
-      const volumeEffect = caCounts.map((ca, i) => {
-        const caChange = ca - priorCACounts[i]
-        const contribution = caChange * avgBillPY[i]
-        return Math.round(contribution / Math.max(priorYear[i], 1) * 100)
-      })
-
-      // Spend effect: how much is from avg bill per CA changing
-      const spendEffect = yoyChanges.map((total, i) => +(total - volumeEffect[i]).toFixed(1))
-
       yoyChart.current = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
           labels,
           datasets: [
             {
-              label: 'Volume effect (CA count)',
-              data: volumeEffect,
-              backgroundColor: 'rgba(28,90,244,0.75)',
-              borderRadius: 2,
-              stack: 'decomp',
-              order: 2,
-            },
-            {
-              label: 'Spend effect (↑ bill)',
-              data: spendEffect.map(v => v > 0 ? v : 0),
-              backgroundColor: 'rgba(229,57,53,0.8)',
-              borderRadius: 2,
-              stack: 'decomp',
-              order: 2,
-            },
-            {
-              label: 'Spend effect (↓ bill)',
-              data: spendEffect.map(v => v < 0 ? v : 0),
-              backgroundColor: 'rgba(54,179,126,0.8)',
-              borderRadius: 2,
-              stack: 'decomp',
-              order: 2,
-            },
-            {
-              label: 'Total YoY',
-              data: yoyChanges,
-              type: 'line' as any,
-              borderColor: '#192744',
-              borderWidth: 2.2,
-              borderDash: [5, 3],
+              label: 'Current year (CY)',
+              data: monthlyTotals,
+              borderColor: '#1c5af4',
+              backgroundColor: 'rgba(28,90,244,0.06)',
+              borderWidth: 2.5,
               pointBackgroundColor: '#fff',
-              pointBorderColor: '#192744',
+              pointBorderColor: '#1c5af4',
               pointBorderWidth: 2,
               pointRadius: 3.5,
+              pointHoverRadius: 5,
+              tension: 0.35,
+              fill: true,
+            },
+            {
+              label: 'Prior year (PY)',
+              data: priorYear,
+              borderColor: '#c8cbd6',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [5, 3],
+              pointRadius: 0,
+              pointHoverRadius: 4,
               tension: 0.35,
               fill: false,
-              order: 1,
             },
           ],
         },
@@ -1436,21 +1409,25 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
-                title: (items: any) => labels[items[0].dataIndex],
                 label: (item: any) => {
-                  if (item.datasetIndex === 0) return '  Volume effect (CAs): +' + item.raw + '%'
-                  if (item.datasetIndex === 1 && (item.raw as number) !== 0) return '  Spend effect (↑ bill): +' + item.raw + '%'
-                  if (item.datasetIndex === 2 && (item.raw as number) !== 0) return '  Spend effect (↓ bill): ' + item.raw + '%'
-                  if (item.datasetIndex === 3) return '  Total YoY: ' + (Number(item.raw) > 0 ? '+' : '') + item.raw + '%'
-                  return ''
+                  const val = item.raw as number
+                  const prefix = item.datasetIndex === 0 ? '  CY: ' : '  PY: '
+                  return prefix + '₹' + (val / 100000).toFixed(1) + 'L'
                 },
+                afterBody: (items: any) => {
+                  const cy = items[0]?.raw as number
+                  const py = items[1]?.raw as number
+                  if (!cy || !py) return []
+                  const chg = Math.round((cy - py) / Math.max(py, 1) * 100)
+                  return ['', '  YoY: ' + (chg > 0 ? '↑ +' : '↓ ') + chg + '% vs same month last year']
+                }
               }
             }
           },
           scales: {
-            x: { stacked: true, grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-            y: { stacked: true, border: { display: false }, grid: { color: '#f3f4f6' },
-              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => (v > 0 ? '+' : '') + v + '%' } },
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: { border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L' } },
           },
         },
       })
@@ -1797,16 +1774,11 @@ function BasicTrends({ appState }: BasicSectionProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '16px', marginBottom: '10px' }}>
               {[
-                { color: 'rgba(28,90,244,0.75)', label: 'Volume effect (CA count)', box: true },
-                { color: 'rgba(229,57,53,0.8)',  label: 'Spend effect (↑ bill)', box: true },
-                { color: 'rgba(54,179,126,0.8)', label: 'Spend effect (↓ bill)', box: true },
-                { color: '#192744',              label: 'Total YoY', dash: true },
+                { color: '#1c5af4', label: 'Current year (CY)', dash: false },
+                { color: '#c8cbd6', label: 'Prior year (PY)',    dash: true  },
               ].map((l, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  {l.dash
-                    ? <svg width="18" height="3"><line x1="0" y1="1.5" x2="18" y2="1.5" stroke={l.color} strokeWidth="2" strokeDasharray="5 3"/></svg>
-                    : <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: l.color }}/>
-                  }
+                  <svg width="18" height="3"><line x1="0" y1="1.5" x2="18" y2="1.5" stroke={l.color} strokeWidth="2" strokeDasharray={l.dash ? '5 3' : 'none'}/></svg>
                   <span style={{ fontSize: '11px', color: '#858ea2' }}>{l.label}</span>
                 </div>
               ))}
