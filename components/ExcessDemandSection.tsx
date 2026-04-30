@@ -240,7 +240,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
             <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Ranked by total excess · click to drill down</div>
           </div>
           <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
-            {([{ id: 'totalLeak', label: '₹ leakage' }, { id: 'over', label: 'Months' }, { id: 'util', label: '% util' }] as Array<{ id: string; label: string }>).map(o => (
+            {([{ id: 'totalLeak', label: '₹ amount' }, { id: 'over', label: 'Over months' }, { id: 'util', label: '% util' }] as Array<{ id: string; label: string }>).map(o => (
               <button key={o.id} onClick={() => setStateMetric(o.id as any)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '3px 12px', fontSize: '12px', background: stateMetric === o.id ? '#1c5af4' : 'transparent', color: stateMetric === o.id ? '#fff' : '#9aa0b0', fontWeight: stateMetric === o.id ? 600 : 400, transition: 'all .12s' }}>{o.label}</button>
             ))}
           </div>
@@ -256,16 +256,20 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
               const minOver = Math.min(...sorted.map(x => x.over));
               const range = Math.max(maxOver - minOver, 1);
               const relScore = (r.over - minOver) / range;
-              const severity = relScore >= 0.67 ? 'High' : relScore >= 0.34 ? 'Med' : 'Low';
-              const sc = severity === 'High' ? '#e53935' : severity === 'Med' ? '#f59e0b' : '#36b37e';
-              const sb = severity === 'High' ? '#fef2f2' : severity === 'Med' ? '#fffbeb' : '#f0faf6';
+              const allOver = sorted.map(x => x.over);
+              const maxOver2 = Math.max(...allOver);
+              const minOver2 = Math.min(...allOver);
+              const range2 = Math.max(maxOver2 - minOver2, 1);
+              const sc = r.totalLeak >= sorted[0].totalLeak * 0.7 ? '#e53935' : r.totalLeak >= sorted[0].totalLeak * 0.4 ? '#f59e0b' : '#36b37e';
+              const sb = r.totalLeak >= sorted[0].totalLeak * 0.7 ? '#fef2f2' : r.totalLeak >= sorted[0].totalLeak * 0.4 ? '#fffbeb' : '#f0faf6';
+              const severity = r.totalLeak >= sorted[0].totalLeak * 0.7 ? 'High' : r.totalLeak >= sorted[0].totalLeak * 0.4 ? 'Med' : 'Low';
               const displayVal = isLeakMetric ? '₹' + (r.totalLeak / 100000).toFixed(1) + 'L' : r.over + ' mths';
               return (
                 <div key={r.name} onClick={() => handleDrillDown(r)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '8px', borderRadius: '4px', transition: 'background .12s' }} onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f9fafb'} onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
                   <div style={{ width: '18px', fontSize: '12px', fontWeight: 600, color: '#c8cbd6', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
                   <div style={{ width: '110px', fontSize: '12px', color: '#192744', flexShrink: 0 }}>{r.name}</div>
                   <div style={{ flex: 1, height: '22px', background: '#f5f6fa', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ height: '100%', width: barPct + '%', borderRadius: '3px', background: relScore >= 0.67 ? 'rgba(229,57,53,0.15)' : relScore >= 0.34 ? 'rgba(245,158,11,0.15)' : 'rgba(54,179,126,0.12)', borderRight: '2px solid ' + sc, transition: 'width .4s ease' }} />
+                    <div style={{ height: '100%', width: barPct + '%', borderRadius: '3px', background: r.totalLeak >= sorted[0].totalLeak * 0.7 ? 'rgba(229,57,53,0.15)' : r.totalLeak >= sorted[0].totalLeak * 0.4 ? 'rgba(245,158,11,0.15)' : 'rgba(54,179,126,0.12)', borderRight: '2px solid ' + sc, transition: 'width .4s ease' }} />
                     <div style={{ position: 'absolute', left: '8px', top: 0, height: '100%', display: 'flex', alignItems: 'center', fontSize: '12px', color: '#192744', fontWeight: 500 }}>{displayVal}</div>
                   </div>
                   <div style={{ width: '54px', fontSize: '12px', color: '#9aa0b0', textAlign: 'right', flexShrink: 0 }}>{r.contracted} kVA</div>
