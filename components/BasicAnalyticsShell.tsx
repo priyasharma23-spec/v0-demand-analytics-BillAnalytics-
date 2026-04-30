@@ -862,17 +862,22 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                 {!spendSel ? (
                   <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-                        {showBottom ? 'Bottom states by spend' : 'Top states by spend'}
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>
+                          {showBottom ? 'Lowest spend states · savings benchmark' : 'Highest spend states · focus area'}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#858ea2' }}>
+                          {showBottom ? 'These states show efficient bill management' : 'These states drive most of your bill outflow'}
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '99px', padding: '2px' }}>
+                      <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '99px', padding: '2px', flexShrink: 0 }}>
                         <button onClick={() => setShowBottom(false)}
                           style={{ background: !showBottom ? '#fff' : 'transparent', border: 'none', borderRadius: '99px', padding: '3px 12px', fontSize: '11px', fontWeight: !showBottom ? 600 : 400, color: !showBottom ? '#192744' : '#858ea2', cursor: 'pointer', fontFamily: 'inherit' }}>
-                          Top 5
+                          Highest Spend
                         </button>
                         <button onClick={() => setShowBottom(true)}
                           style={{ background: showBottom ? '#fff' : 'transparent', border: 'none', borderRadius: '99px', padding: '3px 12px', fontSize: '11px', fontWeight: showBottom ? 600 : 400, color: showBottom ? '#192744' : '#858ea2', cursor: 'pointer', fontFamily: 'inherit' }}>
-                          Bottom 5
+                          Lowest Spend
                         </button>
                       </div>
                     </div>
@@ -884,9 +889,14 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
                           onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
                           onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
-                          <div style={{ fontSize:'11px', color:'#858ea2', fontWeight:600, width:'14px' }}>{i+1}</div>
+                          <div style={{ fontSize:'11px', fontWeight:600, width:'14px', color: showBottom ? '#15803D' : '#ec2127' }}>{i+1}</div>
                           <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
-                          <div style={{ fontSize:'12px', fontWeight:700, color: showBottom ? '#ec2127' : '#1c5af4' }}>{inr(sd.total * 100000)}</div>
+                          <div style={{ fontSize:'12px', fontWeight:700, padding:'2px 8px', borderRadius:'4px',
+                            background: showBottom ? '#e8f8f1' : '#fce8e8',
+                            color: showBottom ? '#36b37e' : '#ec2127' }}>
+                            {showBottom ? '↓ Low spend' : '↑ High spend'}
+                          </div>
+                          <div style={{ fontSize:'12px', fontWeight:700, color: showBottom ? '#15803D' : '#ec2127' }}>{inr(sd.total * 100000)}</div>
                         </div>
                       ))
                     })()}
