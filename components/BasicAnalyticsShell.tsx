@@ -401,6 +401,9 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   const [sel, setSel] = useState<string|null>(null)
   const [spendHov, setSpendHov] = useState<string|null>(null)
   const [spendSel, setSpendSel] = useState<string|null>(null)
+  const [selBranch, setSelBranch] = useState<string|null>(null)
+  const [spendView, setSpendView] = useState<'all' | 'top' | 'bottom'>('all')
+  const [drillPage, setDrillPage] = useState<'branches'|'cas'|'peak'|'lowest'|'avg'|'spend'|null>(null)
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -465,6 +468,77 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
 
   return (
     <div>
+      {/* Full-screen drill-down overlay */}
+      {drillPage && (
+        <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 50, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          {/* Header with back button */}
+          <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+            <button onClick={() => setDrillPage(null)}
+              style={{ background: 'none', border: 'none', color: '#1c5af4', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              ← Back to {spendSel}
+            </button>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              {drillPage === 'branches' ? 'Branches' : drillPage === 'cas' ? 'Certified Agents' : drillPage === 'peak' ? 'Peak Month' : drillPage === 'lowest' ? 'Lowest Month' : drillPage === 'avg' ? 'Average / Branch' : 'Total Spend'}
+            </div>
+            <div style={{ width: '80px' }} />
+          </div>
+          {/* Content */}
+          <div style={{ flex: 1, padding: '20px 24px' }}>
+            {drillPage === 'branches' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {(BRANCHES[spendSel] ?? []).map(br => {
+                  const brCAs = CAS[br] ?? []
+                  const brTotal = brCAs.reduce((sum: number, ca: string) => {
+                    const bills = getCABills(ca, 'monthly')
+                    return sum + bills.reduce((s: number, d: any) => s + d.totalBill, 0)
+                  }, 0)
+                  const paidCAs = brCAs.filter((_: string, i: number) => (br.charCodeAt(0) + i) % 10 < 6).length
+                  return (
+                    <div key={br} style={{ background: '#f5f6fa', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>{br}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#1c5af4' }}>{inr(brTotal)}</div>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#858ea2' }}>{brCAs.length} CAs · {paidCAs} paid</div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            {drillPage === 'cas' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {(BRANCHES[spendSel] ?? []).flatMap(br => (CAS[br] ?? []).map((ca: string) => {
+                  const bills = getCABills(ca, 'monthly')
+                  const avg = bills.reduce((s: number, d: any) => s + d.totalBill, 0) / bills.length || 0
+                  return (
+                    <div key={ca} style={{ background: '#f5f6fa', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '13px', fontFamily: 'monospace', color: '#192744', fontWeight: 600 }}>{ca}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#1c5af4' }}>{inr(avg)}</div>
+                    </div>
+                  )
+                }))}
+              </div>
+            )}
+            {(drillPage === 'peak' || drillPage === 'lowest') && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                {drillPage === 'peak' 
+                  ? `${mthLabels[peakMthIdx]} had the highest spend at ₹${(sd.months[peakMthIdx] * 100000 / 100000).toFixed(1)}L`
+                  : `${mthLabels[lowMthIdx]} had the lowest spend at ₹${(sd.months[lowMthIdx] * 100000 / 100000).toFixed(1)}L`}
+              </div>
+            )}
+            {drillPage === 'avg' && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                Average spend per branch: {inr(avgPerBranch)}
+              </div>
+            )}
+            {drillPage === 'spend' && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                Total spend Apr 24–Mar 25: {inr(sd.total * 100000)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Summary chips */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
@@ -859,20 +933,91 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
               <div style={{ flex:1, minWidth:0 }}>
                 {!spendSel ? (
                   <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
-                    <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'6px' }}>All states</div>
-                    {Object.entries(spendData).sort((a,b)=>b[1].total-a[1].total).map(([name, sd], i) => (
-                      <div key={name} onClick={() => setSpendSel(name)}
-                        style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
-                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
-                        <div style={{ fontSize:'11px', color:'#858ea2', fontWeight:600, width:'14px' }}>{i+1}</div>
-                        <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
-                        <div style={{ fontSize:'12px', fontWeight:700, color:'#1c5af4' }}>{inr(sd.total * 100000)}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>
+                          {spendView === 'all' 
+                            ? 'All states by spend'
+                            : spendView === 'top'
+                            ? 'Highest spend states · focus area'
+                            : 'Lowest spend states · savings benchmark'}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#858ea2' }}>
+                          {spendView === 'all' 
+                            ? 'Complete state ranking by total bill outflow'
+                            : spendView === 'top'
+                            ? 'These states drive most of your bill outflow'
+                            : 'These states show efficient bill management'}
+                        </div>
                       </div>
-                    ))}
+                      <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '99px', padding: '2px', gap: '2px' }}>
+                        {([
+                          { key: 'all',    label: 'All states' },
+                          { key: 'top',    label: 'Highest Spend' },
+                          { key: 'bottom', label: 'Lowest Spend' },
+                        ] as const).map(p => (
+                          <button key={p.key} onClick={() => setSpendView(p.key)}
+                            style={{
+                              background: spendView === p.key ? '#1c5af4' : 'transparent',
+                              color: spendView === p.key ? '#fff' : '#858ea2',
+                              border: 'none', borderRadius: '99px',
+                              padding: '4px 14px',
+                              fontSize: '11px',
+                              fontWeight: spendView === p.key ? 600 : 400,
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              transition: 'all .12s',
+                            }}>
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {(() => {
+                      const sortedStates = Object.entries(spendData).sort((a, b) => b[1].total - a[1].total)
+                      const displayStates = spendView === 'top'
+                        ? sortedStates.slice(0, 5)
+                        : spendView === 'bottom'
+                        ? sortedStates.slice(-5).reverse()
+                        : sortedStates
+                      
+                      return displayStates.map(([name, sd], i) => {
+                        const rankColor = '#858ea2'
+                        const valueColor = spendView === 'all' ? '#1c5af4' : spendView === 'top' ? '#ec2127' : '#15803D'
+                        const showBadge = spendView !== 'all'
+                        const badgeBg = spendView === 'top' ? '#fce8e8' : '#e8f8f1'
+                        const badgeColor = spendView === 'top' ? '#ec2127' : '#36b37e'
+                        const badgeText = spendView === 'top' ? '↑ High spend' : '↓ Low spend'
+                        
+                        return (
+                          <div key={name} onClick={() => setSpendSel(name)}
+                            style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
+                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
+                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
+                            <div style={{ fontSize:'11px', fontWeight:600, width:'14px', color: rankColor }}>{i+1}</div>
+                            <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
+                            {showBadge && (
+                              <div style={{ fontSize:'12px', fontWeight:700, padding:'2px 8px', borderRadius:'4px', background: badgeBg, color: badgeColor }}>
+                                {badgeText}
+                              </div>
+                            )}
+                            <div style={{ fontSize:'12px', fontWeight:700, color: valueColor }}>{inr(sd.total * 100000)}</div>
+                          </div>
+                        )
+                      })
+                    })()}
+                    {spendView !== 'all' && (
+                      <div style={{ marginTop: '6px', textAlign: 'center' }}>
+                        <button onClick={() => setSpendView('all')}
+                          style={{ background: 'none', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '6px 16px', fontSize: '11px', fontWeight: 500, color: '#1c5af4', cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+                          View all states
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (() => {
                   const sd = spendData[spendSel]
+                  if (!sd) return <div style={{ padding: '10px', color: '#858ea2' }}>No data available</div>
                   const branches = BRANCHES[spendSel] ?? []
                   const branchCount = branches.length
                   const totalBill = sd.total * 100000
@@ -892,14 +1037,17 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                       {/* 3×2 stat grid */}
                       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'6px' }}>
                         {[
-                          { label:'Branches', value: String(branchCount), sub: 'in portfolio' },
-                          { label:'Total CAs', value: String((BRANCHES[spendSel]??[]).reduce((s,br)=>s+(CAS[br]?.length??0),0)), sub: 'active CAs' },
-                          { label:'Avg / Branch', value: inr(avgPerBranch), sub: 'this FY' },
-                          { label:'Peak Month', value: mthLabels[peakMthIdx], sub: inr(sd.months[peakMthIdx] * 100000) },
-                          { label:'Lowest Month', value: mthLabels[lowMthIdx], sub: inr(sd.months[lowMthIdx] * 100000) },
-                          { label:'Total Spend', value: inr(sd.total * 100000), sub: 'Apr 24–Mar 25' },
+                          { label:'Branches', value: String(branchCount), sub: 'in portfolio', page: 'branches' as const },
+                          { label:'Total CAs', value: String((BRANCHES[spendSel]??[]).reduce((s,br)=>s+(CAS[br]?.length??0),0)), sub: 'active CAs', page: 'cas' as const },
+                          { label:'Avg / Branch', value: inr(avgPerBranch), sub: 'this FY', page: 'avg' as const },
+                          { label:'Peak Month', value: mthLabels[peakMthIdx], sub: inr(sd.months[peakMthIdx] * 100000), page: 'peak' as const },
+                          { label:'Lowest Month', value: mthLabels[lowMthIdx], sub: inr(sd.months[lowMthIdx] * 100000), page: 'lowest' as const },
+                          { label:'Total Spend', value: inr(sd.total * 100000), sub: 'Apr 24–Mar 25', page: 'spend' as const },
                         ].map(m => (
-                          <div key={m.label} style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'6px 10px' }}>
+                          <div key={m.label} onClick={() => setDrillPage(m.page)}
+                            style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'6px 10px', cursor:'pointer', transition:'background .12s' }}
+                            onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#EFF6FF'}
+                            onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}>
                             <div style={{ fontSize:'9px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'2px' }}>{m.label}</div>
                             <div style={{ fontSize:'13px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'1px' }}>{m.value}</div>
                             <div style={{ fontSize:'10px', color:'#858ea2' }}>{m.sub}</div>
@@ -934,16 +1082,12 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           </div>
                         )
                       })()}
-                      {/* Monthly sparkline */}
-                      <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'8px 12px' }}>
-                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
-                          <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em' }}>Monthly spend</div>
-                          <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
-                            <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
-                            <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
-                          </div>
-                        </div>
-                        {(() => {
+                      {/* Monthly spend */}
+                      <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
+                        <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
+                        <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
+                      </div>
+                      {(() => {
                           const W = 400, H = 100, PAD = { t:18, r:24, b:24, l:24 }
                           const iW = W - PAD.l - PAD.r
                           const iH = H - PAD.t - PAD.b
@@ -955,10 +1099,10 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           const linePath = points.map(([x,y],i) => (i===0?`M${x},${y}`:`L${x},${y}`)).join(' ')
                           const areaPath = `${linePath} L${points[11][0]},${PAD.t+iH} L${points[0][0]},${PAD.t+iH} Z`
                           return (
-                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'Inter, sans-serif', width:'100%', display:'block' }}>
+                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'system-ui, sans-serif', width:'100%', display:'block' }}>
                               {[0,0.5,1].map((t,i) => (
                                 <line key={i} x1={PAD.l} x2={W-PAD.r} y1={PAD.t + iH*(1-t)} y2={PAD.t + iH*(1-t)}
-                                  stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" />
+                                  stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />
                               ))}
                               <path d={areaPath} fill="#dbeafe" opacity="0.3" />
                               <path d={linePath} fill="none" stroke="#1c5af4" strokeWidth="1" strokeLinejoin="round" strokeLinecap="round" />
@@ -988,7 +1132,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                             </svg>
                           )
                         })()}
-                      </div>
                     </div>
                   )
                 })()}
