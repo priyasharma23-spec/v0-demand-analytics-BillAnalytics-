@@ -431,4 +431,3 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
     </div>
   );
 }
-}
