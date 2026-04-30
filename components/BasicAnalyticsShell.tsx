@@ -1528,8 +1528,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (caCompChart.current) caCompChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
-
-
+  return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       {/* Summary cards - tab-aware */}
