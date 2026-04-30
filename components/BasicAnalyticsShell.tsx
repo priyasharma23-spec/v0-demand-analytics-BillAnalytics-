@@ -910,7 +910,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         : sortedStates
                       
                       return displayStates.map(([name, sd], i) => {
-                        const rankColor = spendView === 'all' ? '#858ea2' : spendView === 'top' ? '#ec2127' : '#15803D'
+                        const rankColor = '#858ea2'
                         const valueColor = spendView === 'all' ? '#1c5af4' : spendView === 'top' ? '#ec2127' : '#15803D'
                         const showBadge = spendView !== 'all'
                         const badgeBg = spendView === 'top' ? '#fce8e8' : '#e8f8f1'
