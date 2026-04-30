@@ -257,7 +257,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
               const sb = severity === 'High' ? '#fef2f2' : severity === 'Med' ? '#fffbeb' : '#f0faf6';
               const displayVal = isLeakMetric ? '₹' + (r.totalLeak / 100000).toFixed(1) + 'L' : r.over + ' mths';
               return (
-                <div key={r.name} onClick={() => handleDrillDown(r)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '8px', borderRadius: '4px', transition: 'background .12s', hoverStyle: { background: '#f9fafb' } }} onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f9fafb'} onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
+                <div key={r.name} onClick={() => handleDrillDown(r)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '8px', borderRadius: '4px', transition: 'background .12s' }} onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f9fafb'} onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
                   <div style={{ width: '18px', fontSize: '12px', fontWeight: 600, color: '#c8cbd6', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
                   <div style={{ width: '110px', fontSize: '12px', color: '#192744', flexShrink: 0 }}>{r.name}</div>
                   <div style={{ flex: 1, height: '22px', background: '#f5f6fa', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
