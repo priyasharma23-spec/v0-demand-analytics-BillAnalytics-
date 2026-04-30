@@ -886,7 +886,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         ] as const).map(p => (
                           <button key={p.key} onClick={() => setSpendView(p.key)}
                             style={{
-                              background: spendView === p.key ? '#192744' : 'transparent',
+                              background: spendView === p.key ? '#1c5af4' : 'transparent',
                               color: spendView === p.key ? '#fff' : '#858ea2',
                               border: 'none', borderRadius: '99px',
                               padding: '4px 14px',
