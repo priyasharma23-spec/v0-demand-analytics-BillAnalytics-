@@ -1102,7 +1102,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                             <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'system-ui, sans-serif', width:'100%', display:'block' }}>
                               {[0,0.5,1].map((t,i) => (
                                 <line key={i} x1={PAD.l} x2={W-PAD.r} y1={PAD.t + iH*(1-t)} y2={PAD.t + iH*(1-t)}
-                                  stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" />
+                                  stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />
                               ))}
                               <path d={areaPath} fill="#dbeafe" opacity="0.3" />
                               <path d={linePath} fill="none" stroke="#1c5af4" strokeWidth="1" strokeLinejoin="round" strokeLinecap="round" />
