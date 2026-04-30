@@ -1071,18 +1071,18 @@ function BasicTrends({ appState }: BasicSectionProps) {
               fill: true,
             },
             {
-              label: 'Prior year',
-              data: priorYear,
-              borderColor: '#C4BFFF',
+              label: 'Last year avg',
+              data: Array(12).fill(avgPrior),
+              borderColor: '#F59E0B',
               backgroundColor: 'transparent',
               borderWidth: 1.5,
-              borderDash: [5, 4],
-              pointBackgroundColor: '#C4BFFF',
-              pointRadius: 2,
-              pointHoverRadius: 4,
-              tension: 0.35,
+              borderDash: [6, 4],
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              tension: 0,
               fill: false,
             },
+
           ],
         },
         options: {
@@ -1105,14 +1105,17 @@ function BasicTrends({ appState }: BasicSectionProps) {
               callbacks: {
                 title: (items: any[]) => items[0].label,
                 label: (item: any) => {
-                  if (item.datasetIndex === 1) return '  Prior year: ' + inrK(item.raw as number)
+                  if (item.datasetIndex === 1) return `  Last year avg: ${inrK(avgPrior)}`
                   const i = item.dataIndex
                   const curr = Number(item.raw)
                   const prev = monthlyTotals[i - 1]
-                  const amtStr = `  Bill amount: ${inrK(curr)}`
+                  const vsAvg = Math.round((curr - avgPrior) / Math.max(avgPrior, 1) * 100)
+                  const amtStr = `  Monthly outflow: ${inrK(curr)}  (${vsAvg > 0 ? '+' : ''}${vsAvg}% vs last yr avg)`
                   if (i > 0 && prev) {
                     const diff = curr - prev
-                    return `${amtStr}  (${diff > 0 ? '+' : ''}₹${(diff/100000).toFixed(1)}L vs last month)`
+                    const pct = Math.round(diff / Math.max(prev, 1) * 100)
+                    return `${amtStr}
+  ${diff > 0 ? '+' : ''}${pct}% vs last month`
                   }
                   return amtStr
                 },
@@ -1232,29 +1235,17 @@ function BasicTrends({ appState }: BasicSectionProps) {
           labels,
           datasets: [
             {
-              label: 'Current year',
+              label: 'YoY spend change',
               data: yoyChanges,
-              borderColor: '#2500D7',
-              backgroundColor: 'rgba(37,0,215,0.06)',
+              borderColor: '#ec2127',
+              backgroundColor: 'rgba(236,33,39,0.06)',
               borderWidth: 2.5,
-              pointBackgroundColor: '#2500D7',
-              pointRadius: 4,
-              pointHoverRadius: 6,
+              pointBackgroundColor: yoyChanges.map((v: number) => v > 0 ? '#ec2127' : '#36b37e'),
+              pointBorderColor: yoyChanges.map((v: number) => v > 0 ? '#ec2127' : '#36b37e'),
+              pointRadius: 5,
+              pointHoverRadius: 7,
               tension: 0.35,
               fill: true,
-            },
-            {
-              label: 'Prior year',
-              data: priorYoyChanges,
-              borderColor: '#C4BFFF',
-              backgroundColor: 'transparent',
-              borderWidth: 1.5,
-              borderDash: [5, 4],
-              pointBackgroundColor: '#C4BFFF',
-              pointRadius: 2,
-              pointHoverRadius: 4,
-              tension: 0.35,
-              fill: false,
             },
           ],
         },
@@ -1263,12 +1254,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: {
-              display: true,
-              position: 'top' as const,
-              align: 'end' as const,
-              labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 12 }, padding: 16 },
-            },
+            legend: { display: false },
             tooltip: {
               backgroundColor: '#192744',
               titleColor: '#fff',
@@ -1276,14 +1262,48 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
-                label: item => '  ' + item.dataset.label + ': ' + (item.raw as number > 0 ? '+' : '') + item.raw + '%',
+                title: (items: any[]) => items[0].label,
+                label: (item: any) => {
+                  const v = item.raw as number
+                  const direction = v > 0 ? '↑ Cost increased' : '↓ Cost decreased'
+                  return `  ${direction}: ${v > 0 ? '+' : ''}${v}% vs same month last year`
+                },
+                afterLabel: (item: any) => {
+                  const i = item.dataIndex
+                  const v = item.raw as number
+                  const lines = []
+                  lines.push(v > 0 ? '  ⚠ Cost higher than last year' : '  ✓ Cost lower than last year')
+                  // CA contribution
+                  const caCurr = caCounts[i]
+                  const caPrior = priorCACounts[i]
+                  if (caCurr && caPrior) {
+                    const caChg = Math.round((caCurr - caPrior) / caPrior * 100)
+                    lines.push(`  Active CAs: ${caCurr} (${caChg > 0 ? '+' : ''}${caChg}% vs last year)`)
+                  }
+                  // Avg bill per CA contribution
+                  const currAvgBill = Math.round(monthlyTotals[i] / Math.max(caCounts[i], 1))
+                  const priorAvgBill = Math.round(priorYear[i] / Math.max(priorCACounts[i], 1))
+                  if (currAvgBill && priorAvgBill) {
+                    const avgChg = Math.round((currAvgBill - priorAvgBill) / priorAvgBill * 100)
+                    lines.push(`  Avg bill/CA: ${inrK(currAvgBill)} (${avgChg > 0 ? '+' : ''}${avgChg}% vs last year)`)
+                  }
+                  return lines.join('\n')
+                }
               }
             }
           },
           scales: {
             x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-            y: { border: { display: false }, grid: { color: '#f3f4f6' },
-              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
+            y: {
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' },
+              afterDataLimits: (axis: any) => {
+                const max = Math.max(Math.abs(axis.min), Math.abs(axis.max))
+                axis.min = -max - 2
+                axis.max = max + 2
+              }
+            },
           },
         },
       })
@@ -1415,11 +1435,47 @@ function BasicTrends({ appState }: BasicSectionProps) {
 
         {/* Chart area */}
         <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-          {activeTab === 'spend' && <canvas ref={trendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'overdue' && <canvas ref={overdueRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'yoy'   && <canvas ref={yoyRef}        style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'ca'    && <canvas ref={caRef}         style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'spend'   && <canvas key='spend-canvas' ref={trendRef}   style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'overdue' && <canvas key='overdue-canvas' ref={overdueRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'yoy'     && <canvas key='yoy-canvas' ref={yoyRef}     style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'ca'      && <canvas key='ca-canvas' ref={caRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
         </div>
+        {/* YoY driver legend — only shown on YoY tab */}
+        {activeTab === 'yoy' && (() => {
+          const caChangePct = priorCACounts.map((prior: number, i: number) =>
+            prior > 0 ? Math.round((caCounts[i] - prior) / prior * 100) : 0)
+          const avgBillChangePct = priorYear.map((prior: number, i: number) => {
+            const currAvg = Math.round(monthlyTotals[i] / Math.max(caCounts[i], 1))
+            const priorAvg = Math.round(prior / Math.max(priorCACounts[i], 1))
+            return priorAvg > 0 ? Math.round((currAvg - priorAvg) / priorAvg * 100) : 0
+          })
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '4px', marginTop: '8px' }}>
+              {labels.map((lbl: string, i: number) => {
+                const caChg = caChangePct[i]
+                const avgChg = avgBillChangePct[i]
+                const yoyVal = yoyChanges[i]
+                const driver = Math.abs(caChg) >= Math.abs(avgChg) ? 'ca' : 'bill'
+                const isUp = yoyVal > 0
+                return (
+                  <div key={i} title={`${lbl}: ${yoyVal > 0 ? '+' : ''}${yoyVal}% YoY
+CA change: ${caChg > 0 ? '+' : ''}${caChg}%
+Avg bill/CA: ${avgChg > 0 ? '+' : ''}${avgChg}%
+Driver: ${driver === 'ca' ? 'CA additions' : 'Avg bill increase'}`}
+                    style={{ background: isUp ? '#FEF2F2' : '#F0FDF4', border: `1px solid ${isUp ? '#FECACA' : '#BBF7D0'}`, borderRadius: '4px', padding: '4px 2px', textAlign: 'center', cursor: 'default' }}>
+                    <div style={{ fontSize: '8px', fontWeight: 600, color: isUp ? '#ec2127' : '#15803D' }}>
+                      {yoyVal > 0 ? '+' : ''}{yoyVal}%
+                    </div>
+                    <div style={{ fontSize: '7px', color: '#858ea2', marginTop: '1px' }}>
+                      {driver === 'ca' ? '👥' : '📈'}
+                    </div>
+                    <div style={{ fontSize: '7px', color: '#858ea2' }}>{lbl?.slice(0,3)}</div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         {/* Stat pills — linked to active tab */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '16px' }}>
@@ -1433,17 +1489,21 @@ function BasicTrends({ appState }: BasicSectionProps) {
             const avgOverdueAmt = Math.round(avgCurrent * 0.065)
             const peakOverdueAmt = Math.round(Math.max(...monthlyTotals) * 0.085)
             const pills: Record<string, {label:string,value:string,bg:string,bd:string,color:string}[]> = {
-              spend: [
-                { label: 'Lowest month',  value: inr(Math.min(...monthlyTotals)), bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-                { label: 'Monthly avg',   value: inr(avgCurrent),                 bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
-                { label: 'Peak month',    value: inr(Math.max(...monthlyTotals)), bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
-                { label: 'YoY change',    value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-              ],
+              spend: (() => {
+                const peakChg = Math.round((monthlyTotals[maxMonthIdx] - monthlyTotals[maxMonthIdx > 0 ? maxMonthIdx-1 : 0]) / Math.max(monthlyTotals[maxMonthIdx > 0 ? maxMonthIdx-1 : 1], 1) * 100)
+                const lastChg = Math.round((monthlyTotals[11] - monthlyTotals[10]) / Math.max(monthlyTotals[10], 1) * 100)
+                return [
+                  { label: 'Avg monthly outflow — This year',  value: inr(avgCurrent),                                                                       bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
+                  { label: 'Avg monthly outflow — Last year', value: inr(avgPrior),                                                                          bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
+                  { label: 'Lowest month outflow', value: inr(Math.min(...monthlyTotals)),                                                        bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+                  { label: 'Last month change',    value: `${lastChg > 0 ? '+' : ''}${lastChg}%`,                                               bg: lastChg > 0 ? '#FEF2F2' : '#F0FDF4', bd: lastChg > 0 ? '#FECACA' : '#BBF7D0', color: lastChg > 0 ? '#ec2127' : '#15803D' },
+                ]
+              })(),
               yoy: [
-                { label: 'Best month',    value: '+' + bestYoy + '%',                          bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-                { label: 'Worst month',   value: worstYoy + '%',                               bg: '#FEF2F2', bd: '#FECACA', color: '#ec2127' },
-                { label: 'Avg YoY',       value: (avgYoy > 0 ? '+' : '') + avgYoy + '%',      bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
-                { label: 'Positive months', value: posMonths + ' / 12',                        bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
+                { label: 'Most cost increase', value: '+' + bestYoy + '%',                     bg: '#FEF2F2', bd: '#FECACA', color: '#ec2127' },
+                { label: 'Most cost decrease', value: worstYoy + '%',                          bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+                { label: 'Avg YoY change',     value: (avgYoy > 0 ? '+' : '') + avgYoy + '%', bg: avgYoy > 0 ? '#FEF2F2' : '#F0FDF4', bd: avgYoy > 0 ? '#FECACA' : '#BBF7D0', color: avgYoy > 0 ? '#ec2127' : '#15803D' },
+                { label: 'Months cost up',     value: posMonths + ' / 12',                     bg: posMonths > 6 ? '#FEF2F2' : '#F0FDF4', bd: posMonths > 6 ? '#FECACA' : '#BBF7D0', color: posMonths > 6 ? '#ec2127' : '#15803D' },
               ],
               ca: [
                 { label: 'Start of year', value: String(caCounts[0]),                          bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
