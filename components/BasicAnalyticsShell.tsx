@@ -1083,12 +1083,11 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         )
                       })()}
                       {/* Monthly spend */}
-                          <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
-                            <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
-                            <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
-                          </div>
-                        </div>
-                        {(() => {
+                      <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
+                        <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
+                        <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
+                      </div>
+                      {(() => {
                           const W = 400, H = 100, PAD = { t:18, r:24, b:24, l:24 }
                           const iW = W - PAD.l - PAD.r
                           const iH = H - PAD.t - PAD.b
