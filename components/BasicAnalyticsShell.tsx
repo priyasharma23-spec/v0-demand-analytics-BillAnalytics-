@@ -1099,7 +1099,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           const linePath = points.map(([x,y],i) => (i===0?`M${x},${y}`:`L${x},${y}`)).join(' ')
                           const areaPath = `${linePath} L${points[11][0]},${PAD.t+iH} L${points[0][0]},${PAD.t+iH} Z`
                           return (
-                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'Inter, sans-serif', width:'100%', display:'block' }}>
+                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow:'visible', fontFamily:'system-ui, sans-serif', width:'100%', display:'block' }}>
                               {[0,0.5,1].map((t,i) => (
                                 <line key={i} x1={PAD.l} x2={W-PAD.r} y1={PAD.t + iH*(1-t)} y2={PAD.t + iH*(1-t)}
                                   stroke="#E5E7EB" strokeWidth="0.5" strokeDasharray="3,3" />
