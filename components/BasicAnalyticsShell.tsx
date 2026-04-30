@@ -1008,16 +1008,16 @@ function BasicTrends({ appState }: BasicSectionProps) {
     { key: 'spend',  label: 'Bill Trend',   color: '#4F46E5', bg: '#EEF2FF', bd: '#C7D2FE' },
     { key: 'yoy',    label: 'YoY Change',   color: '#3B82F6', bg: '#EFF6FF', bd: '#BFDBFE' },
     { key: 'ca',     label: 'CA Count',     color: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
-    { key: 'overdue', label: 'Overdue Trend', color: '#ec2127', bg: '#FEF2F2', bd: '#FECACA' },
+    { key: 'prior',  label: 'vs Prior Year',color: '#7C3AED', bg: '#F5F3FF', bd: '#DDD6FE' },
   ]
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
-  const overdueRef      = useRef<HTMLCanvasElement>(null)
+  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
-  const overdueChart    = useRef<Chart | null>(null)
+  const spendTrendChart = useRef<Chart | null>(null)
 
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -1071,18 +1071,18 @@ function BasicTrends({ appState }: BasicSectionProps) {
               fill: true,
             },
             {
-              label: 'Last year avg',
-              data: Array(12).fill(avgPrior),
-              borderColor: '#F59E0B',
+              label: 'Prior year',
+              data: priorYear,
+              borderColor: '#C4BFFF',
               backgroundColor: 'transparent',
               borderWidth: 1.5,
-              borderDash: [6, 4],
-              pointRadius: 0,
-              pointHoverRadius: 0,
-              tension: 0,
+              borderDash: [5, 4],
+              pointBackgroundColor: '#C4BFFF',
+              pointRadius: 2,
+              pointHoverRadius: 4,
+              tension: 0.35,
               fill: false,
             },
-
           ],
         },
         options: {
@@ -1103,35 +1103,12 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
-                title: (items: any[]) => items[0].label,
-                label: (item: any) => {
-                  if (item.datasetIndex === 1) return `  Last year avg: ${inrK(avgPrior)}`
-                  const i = item.dataIndex
-                  const curr = Number(item.raw)
-                  const prev = monthlyTotals[i - 1]
-                  const vsAvg = Math.round((curr - avgPrior) / Math.max(avgPrior, 1) * 100)
-                  const amtStr = `  Monthly outflow: ${inrK(curr)}  (${vsAvg > 0 ? '+' : ''}${vsAvg}% vs last yr avg)`
-                  if (i > 0 && prev) {
-                    const diff = curr - prev
-                    const pct = Math.round(diff / Math.max(prev, 1) * 100)
-                    return `${amtStr}
-  ${diff > 0 ? '+' : ''}${pct}% vs last month`
-                  }
-                  return amtStr
-                },
-                afterLabel: (item: any) => {
-                  if (item.datasetIndex !== 0) return ''
-                  const i = item.dataIndex
-                  const lines = []
-                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
-                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
-                  const caCurr = caCounts[i]
-                  const caPrev = i > 0 ? caCounts[i - 1] : undefined
-                  if (caCurr !== undefined && caPrev !== undefined) {
-                    const diff = caCurr - caPrev
-                    lines.push(`  Active CAs: ${caCurr}  (${diff > 0 ? '+' : ''}${diff} vs last month)`)
-                  }
-                  return lines.join('\n')
+                label: item => '  ' + item.dataset.label + ': ' + inrK(item.raw as number),
+                footer: items => {
+                  const curr  = items.find(i => i.datasetIndex === 0)?.raw as number ?? 0
+                  const prior = items.find(i => i.datasetIndex === 1)?.raw as number ?? 0
+                  const chg   = Math.round((curr - prior) / Math.max(prior, 1) * 100)
+                  return 'YoY: ' + (chg > 0 ? '+' : '') + chg + '%'
                 }
               }
             }
@@ -1147,80 +1124,100 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
-  // Overdue trend chart
+  // Monthly spend trend chart (simple line chart)
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!overdueRef.current) return
-      const ctx = overdueRef.current.getContext('2d')
+      if (!spendTrendRef.current) return
+      const ctx = spendTrendRef.current.getContext('2d')
       if (!ctx) return
-      if (overdueChart.current) overdueChart.current.destroy()
-      const overdueAmounts = monthlyTotals.map((v, i) => {
-        const seed = (i * 3 + 7) % 15
-        return Math.round(v * (0.04 + seed * 0.003))
-      })
-      const overdueCountsArr = monthlyTotals.map((_, i) => {
-        const seed = (i * 5 + 3) % 12
-        return Math.round(5 + seed * 1.5)
-      })
-      overdueChart.current = new Chart(ctx, {
-        type: 'bar',
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+      const padding = (maxVal - minVal) * 0.15
+      spendTrendChart.current = new Chart(ctx, {
+        type: 'line',
         data: {
           labels,
-          datasets: [
-            {
-              type: 'bar' as const,
-              label: 'Overdue amount',
-              data: overdueAmounts,
-              backgroundColor: 'rgba(236,33,39,0.12)',
-              borderColor: '#ec2127',
-              borderWidth: 1.5,
-              borderRadius: 3,
-              yAxisID: 'y',
-            },
-            {
-              type: 'line' as const,
-              label: 'Overdue CAs',
-              data: overdueCountsArr,
-              borderColor: '#F59E0B',
-              backgroundColor: 'transparent',
-              borderWidth: 2,
-              pointBackgroundColor: '#F59E0B',
-              pointRadius: 3,
-              tension: 0.35,
-              yAxisID: 'y2',
-            },
-          ],
+          datasets: [{
+            type: 'line' as const,
+            label: 'Total bill',
+            data: monthlyTotals,
+            borderColor: '#4F46E5',
+            borderWidth: 2,
+            backgroundColor: 'rgba(79,70,229,0.06)',
+            pointBackgroundColor: monthlyTotals.map((_, i) =>
+              i === maxMonthIdx ? '#4F46E5' : i === minMonthIdx ? '#15803D' : '#fff'
+            ),
+            pointBorderColor: '#4F46E5',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBorderWidth: 2,
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'y',
+          }],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: { mode: 'index' as const, intersect: false },
+          interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { display: true, position: 'top' as const, align: 'end' as const,
-              labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 12 }, padding: 16 } },
+            legend: { display: false },
             tooltip: {
-              backgroundColor: '#192744', titleColor: '#fff', bodyColor: 'rgba(255,255,255,0.85)',
-              padding: 10, cornerRadius: 4, displayColors: false,
+              backgroundColor: '#f5f6fa',
+              titleColor: '#192744',
+              bodyColor: '#5e687d',
+              borderColor: '#f3f4f6',
+              borderWidth: 1,
+              padding: 10,
+              cornerRadius: 4,
+              displayColors: false,
               callbacks: {
-                title: (items: any[]) => items[0].label,
-                label: (item: any) => item.datasetIndex === 0
-                  ? `  Overdue: ₹${(Number(item.raw)/100000).toFixed(1)}L`
-                  : `  Overdue CAs: ${item.raw}`,
+                title: items => items[0].label,
+                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
+                afterLabel: item => {
+                  const i = item.dataIndex
+                  const lines = []
+                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
+                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
+                  else {
+                    const prev = monthlyTotals[i - 1]
+                    if (prev) {
+                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
+                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
+                    }
+                  }
+                  return lines.join('\n')
+                }
               }
             }
           },
           scales: {
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-            y: { position: 'left' as const, border: { display: false }, grid: { color: '#f3f4f6' },
-              ticks: { color: '#ec2127', font: { size: 11 }, callback: (v: any) => '\u20b9' + (Number(v)/100000).toFixed(1) + 'L' } },
-            y2: { position: 'right' as const, border: { display: false }, grid: { display: false },
-              ticks: { color: '#F59E0B', font: { size: 11 }, callback: (v: any) => v + ' CAs' } },
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#858ea2', font: { size: 11 } },
+            },
+            y: {
+              type: 'linear' as const,
+              position: 'left' as const,
+              border: { display: false },
+              grid: { color: '#f3f4f6' },
+              min: Math.floor((minVal - padding) / 100000) * 100000,
+              max: Math.ceil((maxVal + padding) / 100000) * 100000,
+              ticks: {
+                color: '#858ea2',
+                font: { size: 11 },
+                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
+              },
+            },
           },
         },
       })
-    }, 50)
-    return () => { clearTimeout(timer); if (overdueChart.current) overdueChart.current.destroy() }
-  }, [appState.stateF, appState.branchF, appState.caF, activeTab])
+    }, 100)
+    return () => {
+      clearTimeout(timer)
+      if (spendTrendChart.current) spendTrendChart.current.destroy()
+    }
+  }, [labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx])
 
   // YoY change line chart — same style as spend chart
   useEffect(() => {
@@ -1235,17 +1232,29 @@ function BasicTrends({ appState }: BasicSectionProps) {
           labels,
           datasets: [
             {
-              label: 'YoY spend change',
+              label: 'Current year',
               data: yoyChanges,
-              borderColor: '#ec2127',
-              backgroundColor: 'rgba(236,33,39,0.06)',
+              borderColor: '#2500D7',
+              backgroundColor: 'rgba(37,0,215,0.06)',
               borderWidth: 2.5,
-              pointBackgroundColor: yoyChanges.map((v: number) => v > 0 ? '#ec2127' : '#36b37e'),
-              pointBorderColor: yoyChanges.map((v: number) => v > 0 ? '#ec2127' : '#36b37e'),
-              pointRadius: 5,
-              pointHoverRadius: 7,
+              pointBackgroundColor: '#2500D7',
+              pointRadius: 4,
+              pointHoverRadius: 6,
               tension: 0.35,
               fill: true,
+            },
+            {
+              label: 'Prior year',
+              data: priorYoyChanges,
+              borderColor: '#C4BFFF',
+              backgroundColor: 'transparent',
+              borderWidth: 1.5,
+              borderDash: [5, 4],
+              pointBackgroundColor: '#C4BFFF',
+              pointRadius: 2,
+              pointHoverRadius: 4,
+              tension: 0.35,
+              fill: false,
             },
           ],
         },
@@ -1254,7 +1263,12 @@ function BasicTrends({ appState }: BasicSectionProps) {
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { display: false },
+            legend: {
+              display: true,
+              position: 'top' as const,
+              align: 'end' as const,
+              labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 12 }, padding: 16 },
+            },
             tooltip: {
               backgroundColor: '#192744',
               titleColor: '#fff',
@@ -1262,48 +1276,14 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
-                title: (items: any[]) => items[0].label,
-                label: (item: any) => {
-                  const v = item.raw as number
-                  const direction = v > 0 ? '↑ Cost increased' : '↓ Cost decreased'
-                  return `  ${direction}: ${v > 0 ? '+' : ''}${v}% vs same month last year`
-                },
-                afterLabel: (item: any) => {
-                  const i = item.dataIndex
-                  const v = item.raw as number
-                  const lines = []
-                  lines.push(v > 0 ? '  ⚠ Cost higher than last year' : '  ✓ Cost lower than last year')
-                  // CA contribution
-                  const caCurr = caCounts[i]
-                  const caPrior = priorCACounts[i]
-                  if (caCurr && caPrior) {
-                    const caChg = Math.round((caCurr - caPrior) / caPrior * 100)
-                    lines.push(`  Active CAs: ${caCurr} (${caChg > 0 ? '+' : ''}${caChg}% vs last year)`)
-                  }
-                  // Avg bill per CA contribution
-                  const currAvgBill = Math.round(monthlyTotals[i] / Math.max(caCounts[i], 1))
-                  const priorAvgBill = Math.round(priorYear[i] / Math.max(priorCACounts[i], 1))
-                  if (currAvgBill && priorAvgBill) {
-                    const avgChg = Math.round((currAvgBill - priorAvgBill) / priorAvgBill * 100)
-                    lines.push(`  Avg bill/CA: ${inrK(currAvgBill)} (${avgChg > 0 ? '+' : ''}${avgChg}% vs last year)`)
-                  }
-                  return lines.join('\n')
-                }
+                label: item => '  ' + item.dataset.label + ': ' + (item.raw as number > 0 ? '+' : '') + item.raw + '%',
               }
             }
           },
           scales: {
             x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-            y: {
-              border: { display: false },
-              grid: { color: '#f3f4f6' },
-              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' },
-              afterDataLimits: (axis: any) => {
-                const max = Math.max(Math.abs(axis.min), Math.abs(axis.max))
-                axis.min = -max - 2
-                axis.max = max + 2
-              }
-            },
+            y: { border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
           },
         },
       })
@@ -1435,96 +1415,25 @@ function BasicTrends({ appState }: BasicSectionProps) {
 
         {/* Chart area */}
         <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-          {activeTab === 'spend'   && <canvas key='spend-canvas' ref={trendRef}   style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'overdue' && <canvas key='overdue-canvas' ref={overdueRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'yoy'     && <canvas key='yoy-canvas' ref={yoyRef}     style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'ca'      && <canvas key='ca-canvas' ref={caRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'spend' && <canvas ref={spendTrendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'prior' && <canvas ref={trendRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'yoy'   && <canvas ref={yoyRef}        style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'ca'    && <canvas ref={caRef}         style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
         </div>
-        {/* YoY driver legend — only shown on YoY tab */}
-        {activeTab === 'yoy' && (() => {
-          const caChangePct = priorCACounts.map((prior: number, i: number) =>
-            prior > 0 ? Math.round((caCounts[i] - prior) / prior * 100) : 0)
-          const avgBillChangePct = priorYear.map((prior: number, i: number) => {
-            const currAvg = Math.round(monthlyTotals[i] / Math.max(caCounts[i], 1))
-            const priorAvg = Math.round(prior / Math.max(priorCACounts[i], 1))
-            return priorAvg > 0 ? Math.round((currAvg - priorAvg) / priorAvg * 100) : 0
-          })
-          return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '4px', marginTop: '8px' }}>
-              {labels.map((lbl: string, i: number) => {
-                const caChg = caChangePct[i]
-                const avgChg = avgBillChangePct[i]
-                const yoyVal = yoyChanges[i]
-                const driver = Math.abs(caChg) >= Math.abs(avgChg) ? 'ca' : 'bill'
-                const isUp = yoyVal > 0
-                return (
-                  <div key={i} title={`${lbl}: ${yoyVal > 0 ? '+' : ''}${yoyVal}% YoY
-CA change: ${caChg > 0 ? '+' : ''}${caChg}%
-Avg bill/CA: ${avgChg > 0 ? '+' : ''}${avgChg}%
-Driver: ${driver === 'ca' ? 'CA additions' : 'Avg bill increase'}`}
-                    style={{ background: isUp ? '#FEF2F2' : '#F0FDF4', border: `1px solid ${isUp ? '#FECACA' : '#BBF7D0'}`, borderRadius: '4px', padding: '4px 2px', textAlign: 'center', cursor: 'default' }}>
-                    <div style={{ fontSize: '8px', fontWeight: 600, color: isUp ? '#ec2127' : '#15803D' }}>
-                      {yoyVal > 0 ? '+' : ''}{yoyVal}%
-                    </div>
-                    <div style={{ fontSize: '7px', color: '#858ea2', marginTop: '1px' }}>
-                      {driver === 'ca' ? '👥' : '📈'}
-                    </div>
-                    <div style={{ fontSize: '7px', color: '#858ea2' }}>{lbl?.slice(0,3)}</div>
-                  </div>
-                )
-              })}
-            </div>
-          )
-        })()}
 
-        {/* Stat pills — linked to active tab */}
+        {/* Stat pills */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '16px' }}>
-          {(() => {
-            const avgYoy = Math.round(yoyChanges.reduce((a: number, v: number) => a + v, 0) / yoyChanges.length)
-            const bestYoy = Math.max(...yoyChanges)
-            const worstYoy = Math.min(...yoyChanges)
-            const posMonths = yoyChanges.filter((v: number) => v > 0).length
-            const avgCA = Math.round(caCounts.reduce((a: number, v: number) => a + v, 0) / caCounts.length)
-            const caGrowth = Math.round((caCounts[11] - caCounts[0]) / caCounts[0] * 100)
-            const avgOverdueAmt = Math.round(avgCurrent * 0.065)
-            const peakOverdueAmt = Math.round(Math.max(...monthlyTotals) * 0.085)
-            const pills: Record<string, {label:string,value:string,bg:string,bd:string,color:string}[]> = {
-              spend: (() => {
-                const peakChg = Math.round((monthlyTotals[maxMonthIdx] - monthlyTotals[maxMonthIdx > 0 ? maxMonthIdx-1 : 0]) / Math.max(monthlyTotals[maxMonthIdx > 0 ? maxMonthIdx-1 : 1], 1) * 100)
-                const lastChg = Math.round((monthlyTotals[11] - monthlyTotals[10]) / Math.max(monthlyTotals[10], 1) * 100)
-                return [
-                  { label: 'Avg monthly outflow — This year',  value: inr(avgCurrent),                                                                       bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
-                  { label: 'Avg monthly outflow — Last year', value: inr(avgPrior),                                                                          bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
-                  { label: 'Lowest month outflow', value: inr(Math.min(...monthlyTotals)),                                                        bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-                  { label: 'Last month change',    value: `${lastChg > 0 ? '+' : ''}${lastChg}%`,                                               bg: lastChg > 0 ? '#FEF2F2' : '#F0FDF4', bd: lastChg > 0 ? '#FECACA' : '#BBF7D0', color: lastChg > 0 ? '#ec2127' : '#15803D' },
-                ]
-              })(),
-              yoy: [
-                { label: 'Most cost increase', value: '+' + bestYoy + '%',                     bg: '#FEF2F2', bd: '#FECACA', color: '#ec2127' },
-                { label: 'Most cost decrease', value: worstYoy + '%',                          bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-                { label: 'Avg YoY change',     value: (avgYoy > 0 ? '+' : '') + avgYoy + '%', bg: avgYoy > 0 ? '#FEF2F2' : '#F0FDF4', bd: avgYoy > 0 ? '#FECACA' : '#BBF7D0', color: avgYoy > 0 ? '#ec2127' : '#15803D' },
-                { label: 'Months cost up',     value: posMonths + ' / 12',                     bg: posMonths > 6 ? '#FEF2F2' : '#F0FDF4', bd: posMonths > 6 ? '#FECACA' : '#BBF7D0', color: posMonths > 6 ? '#ec2127' : '#15803D' },
-              ],
-              ca: [
-                { label: 'Start of year', value: String(caCounts[0]),                          bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
-                { label: 'End of year',   value: String(caCounts[11]),                         bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-                { label: 'Monthly avg',   value: String(avgCA) + ' CAs',                       bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
-                { label: 'YoY CA growth', value: (caGrowth > 0 ? '+' : '') + caGrowth + '%',  bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-              ],
-              overdue: [
-                { label: 'Avg overdue/month', value: inr(avgOverdueAmt),                       bg: '#FEF2F2', bd: '#FECACA', color: '#ec2127' },
-                { label: 'Peak overdue',      value: inr(peakOverdueAmt),                      bg: '#FEF2F2', bd: '#FECACA', color: '#B91C1C' },
-                { label: 'Overdue % of bill', value: '6.5%',                                   bg: '#FFFBEB', bd: '#FDE68A', color: '#B45309' },
-                { label: 'Months worsening',  value: '4 / 12',                                 bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
-              ],
-            }
-            return (pills[activeTab] || pills.spend).map(s => (
-              <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.bd}`, borderRadius: '6px', padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500 }}>{s.label}</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: s.color }}>{s.value}</div>
-              </div>
-            ))
-          })()}
+          {[
+            { label: 'Lowest month',  value: inr(Math.min(...monthlyTotals)),  bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+            { label: 'Monthly avg',   value: inr(avgCurrent),                  bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
+            { label: 'Peak month',    value: inr(Math.max(...monthlyTotals)),  bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
+            { label: 'YoY change',    value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+          ].map(s => (
+            <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.bd}`, borderRadius: '6px', padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500 }}>{s.label}</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: s.color }}>{s.value}</div>
+            </div>
+          ))}
         </div>
       </div>
 
