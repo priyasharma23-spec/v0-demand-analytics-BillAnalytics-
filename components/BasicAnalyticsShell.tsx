@@ -1355,29 +1355,44 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab, monthlyTotals, avgCurrent, avgPrior])
 
-  // YoY change line chart — red line, colored dots (red if positive/cost up, green if negative/cost down)
+  // YoY chart — current year vs prior year bill spend
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!yoyRef.current) return
       const ctx = yoyRef.current.getContext('2d')
       if (!ctx) return
       if (yoyChart.current) yoyChart.current.destroy()
+
       yoyChart.current = new Chart(ctx, {
         type: 'line',
         data: {
           labels,
           datasets: [
             {
-              label: 'YoY Change',
-              data: yoyChanges,
-              borderColor: '#ec2127',
-              backgroundColor: 'rgba(236,33,39,0.06)',
+              label: 'Current year (CY)',
+              data: monthlyTotals,
+              borderColor: '#1c5af4',
+              backgroundColor: 'rgba(28,90,244,0.06)',
               borderWidth: 2.5,
-              pointBackgroundColor: yoyChanges.map(v => v > 0 ? '#ec2127' : '#36b37e'),
-              pointRadius: 4,
-              pointHoverRadius: 6,
+              pointBackgroundColor: '#fff',
+              pointBorderColor: '#1c5af4',
+              pointBorderWidth: 2,
+              pointRadius: 3.5,
+              pointHoverRadius: 5,
               tension: 0.35,
               fill: true,
+            },
+            {
+              label: 'Prior year (PY)',
+              data: priorYear,
+              borderColor: '#c8cbd6',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [5, 3],
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              tension: 0.35,
+              fill: false,
             },
           ],
         },
@@ -1394,18 +1409,17 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
-                label: (item) => {
+                label: (item: any) => {
                   const val = item.raw as number
-                  const caChange = Math.round(Math.random() * 10)
-                  const billChange = Math.round(Math.random() * 10)
-                  return val > 0 
-                    ? `↑ Cost increased: +${val}% vs same month last year`
-                    : `↓ Cost decreased: ${val}%`
+                  const prefix = item.datasetIndex === 0 ? '  CY: ' : '  PY: '
+                  return prefix + '₹' + (val / 100000).toFixed(1) + 'L'
                 },
-                afterLabel: (item) => {
-                  const caChange = Math.round(Math.random() * 10)
-                  const billChange = Math.round(Math.random() * 10)
-                  return `Active CAs: ${caChange > 0 ? '+' : ''}${caChange}%\nAvg bill/CA: ${billChange > 0 ? '+' : ''}${billChange}%`
+                afterBody: (items: any) => {
+                  const cy = items[0]?.raw as number
+                  const py = items[1]?.raw as number
+                  if (!cy || !py) return []
+                  const chg = Math.round((cy - py) / Math.max(py, 1) * 100)
+                  return ['', '  YoY: ' + (chg > 0 ? '↑ +' : '↓ ') + chg + '% vs same month last year']
                 }
               }
             }
@@ -1413,7 +1427,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
           scales: {
             x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
             y: { border: { display: false }, grid: { color: '#f3f4f6' },
-              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L' } },
           },
         },
       })
@@ -1756,9 +1770,25 @@ function BasicTrends({ appState }: BasicSectionProps) {
               <canvas key='ca-comp-canvas' ref={caCompRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
             </div>
           </div>
+        ) : activeTab === 'yoy' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '10px' }}>
+              {[
+                { color: '#1c5af4', label: 'Current year (CY)', dash: false },
+                { color: '#c8cbd6', label: 'Prior year (PY)',    dash: true  },
+              ].map((l, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <svg width="18" height="3"><line x1="0" y1="1.5" x2="18" y2="1.5" stroke={l.color} strokeWidth="2" strokeDasharray={l.dash ? '5 3' : 'none'}/></svg>
+                  <span style={{ fontSize: '11px', color: '#858ea2' }}>{l.label}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+              <canvas key='yoy-canvas' ref={yoyRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
+            </div>
+          </div>
         ) : (
           <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-            {activeTab === 'yoy'     && <canvas key='yoy-canvas'     ref={yoyRef}     style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
             {activeTab === 'ca'      && <canvas key='ca-canvas'      ref={caRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
             {activeTab === 'overdue' && <canvas key='overdue-canvas' ref={overdueRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
           </div>
