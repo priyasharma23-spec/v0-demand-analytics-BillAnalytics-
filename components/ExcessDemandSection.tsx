@@ -250,7 +250,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
             </div>
           </div>
           <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-            <canvas ref={edMainRef}></canvas>
+            <canvas ref={edMainRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}></canvas>
           </div>
         </div>
       </div>
@@ -263,7 +263,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
         </div>
         <div style={{ padding: '16px 20px 12px' }}>
           <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-            <canvas ref={edExcessRef}></canvas>
+            <canvas ref={edExcessRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}></canvas>
           </div>
         </div>
       </div>
