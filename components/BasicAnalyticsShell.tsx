@@ -1008,16 +1008,16 @@ function BasicTrends({ appState }: BasicSectionProps) {
     { key: 'spend',  label: 'Bill Trend',   color: '#4F46E5', bg: '#EEF2FF', bd: '#C7D2FE' },
     { key: 'yoy',    label: 'YoY Change',   color: '#3B82F6', bg: '#EFF6FF', bd: '#BFDBFE' },
     { key: 'ca',     label: 'CA Count',     color: '#15803D', bg: '#F0FDF4', bd: '#BBF7D0' },
-    { key: 'prior',  label: 'vs Prior Year',color: '#7C3AED', bg: '#F5F3FF', bd: '#DDD6FE' },
+    { key: 'overdue', label: 'Overdue Trend', color: '#ec2127', bg: '#FEF2F2', bd: '#FECACA' },
   ]
   const trendRef   = useRef<HTMLCanvasElement>(null)
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
-  const spendTrendRef   = useRef<HTMLCanvasElement>(null)
+  const overdueRef      = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
-  const spendTrendChart = useRef<Chart | null>(null)
+  const overdueChart    = useRef<Chart | null>(null)
 
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -1124,100 +1124,80 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
-  // Monthly spend trend chart (simple line chart)
+  // Overdue trend chart
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!spendTrendRef.current) return
-      const ctx = spendTrendRef.current.getContext('2d')
+      if (!overdueRef.current) return
+      const ctx = overdueRef.current.getContext('2d')
       if (!ctx) return
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-      const padding = (maxVal - minVal) * 0.15
-      spendTrendChart.current = new Chart(ctx, {
-        type: 'line',
+      if (overdueChart.current) overdueChart.current.destroy()
+      const overdueAmounts = monthlyTotals.map((v, i) => {
+        const seed = (i * 3 + 7) % 15
+        return Math.round(v * (0.04 + seed * 0.003))
+      })
+      const overdueCountsArr = monthlyTotals.map((_, i) => {
+        const seed = (i * 5 + 3) % 12
+        return Math.round(5 + seed * 1.5)
+      })
+      overdueChart.current = new Chart(ctx, {
+        type: 'bar',
         data: {
           labels,
-          datasets: [{
-            type: 'line' as const,
-            label: 'Total bill',
-            data: monthlyTotals,
-            borderColor: '#4F46E5',
-            borderWidth: 2,
-            backgroundColor: 'rgba(79,70,229,0.06)',
-            pointBackgroundColor: monthlyTotals.map((_, i) =>
-              i === maxMonthIdx ? '#4F46E5' : i === minMonthIdx ? '#15803D' : '#fff'
-            ),
-            pointBorderColor: '#4F46E5',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBorderWidth: 2,
-            tension: 0.35,
-            fill: true,
-            yAxisID: 'y',
-          }],
+          datasets: [
+            {
+              type: 'bar' as const,
+              label: 'Overdue amount',
+              data: overdueAmounts,
+              backgroundColor: 'rgba(236,33,39,0.12)',
+              borderColor: '#ec2127',
+              borderWidth: 1.5,
+              borderRadius: 3,
+              yAxisID: 'y',
+            },
+            {
+              type: 'line' as const,
+              label: 'Overdue CAs',
+              data: overdueCountsArr,
+              borderColor: '#F59E0B',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              pointBackgroundColor: '#F59E0B',
+              pointRadius: 3,
+              tension: 0.35,
+              yAxisID: 'y2',
+            },
+          ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
+          interaction: { mode: 'index' as const, intersect: false },
           plugins: {
-            legend: { display: false },
+            legend: { display: true, position: 'top' as const, align: 'end' as const,
+              labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 12 }, padding: 16 } },
             tooltip: {
-              backgroundColor: '#f5f6fa',
-              titleColor: '#192744',
-              bodyColor: '#5e687d',
-              borderColor: '#f3f4f6',
-              borderWidth: 1,
-              padding: 10,
-              cornerRadius: 4,
-              displayColors: false,
+              backgroundColor: '#192744', titleColor: '#fff', bodyColor: 'rgba(255,255,255,0.85)',
+              padding: 10, cornerRadius: 4, displayColors: false,
               callbacks: {
-                title: items => items[0].label,
-                label: item => `  Bill amount: ₹${(Number(item.raw) / 100000).toFixed(1)}L`,
-                afterLabel: item => {
-                  const i = item.dataIndex
-                  const lines = []
-                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
-                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
-                  else {
-                    const prev = monthlyTotals[i - 1]
-                    if (prev) {
-                      const chg = Math.round((monthlyTotals[i] - prev) / prev * 100)
-                      lines.push(`  ${chg > 0 ? '↑' : '↓'} ${Math.abs(chg)}% vs prev month`)
-                    }
-                  }
-                  return lines.join('\n')
-                }
+                title: (items: any[]) => items[0].label,
+                label: (item: any) => item.datasetIndex === 0
+                  ? `  Overdue: ₹${(Number(item.raw)/100000).toFixed(1)}L`
+                  : `  Overdue CAs: ${item.raw}`,
               }
             }
           },
           scales: {
-            x: {
-              grid: { display: false },
-              border: { display: false },
-              ticks: { color: '#858ea2', font: { size: 11 } },
-            },
-            y: {
-              type: 'linear' as const,
-              position: 'left' as const,
-              border: { display: false },
-              grid: { color: '#f3f4f6' },
-              min: Math.floor((minVal - padding) / 100000) * 100000,
-              max: Math.ceil((maxVal + padding) / 100000) * 100000,
-              ticks: {
-                color: '#858ea2',
-                font: { size: 11 },
-                callback: (v: any) => '₹' + (Number(v) / 100000).toFixed(0) + 'L',
-              },
-            },
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: { position: 'left' as const, border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#ec2127', font: { size: 11 }, callback: (v: any) => '\u20b9' + (Number(v)/100000).toFixed(1) + 'L' } },
+            y2: { position: 'right' as const, border: { display: false }, grid: { display: false },
+              ticks: { color: '#F59E0B', font: { size: 11 }, callback: (v: any) => v + ' CAs' } },
           },
         },
       })
-    }, 100)
-    return () => {
-      clearTimeout(timer)
-      if (spendTrendChart.current) spendTrendChart.current.destroy()
-    }
-  }, [labels, monthlyTotals, maxVal, minVal, maxMonthIdx, minMonthIdx])
+    }, 50)
+    return () => { clearTimeout(timer); if (overdueChart.current) overdueChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
   // YoY change line chart — same style as spend chart
   useEffect(() => {
@@ -1415,8 +1395,8 @@ function BasicTrends({ appState }: BasicSectionProps) {
 
         {/* Chart area */}
         <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-          {activeTab === 'spend' && <canvas ref={spendTrendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'prior' && <canvas ref={trendRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'spend' && <canvas ref={trendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          {activeTab === 'overdue' && <canvas ref={overdueRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
           {activeTab === 'yoy'   && <canvas ref={yoyRef}        style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
           {activeTab === 'ca'    && <canvas ref={caRef}         style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
         </div>
