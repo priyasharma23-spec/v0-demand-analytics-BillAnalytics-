@@ -934,6 +934,14 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         )
                       })
                     })()}
+                    {spendView !== 'all' && (
+                      <div style={{ marginTop: '6px', textAlign: 'center' }}>
+                        <button onClick={() => setSpendView('all')}
+                          style={{ background: 'none', border: '1px solid #f3f4f6', borderRadius: '4px', padding: '6px 16px', fontSize: '11px', fontWeight: 500, color: '#1c5af4', cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+                          View all states
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (() => {
                   const sd = spendData[spendSel]
