@@ -252,7 +252,11 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
             return sorted.map((r, i) => {
               const barPct = ((r[stateMetric as keyof BreakdownRow] as number) / maxVal) * 100;
               const isLeakMetric = stateMetric === 'totalLeak';
-              const severity = isLeakMetric ? r.util >= 100 ? 'High' : r.util >= 80 ? 'Med' : 'Low' : r.over >= 8 ? 'High' : r.over >= 4 ? 'Med' : 'Low';
+              const maxOver = Math.max(...sorted.map(x => x.over));
+              const minOver = Math.min(...sorted.map(x => x.over));
+              const range = Math.max(maxOver - minOver, 1);
+              const relScore = (r.over - minOver) / range;
+              const severity = relScore >= 0.67 ? 'High' : relScore >= 0.34 ? 'Med' : 'Low';
               const sc = severity === 'High' ? '#e53935' : severity === 'Med' ? '#f59e0b' : '#36b37e';
               const sb = severity === 'High' ? '#fef2f2' : severity === 'Med' ? '#fffbeb' : '#f0faf6';
               const displayVal = isLeakMetric ? '₹' + (r.totalLeak / 100000).toFixed(1) + 'L' : r.over + ' mths';
@@ -261,7 +265,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
                   <div style={{ width: '18px', fontSize: '12px', fontWeight: 600, color: '#c8cbd6', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
                   <div style={{ width: '110px', fontSize: '12px', color: '#192744', flexShrink: 0 }}>{r.name}</div>
                   <div style={{ flex: 1, height: '22px', background: '#f5f6fa', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ height: '100%', width: barPct + '%', borderRadius: '3px', background: severity === 'High' ? 'rgba(229,57,53,0.18)' : severity === 'Med' ? 'rgba(245,158,11,0.18)' : 'rgba(54,179,126,0.15)', borderRight: '2px solid ' + sc, transition: 'width .4s ease' }} />
+                    <div style={{ height: '100%', width: barPct + '%', borderRadius: '3px', background: relScore >= 0.67 ? 'rgba(229,57,53,0.15)' : relScore >= 0.34 ? 'rgba(245,158,11,0.15)' : 'rgba(54,179,126,0.12)', borderRight: '2px solid ' + sc, transition: 'width .4s ease' }} />
                     <div style={{ position: 'absolute', left: '8px', top: 0, height: '100%', display: 'flex', alignItems: 'center', fontSize: '12px', color: '#192744', fontWeight: 500 }}>{displayVal}</div>
                   </div>
                   <div style={{ width: '54px', fontSize: '12px', color: '#9aa0b0', textAlign: 'right', flexShrink: 0 }}>{r.contracted} kVA</div>
