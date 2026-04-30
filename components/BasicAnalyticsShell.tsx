@@ -468,6 +468,77 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
 
   return (
     <div>
+      {/* Full-screen drill-down overlay */}
+      {drillPage && (
+        <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 50, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          {/* Header with back button */}
+          <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+            <button onClick={() => setDrillPage(null)}
+              style={{ background: 'none', border: 'none', color: '#1c5af4', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              ← Back to {spendSel}
+            </button>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              {drillPage === 'branches' ? 'Branches' : drillPage === 'cas' ? 'Certified Agents' : drillPage === 'peak' ? 'Peak Month' : drillPage === 'lowest' ? 'Lowest Month' : drillPage === 'avg' ? 'Average / Branch' : 'Total Spend'}
+            </div>
+            <div style={{ width: '80px' }} />
+          </div>
+          {/* Content */}
+          <div style={{ flex: 1, padding: '20px 24px' }}>
+            {drillPage === 'branches' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {(BRANCHES[spendSel] ?? []).map(br => {
+                  const brCAs = CAS[br] ?? []
+                  const brTotal = brCAs.reduce((sum: number, ca: string) => {
+                    const bills = getCABills(ca, 'monthly')
+                    return sum + bills.reduce((s: number, d: any) => s + d.totalBill, 0)
+                  }, 0)
+                  const paidCAs = brCAs.filter((_: string, i: number) => (br.charCodeAt(0) + i) % 10 < 6).length
+                  return (
+                    <div key={br} style={{ background: '#f5f6fa', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>{br}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#1c5af4' }}>{inr(brTotal)}</div>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#858ea2' }}>{brCAs.length} CAs · {paidCAs} paid</div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            {drillPage === 'cas' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {(BRANCHES[spendSel] ?? []).flatMap(br => (CAS[br] ?? []).map((ca: string) => {
+                  const bills = getCABills(ca, 'monthly')
+                  const avg = bills.reduce((s: number, d: any) => s + d.totalBill, 0) / bills.length || 0
+                  return (
+                    <div key={ca} style={{ background: '#f5f6fa', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '13px', fontFamily: 'monospace', color: '#192744', fontWeight: 600 }}>{ca}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#1c5af4' }}>{inr(avg)}</div>
+                    </div>
+                  )
+                }))}
+              </div>
+            )}
+            {(drillPage === 'peak' || drillPage === 'lowest') && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                {drillPage === 'peak' 
+                  ? `${mthLabels[peakMthIdx]} had the highest spend at ₹${(sd.months[peakMthIdx] * 100000 / 100000).toFixed(1)}L`
+                  : `${mthLabels[lowMthIdx]} had the lowest spend at ₹${(sd.months[lowMthIdx] * 100000 / 100000).toFixed(1)}L`}
+              </div>
+            )}
+            {drillPage === 'avg' && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                Average spend per branch: {inr(avgPerBranch)}
+              </div>
+            )}
+            {drillPage === 'spend' && (
+              <div style={{ color: '#858ea2', padding: '20px', textAlign: 'center' }}>
+                Total spend Apr 24–Mar 25: {inr(sd.total * 100000)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Summary chips */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
