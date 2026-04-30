@@ -1190,8 +1190,8 @@ function BasicTrends({ appState }: BasicSectionProps) {
                     const i = item.dataIndex
                     const prev = i > 0 ? monthlyTotals[i - 1] : 0
                     const momChg = prev > 0 ? Math.round((curr - prev) / prev * 100) : 0
-                    const yoyChg = avgPrior > 0 ? Math.round((curr - avgPrior) / avgPrior * 100) : 0
-                    return `Monthly outflow: ₹${inrK(curr)}  (${momChg > 0 ? '+' : ''}${momChg}% vs last month)\n(${yoyChg > 0 ? '+' : ''}${yoyChg}% vs last yr avg)`
+                    const vsAvg = avgPrior > 0 ? Math.round((curr - avgPrior) / avgPrior * 100) : 0
+                    return `Monthly outflow: ₹${inrK(curr)}  (${momChg > 0 ? '+' : ''}${momChg}% vs last month)\n(${Math.abs(vsAvg)}% ${vsAvg > 0 ? "above" : "below"} last year's avg)`
                   } else {
                     return `Last year avg: ₹${inrK(item.raw as number)}`
                   }
