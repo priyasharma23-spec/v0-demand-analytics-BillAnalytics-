@@ -1355,29 +1355,64 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (trendChart.current) trendChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab, monthlyTotals, avgCurrent, avgPrior])
 
-  // YoY change line chart — red line, colored dots (red if positive/cost up, green if negative/cost down)
+  // YoY decomposition chart — stacked bars (CA effect + rate effect) + dashed total line
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!yoyRef.current) return
       const ctx = yoyRef.current.getContext('2d')
       if (!ctx) return
       if (yoyChart.current) yoyChart.current.destroy()
+
+      // Decompose YoY into CA count effect vs per-CA spend (rate) effect
+      const caEffect = caCounts.map((ca, i) => {
+        const priorCA = priorCACounts[i]
+        return Math.round((ca - priorCA) / Math.max(priorCA, 1) * 100)
+      })
+      const rateEffect = yoyChanges.map((total, i) => +(total - caEffect[i]).toFixed(1))
+
       yoyChart.current = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels,
           datasets: [
             {
-              label: 'YoY Change',
+              label: 'CA count effect',
+              data: caEffect,
+              backgroundColor: 'rgba(28,90,244,0.75)',
+              borderRadius: 2,
+              stack: 'decomp',
+              order: 2,
+            },
+            {
+              label: 'Rate effect (↑ expense)',
+              data: rateEffect.map(v => v > 0 ? v : 0),
+              backgroundColor: 'rgba(229,57,53,0.8)',
+              borderRadius: 2,
+              stack: 'decomp',
+              order: 2,
+            },
+            {
+              label: 'Rate effect (↓ expense)',
+              data: rateEffect.map(v => v < 0 ? v : 0),
+              backgroundColor: 'rgba(54,179,126,0.8)',
+              borderRadius: 2,
+              stack: 'decomp',
+              order: 2,
+            },
+            {
+              label: 'Total YoY',
               data: yoyChanges,
-              borderColor: '#ec2127',
-              backgroundColor: 'rgba(236,33,39,0.06)',
-              borderWidth: 2.5,
-              pointBackgroundColor: yoyChanges.map(v => v > 0 ? '#ec2127' : '#36b37e'),
-              pointRadius: 4,
-              pointHoverRadius: 6,
+              type: 'line' as any,
+              borderColor: '#192744',
+              borderWidth: 2.2,
+              borderDash: [5, 3],
+              pointBackgroundColor: '#fff',
+              pointBorderColor: '#192744',
+              pointBorderWidth: 2,
+              pointRadius: 3.5,
               tension: 0.35,
-              fill: true,
+              fill: false,
+              order: 1,
             },
           ],
         },
@@ -1394,26 +1429,21 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
+                title: (items) => labels[items[0].dataIndex],
                 label: (item) => {
-                  const val = item.raw as number
-                  const caChange = Math.round(Math.random() * 10)
-                  const billChange = Math.round(Math.random() * 10)
-                  return val > 0 
-                    ? `↑ Cost increased: +${val}% vs same month last year`
-                    : `↓ Cost decreased: ${val}%`
+                  if (item.datasetIndex === 0) return '  CA count effect: +' + item.raw + '%'
+                  if (item.datasetIndex === 1 && (item.raw as number) !== 0) return '  Rate effect (↑): +' + item.raw + '%'
+                  if (item.datasetIndex === 2 && (item.raw as number) !== 0) return '  Rate effect (↓): ' + item.raw + '%'
+                  if (item.datasetIndex === 3) return '  Total YoY: ' + (Number(item.raw) > 0 ? '+' : '') + item.raw + '%'
+                  return ''
                 },
-                afterLabel: (item) => {
-                  const caChange = Math.round(Math.random() * 10)
-                  const billChange = Math.round(Math.random() * 10)
-                  return `Active CAs: ${caChange > 0 ? '+' : ''}${caChange}%\nAvg bill/CA: ${billChange > 0 ? '+' : ''}${billChange}%`
-                }
               }
             }
           },
           scales: {
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
-            y: { border: { display: false }, grid: { color: '#f3f4f6' },
-              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => v + '%' } },
+            x: { stacked: true, grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 11 } } },
+            y: { stacked: true, border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 11 }, callback: (v: any) => (v > 0 ? '+' : '') + v + '%' } },
           },
         },
       })
@@ -1756,9 +1786,30 @@ function BasicTrends({ appState }: BasicSectionProps) {
               <canvas key='ca-comp-canvas' ref={caCompRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
             </div>
           </div>
+        ) : activeTab === 'yoy' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '10px' }}>
+              {[
+                { color: 'rgba(28,90,244,0.75)', label: 'CA count effect', box: true },
+                { color: 'rgba(229,57,53,0.8)',  label: 'Rate effect (↑ expense)', box: true },
+                { color: 'rgba(54,179,126,0.8)', label: 'Rate effect (↓ expense)', box: true },
+                { color: '#192744',              label: 'Total YoY', dash: true },
+              ].map((l, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  {l.dash
+                    ? <svg width="18" height="3"><line x1="0" y1="1.5" x2="18" y2="1.5" stroke={l.color} strokeWidth="2" strokeDasharray="5 3"/></svg>
+                    : <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: l.color }}/>
+                  }
+                  <span style={{ fontSize: '11px', color: '#858ea2' }}>{l.label}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+              <canvas key='yoy-canvas' ref={yoyRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
+            </div>
+          </div>
         ) : (
           <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-            {activeTab === 'yoy'     && <canvas key='yoy-canvas'     ref={yoyRef}     style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
             {activeTab === 'ca'      && <canvas key='ca-canvas'      ref={caRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
             {activeTab === 'overdue' && <canvas key='overdue-canvas' ref={overdueRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
           </div>
