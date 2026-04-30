@@ -403,6 +403,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   const [spendSel, setSpendSel] = useState<string|null>(null)
   const [selBranch, setSelBranch] = useState<string|null>(null)
   const [spendView, setSpendView] = useState<'all' | 'top' | 'bottom'>('all')
+  const [drillPage, setDrillPage] = useState<'branches'|'cas'|'peak'|'lowest'|'avg'|'spend'|null>(null)
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -965,14 +966,17 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                       {/* 3×2 stat grid */}
                       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'6px' }}>
                         {[
-                          { label:'Branches', value: String(branchCount), sub: 'in portfolio' },
-                          { label:'Total CAs', value: String((BRANCHES[spendSel]??[]).reduce((s,br)=>s+(CAS[br]?.length??0),0)), sub: 'active CAs' },
-                          { label:'Avg / Branch', value: inr(avgPerBranch), sub: 'this FY' },
-                          { label:'Peak Month', value: mthLabels[peakMthIdx], sub: inr(sd.months[peakMthIdx] * 100000) },
-                          { label:'Lowest Month', value: mthLabels[lowMthIdx], sub: inr(sd.months[lowMthIdx] * 100000) },
-                          { label:'Total Spend', value: inr(sd.total * 100000), sub: 'Apr 24–Mar 25' },
+                          { label:'Branches', value: String(branchCount), sub: 'in portfolio', page: 'branches' as const },
+                          { label:'Total CAs', value: String((BRANCHES[spendSel]??[]).reduce((s,br)=>s+(CAS[br]?.length??0),0)), sub: 'active CAs', page: 'cas' as const },
+                          { label:'Avg / Branch', value: inr(avgPerBranch), sub: 'this FY', page: 'avg' as const },
+                          { label:'Peak Month', value: mthLabels[peakMthIdx], sub: inr(sd.months[peakMthIdx] * 100000), page: 'peak' as const },
+                          { label:'Lowest Month', value: mthLabels[lowMthIdx], sub: inr(sd.months[lowMthIdx] * 100000), page: 'lowest' as const },
+                          { label:'Total Spend', value: inr(sd.total * 100000), sub: 'Apr 24–Mar 25', page: 'spend' as const },
                         ].map(m => (
-                          <div key={m.label} style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'6px 10px' }}>
+                          <div key={m.label} onClick={() => setDrillPage(m.page)}
+                            style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'6px 10px', cursor:'pointer', transition:'background .12s' }}
+                            onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#EFF6FF'}
+                            onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6fa'}>
                             <div style={{ fontSize:'9px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'2px' }}>{m.label}</div>
                             <div style={{ fontSize:'13px', fontWeight:600, color:'#1c5af4', lineHeight:1, marginBottom:'1px' }}>{m.value}</div>
                             <div style={{ fontSize:'10px', color:'#858ea2' }}>{m.sub}</div>
@@ -1007,57 +1011,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                           </div>
                         )
                       })()}
-                      {/* Branch drill-down section */}
-                      <div style={{ marginTop: '8px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Branches</div>
-                        {(BRANCHES[spendSel] ?? []).map(br => {
-                          const brCAs = CAS[br] ?? []
-                          if (brCAs.length === 0) return null
-                          const brTotal = brCAs.reduce((sum: number, ca: string) => {
-                            const bills = getCABills(ca, 'monthly')
-                            return sum + bills.reduce((s: number, d: any) => s + d.totalBill, 0)
-                          }, 0)
-                          const paidCAs = brCAs.filter((_: string, i: number) => (br.charCodeAt(0) + i) % 10 < 6).length
-                          const isOpen = selBranch === br
-                          return (
-                            <div key={br}>
-                              <div onClick={() => setSelBranch(isOpen ? null : br)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', background: isOpen ? '#EFF6FF' : '#f9fafb', border: '1px solid #f3f4f6', marginBottom: '4px' }}
-                                onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#EFF6FF'}
-                                onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = isOpen ? '#EFF6FF' : '#f9fafb'}>
-                                <div style={{ flex: 1, fontSize: '12px', fontWeight: 600, color: '#192744' }}>{br}</div>
-                                <div style={{ fontSize: '11px', color: '#858ea2' }}>{brCAs.length} CAs</div>
-                                <div style={{ fontSize: '11px', color: '#36b37e' }}>{paidCAs} paid</div>
-                                <div style={{ fontSize: '12px', fontWeight: 700, color: '#1c5af4' }}>{inr(brTotal)}</div>
-                                <div style={{ fontSize: '10px', color: '#858ea2' }}>{isOpen ? '▲' : '▼'}</div>
-                              </div>
-                              {isOpen && (
-                                <div style={{ marginLeft: '12px', marginBottom: '6px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                  {brCAs.map((ca: string, ci: number) => {
-                                    const isPaid = (br.charCodeAt(0) + ci) % 10 < 6
-                                    const caMonthlyBills = getCABills(ca, 'monthly')
-                                    const amt = caMonthlyBills.reduce((s: number, d: any) => s + d.totalBill, 0) / caMonthlyBills.length || 0
-                                    return (
-                                      <div key={ca} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 10px', borderRadius: '4px', background: '#fff', border: '1px solid #f3f4f6' }}>
-                                        <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#192744', flex: 1 }}>{ca}</div>
-                                        <div style={{ fontSize: '11px', fontWeight: 600, color: '#192744' }}>{inr(amt)}</div>
-                                        <div style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px',
-                                          background: isPaid ? '#e8f8f1' : '#fce8e8',
-                                          color: isPaid ? '#36b37e' : '#ec2127' }}>
-                                          {isPaid ? 'Paid' : 'Unpaid'}
-                                        </div>
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                      <div style={{ background:'#f5f6fa', border:'1px solid #f3f4f6', borderRadius:'4px', padding:'8px 12px' }}>
-                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
-                          <div style={{ fontSize:'11px', fontWeight:600, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.07em' }}>Monthly spend</div>
+                      {/* Monthly spend */}
                           <div style={{ display:'flex', gap:'10px', fontSize:'11px', color:'#858ea2' }}>
                             <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1D4ED8', display:'inline-block' }}/>Peak</span>
                             <span style={{ display:'flex', alignItems:'center', gap:'3px' }}><span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#93C5FD', display:'inline-block' }}/>Other</span>
