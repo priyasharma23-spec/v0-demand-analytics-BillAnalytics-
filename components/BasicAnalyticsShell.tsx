@@ -1014,10 +1014,12 @@ function BasicTrends({ appState }: BasicSectionProps) {
   const yoyRef     = useRef<HTMLCanvasElement>(null)
   const caRef      = useRef<HTMLCanvasElement>(null)
   const overdueRef = useRef<HTMLCanvasElement>(null)
+  const caCompRef   = useRef<HTMLCanvasElement>(null)
   const trendChart = useRef<Chart | null>(null)
   const yoyChart   = useRef<Chart | null>(null)
   const caChart    = useRef<Chart | null>(null)
   const overdueChart = useRef<Chart | null>(null)
+  const caCompChart = useRef<Chart | null>(null)
 
   const data          = getFilteredBills('monthly', appState.stateF, appState.branchF, appState.caF)
   const monthlyTotals = data.map(d => d.totalBill)
@@ -1443,9 +1445,91 @@ function BasicTrends({ appState }: BasicSectionProps) {
     return () => { clearTimeout(timer); if (overdueChart.current) overdueChart.current.destroy() }
   }, [appState.stateF, appState.branchF, appState.caF, activeTab, monthlyTotals, caCounts])
 
+  // CA comparison chart — bar for this year, line for last year (shows on spend tab)
+  useEffect(() => {
+    if (activeTab !== 'spend') return
+    const timer = setTimeout(() => {
+      if (!caCompRef.current) return
+      const ctx = caCompRef.current.getContext('2d')
+      if (!ctx) return
+      if (caCompChart.current) caCompChart.current.destroy()
+      caCompChart.current = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              type: 'bar' as const,
+              label: 'CAs this year',
+              data: caCounts,
+              backgroundColor: 'rgba(28,90,244,0.15)',
+              borderColor: '#1c5af4',
+              borderWidth: 1.5,
+              borderRadius: 3,
+              yAxisID: 'y',
+            },
+            {
+              type: 'line' as const,
+              label: 'CAs last year',
+              data: priorCACounts,
+              borderColor: '#C4BFFF',
+              backgroundColor: 'transparent',
+              borderWidth: 1.5,
+              borderDash: [5, 4],
+              pointRadius: 2,
+              pointBackgroundColor: '#C4BFFF',
+              tension: 0.35,
+              yAxisID: 'y',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index' as const, intersect: false },
+          plugins: {
+            legend: { display: true, position: 'top' as const, align: 'end' as const,
+              labels: { boxWidth: 24, boxHeight: 2, color: '#858ea2', font: { size: 11 }, padding: 12 } },
+            tooltip: {
+              backgroundColor: '#192744', titleColor: '#fff', bodyColor: 'rgba(255,255,255,0.85)',
+              padding: 10, cornerRadius: 4, displayColors: false,
+              callbacks: {
+                title: (items: any[]) => items[0].label,
+                label: (item: any) => item.datasetIndex === 0
+                  ? `  CAs this year: ${item.raw}`
+                  : `  CAs last year: ${item.raw}`,
+                afterLabel: (item: any) => {
+                  if (item.datasetIndex !== 0) return ''
+                  const i = item.dataIndex
+                  const curr = caCounts[i]
+                  const prior = priorCACounts[i]
+                  const diff = curr - prior
+                  const pct = Math.round(diff / Math.max(prior, 1) * 100)
+                  const outflowCurr = monthlyTotals[i]
+                  const outflowPrior = priorYear[i]
+                  const outflowChg = Math.round((outflowCurr - outflowPrior) / Math.max(outflowPrior, 1) * 100)
+                  const caDriver = Math.abs(pct) > Math.abs(outflowChg - pct)
+                  return [
+                    `  CA change: ${diff > 0 ? '+' : ''}${diff} (${pct > 0 ? '+' : ''}${pct}% vs last year)`,
+                    `  Outflow change: ${outflowChg > 0 ? '+' : ''}${outflowChg}% — driven by ${caDriver ? '👥 CA additions' : '📈 avg bill increase'}`,
+                  ].join('\n')
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#858ea2', font: { size: 10 } } },
+            y: { border: { display: false }, grid: { color: '#f3f4f6' },
+              ticks: { color: '#858ea2', font: { size: 10 }, callback: (v: any) => v + ' CAs' } },
+          },
+        },
+      })
+    }, 50)
+    return () => { clearTimeout(timer); if (caCompChart.current) caCompChart.current.destroy() }
+  }, [appState.stateF, appState.branchF, appState.caF, activeTab])
 
 
-  return (
+
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       {/* Summary cards - tab-aware */}
@@ -1520,12 +1604,23 @@ function BasicTrends({ appState }: BasicSectionProps) {
         </div>
 
         {/* Chart area */}
-        <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-          {activeTab === 'spend'   && <canvas key='spend-canvas'   ref={trendRef}   style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'yoy'     && <canvas key='yoy-canvas'     ref={yoyRef}     style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'ca'      && <canvas key='ca-canvas'      ref={caRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-          {activeTab === 'overdue' && <canvas key='overdue-canvas' ref={overdueRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
-        </div>
+        {activeTab === 'spend' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+              <canvas key='spend-canvas' ref={trendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
+            </div>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.06em', paddingLeft: '4px' }}>Active CA count — current vs last year</div>
+            <div style={{ position: 'relative', width: '100%', height: '120px' }}>
+              <canvas key='ca-comp-canvas' ref={caCompRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
+            </div>
+          </div>
+        ) : (
+          <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+            {activeTab === 'yoy'     && <canvas key='yoy-canvas'     ref={yoyRef}     style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+            {activeTab === 'ca'      && <canvas key='ca-canvas'      ref={caRef}      style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+            {activeTab === 'overdue' && <canvas key='overdue-canvas' ref={overdueRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
+          </div>
+        )}
       </div>
 
     </div>
