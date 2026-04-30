@@ -1436,8 +1436,8 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
-                title: (items) => labels[items[0].dataIndex],
-                label: (item) => {
+                title: (items: any) => labels[items[0].dataIndex],
+                label: (item: any) => {
                   if (item.datasetIndex === 0) return '  Volume effect (CAs): +' + item.raw + '%'
                   if (item.datasetIndex === 1 && (item.raw as number) !== 0) return '  Spend effect (↑ bill): +' + item.raw + '%'
                   if (item.datasetIndex === 2 && (item.raw as number) !== 0) return '  Spend effect (↓ bill): ' + item.raw + '%'
