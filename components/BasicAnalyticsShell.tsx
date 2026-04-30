@@ -1401,19 +1401,50 @@ function BasicTrends({ appState }: BasicSectionProps) {
           {activeTab === 'ca'    && <canvas ref={caRef}         style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>}
         </div>
 
-        {/* Stat pills */}
+        {/* Stat pills — linked to active tab */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '16px' }}>
-          {[
-            { label: 'Lowest month',  value: inr(Math.min(...monthlyTotals)),  bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-            { label: 'Monthly avg',   value: inr(avgCurrent),                  bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
-            { label: 'Peak month',    value: inr(Math.max(...monthlyTotals)),  bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
-            { label: 'YoY change',    value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
-          ].map(s => (
-            <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.bd}`, borderRadius: '6px', padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500 }}>{s.label}</div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: s.color }}>{s.value}</div>
-            </div>
-          ))}
+          {(() => {
+            const avgYoy = Math.round(yoyChanges.reduce((a: number, v: number) => a + v, 0) / yoyChanges.length)
+            const bestYoy = Math.max(...yoyChanges)
+            const worstYoy = Math.min(...yoyChanges)
+            const posMonths = yoyChanges.filter((v: number) => v > 0).length
+            const avgCA = Math.round(caCounts.reduce((a: number, v: number) => a + v, 0) / caCounts.length)
+            const caGrowth = Math.round((caCounts[11] - caCounts[0]) / caCounts[0] * 100)
+            const avgOverdueAmt = Math.round(avgCurrent * 0.065)
+            const peakOverdueAmt = Math.round(Math.max(...monthlyTotals) * 0.085)
+            const pills: Record<string, {label:string,value:string,bg:string,bd:string,color:string}[]> = {
+              spend: [
+                { label: 'Lowest month',  value: inr(Math.min(...monthlyTotals)), bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+                { label: 'Monthly avg',   value: inr(avgCurrent),                 bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
+                { label: 'Peak month',    value: inr(Math.max(...monthlyTotals)), bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
+                { label: 'YoY change',    value: (overallYoy > 0 ? '+' : '') + overallYoy + '%', bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+              ],
+              yoy: [
+                { label: 'Best month',    value: '+' + bestYoy + '%',                          bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+                { label: 'Worst month',   value: worstYoy + '%',                               bg: '#FEF2F2', bd: '#FECACA', color: '#ec2127' },
+                { label: 'Avg YoY',       value: (avgYoy > 0 ? '+' : '') + avgYoy + '%',      bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
+                { label: 'Positive months', value: posMonths + ' / 12',                        bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
+              ],
+              ca: [
+                { label: 'Start of year', value: String(caCounts[0]),                          bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
+                { label: 'End of year',   value: String(caCounts[11]),                         bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+                { label: 'Monthly avg',   value: String(avgCA) + ' CAs',                       bg: '#EFF6FF', bd: '#BFDBFE', color: '#1c5af4' },
+                { label: 'YoY CA growth', value: (caGrowth > 0 ? '+' : '') + caGrowth + '%',  bg: '#F0FDF4', bd: '#BBF7D0', color: '#15803D' },
+              ],
+              overdue: [
+                { label: 'Avg overdue/month', value: inr(avgOverdueAmt),                       bg: '#FEF2F2', bd: '#FECACA', color: '#ec2127' },
+                { label: 'Peak overdue',      value: inr(peakOverdueAmt),                      bg: '#FEF2F2', bd: '#FECACA', color: '#B91C1C' },
+                { label: 'Overdue % of bill', value: '6.5%',                                   bg: '#FFFBEB', bd: '#FDE68A', color: '#B45309' },
+                { label: 'Months worsening',  value: '4 / 12',                                 bg: '#EEF2FF', bd: '#C7D2FE', color: '#4F46E5' },
+              ],
+            }
+            return (pills[activeTab] || pills.spend).map(s => (
+              <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.bd}`, borderRadius: '6px', padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: '11px', color: '#858ea2', fontWeight: 500 }}>{s.label}</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: s.color }}>{s.value}</div>
+              </div>
+            ))
+          })()}
         </div>
       </div>
 
