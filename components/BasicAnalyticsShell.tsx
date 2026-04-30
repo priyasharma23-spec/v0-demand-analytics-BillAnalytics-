@@ -1132,7 +1132,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                             </svg>
                           )
                         })()}
-                      </div>
                     </div>
                   )
                 })()}
