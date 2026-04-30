@@ -1363,12 +1363,19 @@ function BasicTrends({ appState }: BasicSectionProps) {
       if (!ctx) return
       if (yoyChart.current) yoyChart.current.destroy()
 
-      // Decompose YoY into CA count effect vs per-CA spend (rate) effect
-      const caEffect = caCounts.map((ca, i) => {
-        const priorCA = priorCACounts[i]
-        return Math.round((ca - priorCA) / Math.max(priorCA, 1) * 100)
+      // Decompose YoY = Volume effect (CA count change) + Spend effect (avg bill per CA change)
+      const avgBillCY = monthlyTotals.map((total, i) => Math.round(total / Math.max(caCounts[i], 1)))
+      const avgBillPY = priorYear.map((total, i) => Math.round(total / Math.max(priorCACounts[i], 1)))
+
+      // Volume effect: how much of YoY change is from CA count changing (using PY avg bill as base)
+      const volumeEffect = caCounts.map((ca, i) => {
+        const caChange = ca - priorCACounts[i]
+        const contribution = caChange * avgBillPY[i]
+        return Math.round(contribution / Math.max(priorYear[i], 1) * 100)
       })
-      const rateEffect = yoyChanges.map((total, i) => +(total - caEffect[i]).toFixed(1))
+
+      // Spend effect: how much is from avg bill per CA changing
+      const spendEffect = yoyChanges.map((total, i) => +(total - volumeEffect[i]).toFixed(1))
 
       yoyChart.current = new Chart(ctx, {
         type: 'bar',
@@ -1376,24 +1383,24 @@ function BasicTrends({ appState }: BasicSectionProps) {
           labels,
           datasets: [
             {
-              label: 'CA count effect',
-              data: caEffect,
+              label: 'Volume effect (CA count)',
+              data: volumeEffect,
               backgroundColor: 'rgba(28,90,244,0.75)',
               borderRadius: 2,
               stack: 'decomp',
               order: 2,
             },
             {
-              label: 'Rate effect (↑ expense)',
-              data: rateEffect.map(v => v > 0 ? v : 0),
+              label: 'Spend effect (↑ bill)',
+              data: spendEffect.map(v => v > 0 ? v : 0),
               backgroundColor: 'rgba(229,57,53,0.8)',
               borderRadius: 2,
               stack: 'decomp',
               order: 2,
             },
             {
-              label: 'Rate effect (↓ expense)',
-              data: rateEffect.map(v => v < 0 ? v : 0),
+              label: 'Spend effect (↓ bill)',
+              data: spendEffect.map(v => v < 0 ? v : 0),
               backgroundColor: 'rgba(54,179,126,0.8)',
               borderRadius: 2,
               stack: 'decomp',
@@ -1431,9 +1438,9 @@ function BasicTrends({ appState }: BasicSectionProps) {
               callbacks: {
                 title: (items) => labels[items[0].dataIndex],
                 label: (item) => {
-                  if (item.datasetIndex === 0) return '  CA count effect: +' + item.raw + '%'
-                  if (item.datasetIndex === 1 && (item.raw as number) !== 0) return '  Rate effect (↑): +' + item.raw + '%'
-                  if (item.datasetIndex === 2 && (item.raw as number) !== 0) return '  Rate effect (↓): ' + item.raw + '%'
+                  if (item.datasetIndex === 0) return '  Volume effect (CAs): +' + item.raw + '%'
+                  if (item.datasetIndex === 1 && (item.raw as number) !== 0) return '  Spend effect (↑ bill): +' + item.raw + '%'
+                  if (item.datasetIndex === 2 && (item.raw as number) !== 0) return '  Spend effect (↓ bill): ' + item.raw + '%'
                   if (item.datasetIndex === 3) return '  Total YoY: ' + (Number(item.raw) > 0 ? '+' : '') + item.raw + '%'
                   return ''
                 },
@@ -1790,9 +1797,9 @@ function BasicTrends({ appState }: BasicSectionProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '16px', marginBottom: '10px' }}>
               {[
-                { color: 'rgba(28,90,244,0.75)', label: 'CA count effect', box: true },
-                { color: 'rgba(229,57,53,0.8)',  label: 'Rate effect (↑ expense)', box: true },
-                { color: 'rgba(54,179,126,0.8)', label: 'Rate effect (↓ expense)', box: true },
+                { color: 'rgba(28,90,244,0.75)', label: 'Volume effect (CA count)', box: true },
+                { color: 'rgba(229,57,53,0.8)',  label: 'Spend effect (↑ bill)', box: true },
+                { color: 'rgba(54,179,126,0.8)', label: 'Spend effect (↓ bill)', box: true },
                 { color: '#192744',              label: 'Total YoY', dash: true },
               ].map((l, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
