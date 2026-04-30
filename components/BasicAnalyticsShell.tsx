@@ -1011,7 +1011,10 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Branches</div>
                         {(BRANCHES[spendSel] ?? []).map(br => {
                           const brCAs = CAS[br] ?? []
-                          const brTotal = getCABills(brCAs, 'monthly').reduce((s: number, d: any) => s + d.totalBill, 0)
+                          const brTotal = brCAs.reduce((sum: number, ca: string) => {
+                            const bills = getCABills(ca, 'monthly')
+                            return sum + bills.reduce((s: number, d: any) => s + d.totalBill, 0)
+                          }, 0)
                           const paidCAs = brCAs.filter((_: string, i: number) => (br.charCodeAt(0) + i) % 10 < 6).length
                           const isOpen = selBranch === br
                           return (
@@ -1030,7 +1033,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                                 <div style={{ marginLeft: '12px', marginBottom: '6px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                                   {brCAs.map((ca: string, ci: number) => {
                                     const isPaid = (br.charCodeAt(0) + ci) % 10 < 6
-                                    const amt = Math.round(180000 + (ca.charCodeAt(0) % 50) * 4200)
+                                    const caMonthlyBills = getCABills(ca, 'monthly')
+                                    const amt = caMonthlyBills.reduce((s: number, d: any) => s + d.totalBill, 0) / caMonthlyBills.length || 0
                                     return (
                                       <div key={ca} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 10px', borderRadius: '4px', background: '#fff', border: '1px solid #f3f4f6' }}>
                                         <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#192744', flex: 1 }}>{ca}</div>
