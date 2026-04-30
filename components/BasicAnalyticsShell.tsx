@@ -1605,11 +1605,11 @@ function BasicTrends({ appState }: BasicSectionProps) {
         {/* Chart area */}
         {activeTab === 'spend' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+            <div style={{ position: 'relative', width: '100%', height: '160px' }}>
               <canvas key='spend-canvas' ref={trendRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
             </div>
             <div style={{ fontSize: '10px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.06em', paddingLeft: '4px' }}>Active CA count — current vs last year</div>
-            <div style={{ position: 'relative', width: '100%', height: '120px' }}>
+            <div style={{ position: 'relative', width: '100%', height: '180px' }}>
               <canvas key='ca-comp-canvas' ref={caCompRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%' }}></canvas>
             </div>
           </div>
