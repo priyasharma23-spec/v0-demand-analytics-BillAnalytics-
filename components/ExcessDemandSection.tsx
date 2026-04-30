@@ -240,7 +240,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
             <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Ranked by total excess · click to drill down</div>
           </div>
           <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
-            {([{ id: 'totalLeak', label: '₹ amount' }, { id: 'over', label: 'Over months' }, { id: 'util', label: '% rate' }] as Array<{ id: string; label: string }>).map(o => (
+            {([{ id: 'totalLeak', label: '₹ amount' }, { id: 'over', label: 'Months' }, { id: 'util', label: '% rate' }] as Array<{ id: string; label: string }>).map(o => (
               <button key={o.id} onClick={() => setStateMetric(o.id as any)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '3px 12px', fontSize: '12px', background: stateMetric === o.id ? '#1c5af4' : 'transparent', color: stateMetric === o.id ? '#fff' : '#9aa0b0', fontWeight: stateMetric === o.id ? 600 : 400, transition: 'all .12s' }}>{o.label}</button>
             ))}
           </div>
