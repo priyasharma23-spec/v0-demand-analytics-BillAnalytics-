@@ -1103,12 +1103,32 @@ function BasicTrends({ appState }: BasicSectionProps) {
               padding: 12,
               cornerRadius: 8,
               callbacks: {
-                label: item => '  ' + item.dataset.label + ': ' + inrK(item.raw as number),
-                footer: items => {
-                  const curr  = items.find(i => i.datasetIndex === 0)?.raw as number ?? 0
-                  const prior = items.find(i => i.datasetIndex === 1)?.raw as number ?? 0
-                  const chg   = Math.round((curr - prior) / Math.max(prior, 1) * 100)
-                  return 'YoY: ' + (chg > 0 ? '+' : '') + chg + '%'
+                title: (items: any[]) => items[0].label,
+                label: (item: any) => {
+                  if (item.datasetIndex === 1) return '  Prior year: ' + inrK(item.raw as number)
+                  const i = item.dataIndex
+                  const curr = Number(item.raw)
+                  const prev = monthlyTotals[i - 1]
+                  const amtStr = `  Bill amount: ${inrK(curr)}`
+                  if (i > 0 && prev) {
+                    const diff = curr - prev
+                    return `${amtStr}  (${diff > 0 ? '+' : ''}₹${(diff/100000).toFixed(1)}L vs last month)`
+                  }
+                  return amtStr
+                },
+                afterLabel: (item: any) => {
+                  if (item.datasetIndex !== 0) return ''
+                  const i = item.dataIndex
+                  const lines = []
+                  if (i === maxMonthIdx) lines.push('  ▲ Peak month')
+                  else if (i === minMonthIdx) lines.push('  ▼ Lowest month')
+                  const caCurr = caCounts[i]
+                  const caPrev = i > 0 ? caCounts[i - 1] : undefined
+                  if (caCurr !== undefined && caPrev !== undefined) {
+                    const diff = caCurr - caPrev
+                    lines.push(`  Active CAs: ${caCurr}  (${diff > 0 ? '+' : ''}${diff} vs last month)`)
+                  }
+                  return lines.join('\n')
                 }
               }
             }
