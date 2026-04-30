@@ -945,6 +945,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                   </div>
                 ) : (() => {
                   const sd = spendData[spendSel]
+                  if (!sd) return <div style={{ padding: '10px', color: '#858ea2' }}>No data available</div>
                   const branches = BRANCHES[spendSel] ?? []
                   const branchCount = branches.length
                   const totalBill = sd.total * 100000
@@ -1011,6 +1012,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                         <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>Branches</div>
                         {(BRANCHES[spendSel] ?? []).map(br => {
                           const brCAs = CAS[br] ?? []
+                          if (brCAs.length === 0) return null
                           const brTotal = brCAs.reduce((sum: number, ca: string) => {
                             const bills = getCABills(ca, 'monthly')
                             return sum + bills.reduce((s: number, d: any) => s + d.totalBill, 0)
