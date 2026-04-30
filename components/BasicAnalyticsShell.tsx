@@ -402,7 +402,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   const [spendHov, setSpendHov] = useState<string|null>(null)
   const [spendSel, setSpendSel] = useState<string|null>(null)
   const [selBranch, setSelBranch] = useState<string|null>(null)
-  const [showBottom, setShowBottom] = useState(false)
+  const [spendView, setSpendView] = useState<'all' | 'top' | 'bottom'>('all')
 
   // Per-state data
   const stateData = STATES.map(st => {
@@ -864,41 +864,75 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <div>
                         <div style={{ fontSize: '12px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>
-                          {showBottom ? 'Lowest spend states · savings benchmark' : 'Highest spend states · focus area'}
+                          {spendView === 'all' 
+                            ? 'All states by spend'
+                            : spendView === 'top'
+                            ? 'Highest spend states · focus area'
+                            : 'Lowest spend states · savings benchmark'}
                         </div>
                         <div style={{ fontSize: '11px', color: '#858ea2' }}>
-                          {showBottom ? 'These states show efficient bill management' : 'These states drive most of your bill outflow'}
+                          {spendView === 'all' 
+                            ? 'Complete state ranking by total bill outflow'
+                            : spendView === 'top'
+                            ? 'These states drive most of your bill outflow'
+                            : 'These states show efficient bill management'}
                         </div>
                       </div>
-                      <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '99px', padding: '2px', flexShrink: 0 }}>
-                        <button onClick={() => setShowBottom(false)}
-                          style={{ background: !showBottom ? '#fff' : 'transparent', border: 'none', borderRadius: '99px', padding: '3px 12px', fontSize: '11px', fontWeight: !showBottom ? 600 : 400, color: !showBottom ? '#192744' : '#858ea2', cursor: 'pointer', fontFamily: 'inherit' }}>
-                          Highest Spend
-                        </button>
-                        <button onClick={() => setShowBottom(true)}
-                          style={{ background: showBottom ? '#fff' : 'transparent', border: 'none', borderRadius: '99px', padding: '3px 12px', fontSize: '11px', fontWeight: showBottom ? 600 : 400, color: showBottom ? '#192744' : '#858ea2', cursor: 'pointer', fontFamily: 'inherit' }}>
-                          Lowest Spend
-                        </button>
+                      <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '99px', padding: '2px', gap: '2px' }}>
+                        {([
+                          { key: 'all',    label: 'All states' },
+                          { key: 'top',    label: 'Highest Spend' },
+                          { key: 'bottom', label: 'Lowest Spend' },
+                        ] as const).map(p => (
+                          <button key={p.key} onClick={() => setSpendView(p.key)}
+                            style={{
+                              background: spendView === p.key ? '#192744' : 'transparent',
+                              color: spendView === p.key ? '#fff' : '#858ea2',
+                              border: 'none', borderRadius: '99px',
+                              padding: '4px 14px',
+                              fontSize: '11px',
+                              fontWeight: spendView === p.key ? 600 : 400,
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              transition: 'all .12s',
+                            }}>
+                            {p.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
                     {(() => {
                       const sortedStates = Object.entries(spendData).sort((a, b) => b[1].total - a[1].total)
-                      const displayStates = showBottom ? sortedStates.slice(-5).reverse() : sortedStates.slice(0, 5)
-                      return displayStates.map(([name, sd], i) => (
-                        <div key={name} onClick={() => setSpendSel(name)}
-                          style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
-                          onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
-                          onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
-                          <div style={{ fontSize:'11px', fontWeight:600, width:'14px', color: showBottom ? '#15803D' : '#ec2127' }}>{i+1}</div>
-                          <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
-                          <div style={{ fontSize:'12px', fontWeight:700, padding:'2px 8px', borderRadius:'4px',
-                            background: showBottom ? '#e8f8f1' : '#fce8e8',
-                            color: showBottom ? '#36b37e' : '#ec2127' }}>
-                            {showBottom ? '↓ Low spend' : '↑ High spend'}
+                      const displayStates = spendView === 'top'
+                        ? sortedStates.slice(0, 5)
+                        : spendView === 'bottom'
+                        ? sortedStates.slice(-5).reverse()
+                        : sortedStates
+                      
+                      return displayStates.map(([name, sd], i) => {
+                        const rankColor = spendView === 'all' ? '#858ea2' : spendView === 'top' ? '#ec2127' : '#15803D'
+                        const valueColor = spendView === 'all' ? '#1c5af4' : spendView === 'top' ? '#ec2127' : '#15803D'
+                        const showBadge = spendView !== 'all'
+                        const badgeBg = spendView === 'top' ? '#fce8e8' : '#e8f8f1'
+                        const badgeColor = spendView === 'top' ? '#ec2127' : '#36b37e'
+                        const badgeText = spendView === 'top' ? '↑ High spend' : '↓ Low spend'
+                        
+                        return (
+                          <div key={name} onClick={() => setSpendSel(name)}
+                            style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 10px', borderRadius:'8px', cursor:'pointer', background:'#F9FAFB', border:'1px solid #E5E7EB' }}
+                            onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background='#EFF6FF'}
+                            onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background='#F9FAFB'}>
+                            <div style={{ fontSize:'11px', fontWeight:600, width:'14px', color: rankColor }}>{i+1}</div>
+                            <div style={{ flex:1, fontSize:'12.5px', fontWeight:600, color:'#192744' }}>{name}</div>
+                            {showBadge && (
+                              <div style={{ fontSize:'12px', fontWeight:700, padding:'2px 8px', borderRadius:'4px', background: badgeBg, color: badgeColor }}>
+                                {badgeText}
+                              </div>
+                            )}
+                            <div style={{ fontSize:'12px', fontWeight:700, color: valueColor }}>{inr(sd.total * 100000)}</div>
                           </div>
-                          <div style={{ fontSize:'12px', fontWeight:700, color: showBottom ? '#15803D' : '#ec2127' }}>{inr(sd.total * 100000)}</div>
-                        </div>
-                      ))
+                        )
+                      })
                     })()}
                   </div>
                 ) : (() => {
