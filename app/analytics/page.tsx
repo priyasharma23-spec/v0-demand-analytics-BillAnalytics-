@@ -135,7 +135,7 @@ export default function AnalyticsPage() {
 
                     {activeSection === 'excess-demand' && <ExcessDemandSection appState={appState} />}
                     {activeSection === 'consumption' && <ConsumptionSection appState={appState} />}
-                    {activeSection === 'leakages' && <LeakagesSection />}
+                    {activeSection === 'leakages' && <LeakagesSection onDrilldown={(state, month, monthIndex) => setDrilldown({ state, month, monthIndex })} appState={appState} />}
                     {activeSection === 'savings' && <SavingsSection appState={appState} />}
                     
                   </>

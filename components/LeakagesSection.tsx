@@ -18,10 +18,11 @@ type BreakdownRow = {
 };
 
 interface LeakagesSectionProps {
-  appState?: { view: string; stateF: string; branchF: string; caF: string }
+  appState?: { view: string; stateF: string; branchF: string; caF: string };
+  onDrilldown?: (state: string, month: string, monthIndex: number) => void;
 }
 
-export default function LeakagesSection({ appState }: LeakagesSectionProps) {
+export default function LeakagesSection({ appState, onDrilldown }: LeakagesSectionProps) {
   const stackChartRef = useRef<HTMLCanvasElement>(null);
   const pctChartRef   = useRef<HTMLCanvasElement>(null);
   const donutChartRef = useRef<HTMLCanvasElement>(null);
@@ -37,6 +38,8 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
     totalLeak: 0, totalExcess: 0, totalPF: 0, totalLP: 0,
     periodsWithLeak: 0, totalPeriods: 0, totalBill: 0,
   });
+
+  const MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
   useEffect(() => {
     renderLeakages();
@@ -381,6 +384,69 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
           <div style={{ position: 'relative', width: '100%', height: '200px' }}>
             <canvas ref={donutChartRef}></canvas>
           </div>
+        </div>
+      </div>
+
+      {/* Leakage heatmap — state × month */}
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 20px' }}>
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Leakage heatmap — state × month</div>
+          <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Leakage as % of bill · click a cell to drill down</div>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ borderCollapse: 'collapse', fontSize: '11px', width: '100%' }}>
+            <thead>
+              <tr>
+                <th style={{ padding: '6px 10px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: '#9aa0b0', borderBottom: '1px solid #f0f1f5', minWidth: '100px' }}>State</th>
+                {MONTHS.map(m => (
+                  <th key={m} style={{ padding: '6px 8px', textAlign: 'center', fontSize: '11px', fontWeight: 600, color: '#9aa0b0', borderBottom: '1px solid #f0f1f5', minWidth: '52px' }}>{m}</th>
+                ))}
+                <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '11px', fontWeight: 600, color: '#9aa0b0', borderBottom: '1px solid #f0f1f5' }}>Avg</th>
+              </tr>
+            </thead>
+            <tbody>
+              {STATES.map((state, si) => {
+                const stateBills = getStateBills(state, 'monthly');
+                const pcts = stateBills.map(d => Math.round((d.totalLeakage / Math.max(d.totalBill, 1)) * 100));
+                const avg = Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length);
+                return (
+                  <tr key={state}>
+                    <td style={{ padding: '6px 10px', fontSize: '12px', fontWeight: 500, color: '#192744', borderBottom: '1px solid #f0f1f5' }}>{state}</td>
+                    {pcts.map((pct, mi) => {
+                      const bg = pct >= 25 ? '#fca5a5' : pct >= 18 ? '#fcd34d' : pct >= 12 ? '#86efac' : '#d1fae5';
+                      const color = pct >= 25 ? '#991b1b' : pct >= 18 ? '#92400e' : pct >= 12 ? '#166534' : '#065f46';
+                      return (
+                        <td
+                          key={mi}
+                          onClick={() => onDrilldown?.(state, MONTHS[mi], mi)}
+                          style={{ padding: '5px 4px', textAlign: 'center', background: bg, color, fontWeight: 600, fontSize: '11px', borderBottom: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', cursor: onDrilldown ? 'pointer' : 'default', transition: 'opacity .12s' }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
+                          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                        >
+                          {pct}%
+                        </td>
+                      );
+                    })}
+                    <td style={{ padding: '5px 8px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: avg >= 18 ? '#991b1b' : avg >= 12 ? '#92400e' : '#065f46', borderBottom: '1px solid #f0f1f5' }}>{avg}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ display: 'flex', gap: '16px', marginTop: '12px', alignItems: 'center' }}>
+          <div style={{ fontSize: '11px', color: '#9aa0b0' }}>Severity:</div>
+          {[
+            { bg: '#fca5a5', color: '#991b1b', label: '≥25% Critical' },
+            { bg: '#fcd34d', color: '#92400e', label: '18–24% High' },
+            { bg: '#86efac', color: '#166534', label: '12–17% Moderate' },
+            { bg: '#d1fae5', color: '#065f46', label: '<12% In range' },
+          ].map((l, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: l.bg }} />
+              <span style={{ fontSize: '11px', color: l.color, fontWeight: 500 }}>{l.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
