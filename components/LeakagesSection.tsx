@@ -33,7 +33,6 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
   const [kpis, setKpis] = useState<any[]>([]);
   const [breakdownRows, setBreakdownRows] = useState<BreakdownRow[]>([]);
   const [breakdownCols, setBreakdownCols] = useState<string[]>([]);
-  const [stateMetric, setStateMetric] = React.useState<'totalLeak' | 'pct'>('pct');
   const [leakSummary, setLeakSummary] = useState({
     totalLeak: 0, totalExcess: 0, totalPF: 0, totalLP: 0,
     periodsWithLeak: 0, totalPeriods: 0, totalBill: 0,
@@ -382,49 +381,6 @@ export default function LeakagesSection({ appState }: LeakagesSectionProps) {
           <div style={{ position: 'relative', width: '100%', height: '200px' }}>
             <canvas ref={donutChartRef}></canvas>
           </div>
-        </div>
-      </div>
-
-      {/* State breakdown */}
-      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>State breakdown</div>
-          <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
-            {([{ id: 'pct', label: '% rate' }, { id: 'totalLeak', label: '\u20b9 amount' }] as Array<{ id: 'totalLeak' | 'pct'; label: string }>).map(o => (
-              <button key={o.id} onClick={() => setStateMetric(o.id)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '3px 12px', fontSize: '12px', background: stateMetric === o.id ? '#1c5af4' : 'transparent', color: stateMetric === o.id ? '#fff' : '#9aa0b0', fontWeight: stateMetric === o.id ? 600 : 400, transition: 'all .12s' }}>{o.label}</button>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {(() => {
-            const stateRows = breakdownRows.map(r => ({
-              ...r,
-              pct: Math.round(r.totalLeak / Math.max(leakSummary.totalBill / Math.max(breakdownRows.length, 1), 1) * 1000) / 10,
-            }));
-            const sorted = [...stateRows].sort((a, b) => b[stateMetric] - a[stateMetric]);
-            const maxVal = Math.max(...sorted.map(x => x[stateMetric]), 1);
-            return sorted.map((r, i) => {
-              const barPct = (r[stateMetric] / maxVal) * 100;
-              const sc = r.pct >= 7 ? '#e53935' : r.pct >= 5.5 ? '#f59e0b' : '#36b37e';
-              const sb = r.pct >= 7 ? '#fef2f2' : r.pct >= 5.5 ? '#fffbeb' : '#f0faf6';
-              const sl = r.pct >= 7 ? 'High' : r.pct >= 5.5 ? 'Med' : 'Low';
-              const displayVal = stateMetric === 'totalLeak' ? '\u20b9' + (r.totalLeak / 100000).toFixed(1) + 'L' : r.pct + '%';
-              return (
-                <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '18px', fontSize: '12px', fontWeight: 600, color: '#c8cbd6', textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
-                  <div style={{ width: '110px', fontSize: '12px', color: '#192744', flexShrink: 0 }}>{r.name}</div>
-                  <div style={{ flex: 1, height: '22px', background: '#f5f6fa', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ height: '100%', width: barPct + '%', borderRadius: '3px', background: r.pct >= 7 ? 'rgba(229,57,53,0.18)' : r.pct >= 5.5 ? 'rgba(245,158,11,0.18)' : 'rgba(54,179,126,0.15)', borderRight: '2px solid ' + sc, transition: 'width .4s ease' }} />
-                    <div style={{ position: 'absolute', left: '8px', top: 0, height: '100%', display: 'flex', alignItems: 'center', fontSize: '12px', color: '#192744', fontWeight: 500 }}>{displayVal}</div>
-                  </div>
-                  <div style={{ width: '54px', fontSize: '12px', color: '#9aa0b0', textAlign: 'right', flexShrink: 0 }}>{r.mdi} kVA</div>
-                  <div style={{ width: '40px', flexShrink: 0 }}>
-                    <span style={{ background: sb, color: sc, fontSize: '10px', fontWeight: 500, padding: '2px 7px', borderRadius: '4px' }}>{sl}</span>
-                  </div>
-                </div>
-              );
-            });
-          })()}
         </div>
       </div>
 
