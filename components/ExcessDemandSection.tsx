@@ -202,26 +202,45 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
             </div>
             <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', background: '#f5f6fa', padding: '4px 10px', borderRadius: '4px' }}>Based on 2-month demand charge formula</div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0', background: '#f5f6fa', borderRadius: '6px', overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
             {(() => {
-              const avgDemandRate = Math.round(edMetrics.totalExcess > 0 ? 500 : 500)
+              const avgDemandRate = 500
               const currentSD = edMetrics.avgCont * avgDemandRate * 2
               const revisedSD = edMetrics.recommended * avgDemandRate * 2
               const additionalSD = revisedSD - currentSD
               const fmtL = (v: number) => '₹' + (v / 100000).toFixed(1) + 'L'
+              const recoveryMonths = Math.ceil(additionalSD / Math.max(edMetrics.netSavings / 12, 1))
               const cols = [
-                { label: 'Current security deposit', value: fmtL(currentSD), sub: edMetrics.avgCont + ' kVA × ₹500/kVA × 2 months', color: '#192744' },
-                { label: 'Revised security deposit', value: fmtL(revisedSD), sub: edMetrics.recommended + ' kVA × ₹500/kVA × 2 months', color: '#1c5af4' },
-                { label: 'Additional deposit required', value: fmtL(additionalSD), sub: 'One-time outflow to utility', color: '#f59e0b' },
-                { label: 'Annual savings vs deposit', value: (edMetrics.netSavings / additionalSD).toFixed(1) + 'x', sub: 'Savings recover deposit in ' + Math.ceil(additionalSD / Math.max(edMetrics.netSavings / 12, 1)) + ' months', color: '#36b37e' },
-              ]
-              return cols.map((c, i) => (
-                <div key={i} style={{ padding: '14px 18px', borderRight: i < cols.length - 1 ? '1px solid #e5e7eb' : 'none', background: '#fff' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{c.label}</div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: c.color, lineHeight: 1, marginBottom: '4px' }}>{c.value}</div>
-                  <div style={{ fontSize: '11px', color: '#9aa0b0' }}>{c.sub}</div>
-                </div>
-              ))
+                { label: 'Current security deposit', value: fmtL(currentSD), total: revisedSD, sub: edMetrics.avgCont + ' kVA × ₹500/kVA × 2 months', color: '#1c5af4', bg: '#eef3fe', bd: '#c7d2fe' },
+                { label: 'Revised security deposit', value: fmtL(revisedSD), total: revisedSD, sub: edMetrics.recommended + ' kVA × ₹500/kVA × 2 months', color: '#1c5af4', bg: '#eef3fe', bd: '#c7d2fe' },
+                { label: 'Additional deposit required', value: fmtL(additionalSD), total: revisedSD, sub: 'One-time outflow to utility', color: '#f59e0b', bg: '#fffbeb', bd: '#fde68a' },
+                { label: 'Recovery period', value: recoveryMonths + ' months', total: 24, sub: 'Annual savings recover deposit', color: '#36b37e', bg: '#f0faf6', bd: '#bbf7d0' },
+              ] as Array<{ label: string; value: string; total: number; sub: string; color: string; bg: string; bd: string }>
+              return cols.map((c, i) => {
+                const numVal = i === 0 ? currentSD : i === 1 ? revisedSD : i === 2 ? additionalSD : recoveryMonths
+                const pct = Math.min(Math.round((numVal / Math.max(c.total, 1)) * 100), 100)
+                const r = 17, circ = 2 * Math.PI * r, dash = (pct / 100) * circ
+                return (
+                  <div key={i} style={{ background: c.bg, border: '1px solid ' + c.bd, borderRadius: '6px', padding: '14px 16px 0', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                      <div>
+                        <div style={{ fontSize: '24px', fontWeight: 700, color: c.color, lineHeight: 1, letterSpacing: '-0.02em' }}>{c.value}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 600, color: c.color, textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: '5px' }}>{c.label}</div>
+                      </div>
+                      <svg width="42" height="42" viewBox="0 0 42 42" style={{ flexShrink: 0 }}>
+                        <circle cx="21" cy="21" r={r} fill="none" stroke={c.color} strokeOpacity="0.15" strokeWidth="4"/>
+                        <circle cx="21" cy="21" r={r} fill="none" stroke={c.color} strokeWidth="4" strokeLinecap="round"
+                          strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 21 21)"/>
+                        <text x="21" y="25" textAnchor="middle" fontSize="9" fontWeight="600" fill={c.color} fontFamily="Inter,sans-serif">{pct}%</text>
+                      </svg>
+                    </div>
+                    <div style={{ fontSize: '11px', color: c.color, opacity: 0.7, marginBottom: '12px' }}>{c.sub}</div>
+                    <div style={{ height: '3px', background: c.bd, margin: '0 -16px' }}>
+                      <div style={{ height: '100%', width: pct + '%', background: c.color, opacity: 0.6, borderRadius: '0 2px 2px 0' }} />
+                    </div>
+                  </div>
+                )
+              })
             })()}
           </div>
           <div style={{ marginTop: '12px', padding: '10px 14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', fontSize: '12px', color: '#92400e' }}>
