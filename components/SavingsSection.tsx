@@ -176,7 +176,7 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
           },
         },
       })
-    }, 0)
+    }, 100)
     return () => {
       clearTimeout(timer)
       if (cleanVsPenaltyChart.current) cleanVsPenaltyChart.current.destroy()
@@ -185,7 +185,9 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
 
   // Monthly savings trend
   useEffect(() => {
-    if (!savingsTrendRef.current || savingsTrendData.length === 0) return
+    if (savingsTrendData.length === 0) return
+    const timer = setTimeout(() => {
+    if (!savingsTrendRef.current) return
     const ctx = savingsTrendRef.current.getContext('2d')
     if (!ctx) return
     if (savingsTrendChart.current) savingsTrendChart.current.destroy()
@@ -256,14 +258,15 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
         },
       },
     })
-    return () => { if (savingsTrendChart.current) savingsTrendChart.current.destroy() }
+    }, 100)
+    return () => { clearTimeout(timer); if (savingsTrendChart.current) savingsTrendChart.current.destroy() }
   }, [savingsTrendData])
 
   return (
-    <div style={{ background: '#f0f5fa', padding: '20px' }}>
+    <div style={{ background: '#f5f6fa', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
       {/* Summary cards */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', display: 'flex', overflow: 'hidden' }}>
         {[
           { label: 'Total bill generated',   value: inr(summary.totalBillGenerated),   sub: `across ${summary.totalPeriods ?? 12} billing periods`,          subColor: '#6B7280' },
           { label: 'Paid via platform',       value: inr(summary.paidViaPlatform),       sub: `${summary.paidViaPlatformPct}% of total bill`,                  subColor: '#1D4ED8' },
@@ -271,22 +274,22 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
           { label: 'Missed digital discount', value: inr(summary.missedDigitalDiscount), sub: 'bills paid outside platform · 0.75% discount foregone',    subColor: '#B91C1C' },
         ].map((k, i) => (
           <div key={k.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
-            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
-            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '16px', bottom: '16px', width: '1px', background: '#f0f1f5' }} />}
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{k.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#192744', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{k.value}</div>
             <div style={{ fontSize: '12px', color: k.subColor }}>{k.sub}</div>
           </div>
         ))}
       </div>
 
       {/* Charts */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: '12px', marginBottom: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '14px' }}>
 
         {/* Clean vs penalty with toggle */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'10px' }}>
+        <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
             <div>
-              <div style={{ fontSize:'14px', fontWeight:600, color:'#192744', marginBottom:'3px' }}>Realised savings vs avoidable losses</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Realized savings vs avoidable losses</div>
               <div style={{ fontSize:'12px', color:'#858ea2' }}>
                 {cleanChartView === 'amount' ? 'Clean bill ₹ vs penalty ₹ · monthly' : 'Count of clean bills vs penalised bills · monthly'}
               </div>
@@ -305,86 +308,102 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
               ))}
             </div>
           </div>
-          <div style={{ display:'flex', gap:'14px', marginBottom:'10px', fontSize:'12px', color:'#6b6b67' }}>
+          <div style={{ padding: '14px 20px 16px' }}>
+          <div style={{ display:'flex', gap:'14px', marginBottom:'10px', fontSize:'12px', color:'#9aa0b0' }}>
             <span style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(29,158,117,0.75)', display:'inline-block' }} />
+              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'rgba(54,179,126,0.75)', display:'inline-block' }} />
               {cleanChartView === 'amount' ? 'Clean bill' : 'Clean bills'}
             </span>
             <span style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'#E24B4A', display:'inline-block' }} />
+              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:'#e53935', display:'inline-block' }} />
               {cleanChartView === 'amount' ? 'Penalties' : 'Penalised bills'}
             </span>
           </div>
-          <div style={{ position:'relative', width:'100%', height:'240px' }}>
+          <div style={{ position:'relative', width:'100%', height:'220px' }}>
             <canvas ref={cleanVsPenaltyRef}></canvas>
+          </div>
           </div>
         </div>
 
         {/* Monthly savings trend */}
-        <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '12px', padding: '16px 18px' }}>
-          <div style={{ fontSize:'14px', fontWeight:600, color:'#192744', marginBottom:'3px' }}>Monthly savings trend</div>
-          <div style={{ fontSize:'12px', color:'#858ea2', marginBottom:'10px' }}>Total incentives earned per month · PF rebate + digital payment + early payment</div>
-          <div style={{ display:'flex', gap:'14px', marginBottom:'10px', fontSize:'12px', color:'#6b6b67' }}>
+        <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
+            <div style={{ fontSize:'14px', fontWeight:600, color:'#192744', marginBottom:'2px' }}>Monthly savings trend</div>
+            <div style={{ fontSize:'12px', color:'#9aa0b0' }}>Net savings per month · ₹L</div>
+          </div>
+          <div style={{ padding: '14px 20px 16px' }}>
+          <div style={{ display:'flex', gap:'14px', marginBottom:'10px', fontSize:'12px', color:'#9aa0b0' }}>
             <span style={{ display:'flex', alignItems:'center', gap:'6px' }}>
-              <span style={{ width:'18px', height:'2px', background:'#1D9E75', display:'inline-block', borderRadius:'1px' }} />
+              <span style={{ width:'18px', height:'2px', background:'#36b37e', display:'inline-block', borderRadius:'1px' }} />
               PF incentive + digital + early payment · monthly
             </span>
           </div>
-          <div style={{ position:'relative', width:'100%', height:'240px' }}>
+          <div style={{ position:'relative', width:'100%', height:'220px' }}>
             <canvas ref={savingsTrendRef}></canvas>
+          </div>
           </div>
         </div>
 
       </div>
 
       {/* KPI insight cards */}
-      <div style={{ fontSize:'11px', fontWeight:500, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'8px' }}>Insights</div>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4, minmax(0,1fr))', gap:'10px', marginBottom:'12px' }}>
-        <KpiCard variant="good" label="Contract revision saving" value={inr(summary.contractSaving)}   desc="Raise contracted demand to P90 MDI + 15% buffer · eliminates most excess charges" />
-        <KpiCard variant="good" label="PF improvement saving"    value={inr(summary.pfSaving)}          desc="Eliminate PF penalties by maintaining power factor ≥ 0.90 via capacitor banks" />
-        <KpiCard variant="info" label="Total recoverable"        value={inr(summary.totalSaving)}       desc={`${Math.round(summary.totalSaving / Math.max(summary.totalBill,1)*100)}% of total bill can be avoided with recommended actions`} />
-        <KpiCard variant={summary.cleanPct >= 90 ? 'good' : 'warn'} label="Clean bill ratio" value={`${summary.cleanPct}%`} desc="Share of bill that is legitimate base charges — higher is better" />
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4, minmax(0,1fr))', gap:'12px' }}>
+        {([
+          { color: '#e53935', label: 'Contract revision saving', value: inr(summary.contractSaving), valueSub: 'No excess demand charges', desc: 'Raise contracted demand to P80 MDI + 10% buffer — eliminates all excess demand charges.', cta: 'Model revision' },
+          { color: '#f59e0b', label: 'PF improvement saving',    value: inr(summary.pfSaving),       valueSub: 'Maintain PF ≥ 0.95 via capacitor banks', desc: 'Eliminating PF penalties by maintaining power factor above 0.95 across all CAs.', cta: 'View CA list' },
+          { color: '#36b37e', label: 'Total recoverable',        value: inr(summary.totalSaving),    valueSub: Math.round(summary.totalSaving / Math.max(summary.totalBill,1)*100) + '% of total bills avoidable', desc: 'Total savings achievable with recommended contract and PF improvement actions.', cta: 'See breakdown' },
+          { color: '#1c5af4', label: 'Clean bill rate',          value: summary.cleanPct + '%',       valueSub: 'Avg across all CAs · higher is better', desc: 'Bills at ' + summary.cleanPct + '% clean — ' + (100 - summary.cleanPct) + '% still carry avoidable charges that can be eliminated.', cta: 'View profile' },
+        ] as Array<{ color: string; label: string; value: string; valueSub: string; desc: string; cta: string }>).map((item, i) => (
+          <div key={i} style={{ background: '#fff', border: '1px solid #f0f1f5', borderTop: '2.5px solid ' + item.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+              <div style={{ fontSize: '10px', fontWeight: 600, color: item.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{item.label}</div>
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: item.color, lineHeight: 1, marginBottom: '4px' }}>{item.value}</div>
+            <div style={{ fontSize: '12px', color: item.color, opacity: 0.7, marginBottom: '10px' }}>{item.valueSub}</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', lineHeight: 1.55, flex: 1, marginBottom: '14px' }}>{item.desc}</div>
+            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: item.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}>{item.cta} →</button>
+          </div>
+        ))}
       </div>
 
-      {/* Incentives & Credits card */}
-      <div style={{ background:'#fff', border:'0.5px solid rgba(0,0,0,0.10)', borderRadius:'12px', padding:'16px 18px' }}>
-        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'14px' }}>
-          <div>
-            <div style={{ fontSize:'14px', fontWeight:600, color:'#192744', marginBottom:'2px' }}>Incentives & credits</div>
-            <div style={{ fontSize:'12px', color:'#858ea2' }}>Earned vs potential · PF rebate + digital payment + early payment discount</div>
-          </div>
-          <div style={{ display:'flex', gap:'16px', alignItems:'flex-end', flexShrink:0 }}>
-            <div style={{ textAlign:'right' }}>
-              <div style={{ fontSize:'11px', color:'#858ea2', marginBottom:'2px' }}>Currently earning</div>
-              <div style={{ fontSize:'18px', fontWeight:700, color:'#3B6D11' }}>{inr(summary.totalEarnedIncentives)}</div>
-            </div>
-            <div style={{ textAlign:'right' }}>
-              <div style={{ fontSize:'11px', color:'#858ea2', marginBottom:'2px' }}>Total potential</div>
-              <div style={{ fontSize:'18px', fontWeight:700, color:'#185FA5' }}>{inr(summary.totalIncentivePotential)}</div>
-            </div>
-          </div>
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, minmax(0,1fr))', gap:'10px', marginBottom:'14px' }}>
-          <div style={{ background: summary.digitalPaymentBenefit > 0 ? '#EAF3DE' : '#f9f9f9', border: `0.5px solid ${summary.digitalPaymentBenefit > 0 ? '#C0DD97' : 'rgba(0,0,0,0.08)'}`, borderRadius:'8px', padding:'12px 14px' }}>
-            <div style={{ fontSize:'11px', fontWeight:500, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.04em', marginBottom:'5px' }}>Digital payment benefit</div>
-            <div style={{ fontSize:'20px', fontWeight:600, color: summary.digitalPaymentBenefit > 0 ? '#3B6D11' : '#858ea2' }}>{inr(summary.digitalPaymentBenefit)}</div>
-            <div style={{ fontSize:'11px', color:'#858ea2', marginTop:'3px' }}>Earned this period</div>
-          </div>
-          <div style={{ background: summary.earlyPaymentDiscount > 0 ? '#EAF3DE' : '#f9f9f9', border: `0.5px solid ${summary.earlyPaymentDiscount > 0 ? '#C0DD97' : 'rgba(0,0,0,0.08)'}`, borderRadius:'8px', padding:'12px 14px' }}>
-            <div style={{ fontSize:'11px', fontWeight:500, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.04em', marginBottom:'5px' }}>Early payment discount</div>
-            <div style={{ fontSize:'20px', fontWeight:600, color: summary.earlyPaymentDiscount > 0 ? '#3B6D11' : '#858ea2' }}>{inr(summary.earlyPaymentDiscount)}</div>
-            <div style={{ fontSize:'11px', color:'#858ea2', marginTop:'3px' }}>Earned this period</div>
-          </div>
-          <div style={{ background: summary.earnedPfIncentive > 0 ? '#EAF3DE' : '#f9f9f9', border: `0.5px solid ${summary.earnedPfIncentive > 0 ? '#C0DD97' : 'rgba(0,0,0,0.08)'}`, borderRadius:'8px', padding:'12px 14px' }}>
-            <div style={{ fontSize:'11px', fontWeight:500, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.04em', marginBottom:'5px' }}>PF incentive</div>
-            <div style={{ fontSize:'20px', fontWeight:600, color: summary.earnedPfIncentive > 0 ? '#3B6D11' : '#858ea2' }}>{inr(summary.earnedPfIncentive)}</div>
-            <div style={{ fontSize:'11px', color:'#858ea2', marginTop:'3px' }}>Earned this period</div>
-          </div>
-          <div style={{ background: summary.totalIncentivePotential - summary.totalEarnedIncentives > 0 ? '#E6F1FB' : '#f9f9f9', border: `0.5px solid ${summary.totalIncentivePotential - summary.totalEarnedIncentives > 0 ? '#B5D4F4' : 'rgba(0,0,0,0.08)'}`, borderRadius:'8px', padding:'12px 14px' }}>
-            <div style={{ fontSize:'11px', fontWeight:500, color:'#858ea2', textTransform:'uppercase', letterSpacing:'0.04em', marginBottom:'5px' }}>Potential upside</div>
-            <div style={{ fontSize:'20px', fontWeight:600, color: summary.totalIncentivePotential - summary.totalEarnedIncentives > 0 ? '#185FA5' : '#858ea2' }}>{inr(Math.max(0, summary.totalIncentivePotential - summary.totalEarnedIncentives))}</div>
-            <div style={{ fontSize:'11px', color:'#858ea2', marginTop:'3px' }}>If all targets met</div>
-          </div>
+      {/* Incentives & Credits */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Incentives &amp; credits</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '12px' }}>
+          {(() => {
+            const totalPotential = summary.totalIncentivePotential
+            const items = [
+              { label: 'Digital payment benefit', value: summary.digitalPaymentBenefit, total: summary.totalIncentivePotential, sub: 'Accrued this period', color: '#36b37e', bg: '#f0faf6', bd: '#bbf7d0' },
+              { label: 'Early payment discount',  value: summary.earlyPaymentDiscount,  total: summary.totalIncentivePotential, sub: 'Across discount windows', color: '#36b37e', bg: '#f0faf6', bd: '#bbf7d0' },
+              { label: 'PF incentive',            value: summary.earnedPfIncentive,     total: summary.totalIncentivePotential, sub: 'Months in target', color: '#f59e0b', bg: '#fffbeb', bd: '#fde68a' },
+              { label: 'Potential upside',        value: Math.max(0, totalPotential - summary.totalEarnedIncentives), total: totalPotential, sub: 'If all targets met', color: '#1c5af4', bg: '#eef3fe', bd: '#c7d2fe' },
+            ] as Array<{ label: string; value: number; total: number; sub: string; color: string; bg: string; bd: string }>
+            return items.map((item, i) => {
+              const pct = Math.round((item.value / Math.max(item.total, 1)) * 100)
+              const r = 17, circ = 2 * Math.PI * r, dash = (pct / 100) * circ
+              return (
+                <div key={i} style={{ background: item.bg, border: `1px solid ${item.bd}`, borderRadius: '6px', padding: '16px 16px 0', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontSize: '26px', fontWeight: 700, color: item.color, lineHeight: 1, letterSpacing: '-0.02em' }}>{inr(item.value)}</div>
+                      <div style={{ fontSize: '10px', fontWeight: 600, color: item.color, textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: '5px' }}>{item.label}</div>
+                    </div>
+                    <svg width="42" height="42" viewBox="0 0 42 42" style={{ flexShrink: 0 }}>
+                      <circle cx="21" cy="21" r={r} fill="none" stroke={item.color} strokeOpacity="0.15" strokeWidth="4"/>
+                      <circle cx="21" cy="21" r={r} fill="none" stroke={item.color} strokeWidth="4" strokeLinecap="round"
+                        strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 21 21)"/>
+                      <text x="21" y="25" textAnchor="middle" fontSize="9" fontWeight="600" fill={item.color} fontFamily="Inter,sans-serif">{pct}%</text>
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: '11px', color: item.color, opacity: 0.7, marginBottom: '14px' }}>{item.sub}</div>
+                  <div style={{ height: '3px', background: item.bd, margin: '0 -16px' }}>
+                    <div style={{ height: '100%', width: pct + '%', background: item.color, opacity: 0.6, borderRadius: '0 2px 2px 0' }} />
+                  </div>
+                </div>
+              )
+            })
+          })()}
         </div>
       </div>
 
