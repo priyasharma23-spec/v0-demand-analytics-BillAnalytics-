@@ -423,9 +423,8 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 { label: 'Duplicate bills',   sub: 'Same bill fetched more than once',     count: 8,                tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
                 { label: 'Meter reading alert', sub: 'Zero or same as last month · check meter', count: faultyMeterCount, tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
               ].map(a => (
-                <div key={a.label} style={{ padding: '10px 12px', background: a.tone.bg, border: `1px solid ${a.tone.bd}`, borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div key={a.label} style={{ padding: '10px 12px', background: a.tone.bg, border: `1px solid ${a.tone.bd}`, borderTop: `2.5px solid ${a.tone.accent}`, borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '3px', alignSelf: 'stretch', borderRadius: '2px', background: a.tone.accent, flexShrink: 0 }}/>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: a.tone.text }}>{a.label}</div>
                       <div style={{ fontSize: '12px', color: a.tone.text, opacity: 0.7 }}>{a.sub}</div>
