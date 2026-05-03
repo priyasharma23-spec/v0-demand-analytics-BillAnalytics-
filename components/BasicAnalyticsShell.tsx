@@ -145,7 +145,8 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     cas.forEach((ca: string) => { caToState[ca] = branchToState[branch] ?? 'Maharashtra' })
   })
 
-  const today = new Date()
+  const today = new Date(2025, 4, 3) // Fixed reference date: May 3, 2025
+
 
   const caSchedule = allCAs.map((ca) => {
     const state   = caToState[ca] ?? 'Maharashtra'
