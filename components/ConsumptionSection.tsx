@@ -98,7 +98,14 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   const [distribution, setDistribution] = useState<any[]>([])
   const [totalFaulty, setTotalFaulty] = useState(0)
   const [stateConsumption, setStateConsumption] = useState<any[]>([])
-  const [consBillData, setConsBillData] = useState<any[]>([])
+  const [consBillData, setConsBillData] = useState<any[]>(
+    trendData.map(d => ({
+      month: d.period_label,
+      totalKwh: d.total_kwh,
+      totalBill: d.energy_charges * 1.25,
+      ratePerUnit: d.rate_per_unit,
+    }))
+  )
   const distChartRef = useRef<HTMLCanvasElement>(null)
   const distChartInstance = useRef<Chart | null>(null)
   const compChartRef = useRef<HTMLCanvasElement>(null)
