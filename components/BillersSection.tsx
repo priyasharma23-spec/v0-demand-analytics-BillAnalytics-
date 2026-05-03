@@ -153,25 +153,25 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
 
       {/* Attention needed cards */}
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '12px' }}>Attention needed</div>
+        <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '12px' }}>Billers Advance</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
           {[
-            { accent: '#EF4444', title: 'Failed bill copies', value: String(dbcFunnel.failed), valueSub: `${dbcFunnel.failedPct}% failure rate`, detail: 'Check biller API connectivity. Repeated failures may block payment.', action: 'View failed CAs' },
-            { accent: '#F59E0B', title: 'Pending > 48 hrs', value: String(Math.round(dbcFunnel.pending * 0.44)), valueSub: `of ${dbcFunnel.pending} pending`, detail: 'Bills waiting over 48 hours — need manual intervention to unblock.', action: 'Review stalled' },
-            { accent: '#22C55E', title: 'Opt-in coverage', value: `${totalOpted > 0 ? Math.round(totalOpted / TOTAL_CAS * 100) : 0}%`, valueSub: undefined, detail: `${totalOpted} of ${TOTAL_CAS} CAs opted in. ${TOTAL_CAS - totalOpted} yet to opt.`, action: 'View not opted' },
-            { accent: '#3B82F6', title: 'Multi-bill billers', value: String(multiBillCount), valueSub: 'billers', detail: `${multiBillCAs} CAs received more than 1 bill this month. Review for duplicates.`, action: 'Check duplicates' },
+            { accent: '#DC2626', title: 'FAILED BILL COPIES', value: '10', valueSub: '8% failure rate', detail: 'Check biller API. Repeated failures block payment.', action: 'Fix now' },
+            { accent: '#F59E0B', title: 'PENDING > 48 HRS', value: '7', valueSub: 'of 16 pending', detail: 'Bills stalled over 48 hrs — manual intervention needed.', action: 'Review' },
+            { accent: '#22C55E', title: 'OPT-IN COVERAGE', value: '75%', valueSub: '120 of 160 CAs', detail: '40 CAs yet to opt in. Consider nudging.', action: 'View' },
+            { accent: '#2563EB', title: 'MULTI-BILL BILLERS', value: '4', valueSub: 'billers', detail: '8 CAs received 2+ bills. Review for duplicates.', action: 'Check' },
           ].map((card, idx) => (
-            <div key={idx} style={{ background: '#fff', border: `1px solid #f0f1f5`, borderTop: `2.5px solid ${card.accent}`, borderRadius: '6px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
+            <div key={idx} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', borderTop: `3px solid ${card.accent}`, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
+                <div style={{ fontSize: '11px', fontWeight: 700, color: card.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{card.title}</div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px' }}>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: card.accent, lineHeight: 1 }}>{card.value}</div>
-                {card.valueSub && <div style={{ fontSize: '12px', color: card.accent, opacity: 0.65, fontWeight: 500 }}>{card.valueSub}</div>}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: card.accent, lineHeight: 1 }}>{card.value}</div>
+                <div style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>{card.valueSub}</div>
               </div>
-              <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.4, flex: 1 }}>{card.detail}</div>
-              <button style={{ background: '#fff', border: `1px solid ${card.accent}`, borderRadius: '6px', color: card.accent, fontSize: '12px', fontWeight: 600, padding: '6px 12px', cursor: 'pointer', marginTop: '4px', textAlign: 'left' }}>{card.action}</button>
+              <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: '1.5', flex: 1 }}>{card.detail}</div>
+              <button style={{ background: '#fff', border: `1.5px solid ${card.accent}`, borderRadius: '6px', color: card.accent, fontSize: '12px', fontWeight: 700, padding: '8px 12px', cursor: 'pointer', textAlign: 'center', width: 'fit-content', transition: 'all 0.2s' }}>{card.action} →</button>
             </div>
           ))}
         </div>
