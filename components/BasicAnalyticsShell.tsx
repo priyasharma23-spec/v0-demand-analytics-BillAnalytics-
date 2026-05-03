@@ -519,11 +519,12 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
     ? Object.fromEntries(locationRows.map(r => [r.name, r]))
     : Object.fromEntries(stateData.map(r => [r.state, r]))
   const sd = spendSel ? spendData[spendSel] : { total: 0, months: [] }
-  const peakMthIdx = sd && sd.months ? sd.months.indexOf(Math.max(...sd.months)) : 0
-  const lowMthIdx = sd && sd.months ? sd.months.indexOf(Math.min(...sd.months)) : 0
+  const peakMthIdx = sd && sd.months && (sd.months as number[]).length > 0 ? (sd.months as number[]).indexOf(Math.max(...(sd.months as number[]))) : 0
+  const lowMthIdx = sd && sd.months && (sd.months as number[]).length > 0 ? (sd.months as number[]).indexOf(Math.min(...(sd.months as number[]))) : 0
   const avgPerBranch = spendSel && showBranches 
     ? Math.round((locationRows.find(r => r.name === spendSel)?.total || 0) / Math.max(BRANCHES[spendSel]?.length || 1, 1))
     : 0
+  const mthLabels = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']
 
   return (
     <div>
