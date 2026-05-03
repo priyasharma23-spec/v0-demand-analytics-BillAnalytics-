@@ -2160,7 +2160,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 { accent: '#22C55E', accentL: '#F0FDF4', accentBd: '#BBF7D0', accentD: '#15803D', title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', sub: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs', detail: (TOTAL_CAS_DBC - optedIn) + ' CAs yet to opt in. Consider nudging.', cta: 'View' },
                 { accent: '#2563EB', accentL: '#EFF6FF', accentBd: '#BFDBFE', accentD: '#1D4ED8', title: 'Multi-bill billers', value: String(multiBillCount), sub: 'billers',                                                     detail: multiBillCAs + ' CAs received 2+ bills. Review for duplicates.', cta: 'Check' },
               ] as const).map((card, ci) => (
-                <div key={ci} style={{ background: '#fff', border: `1px solid #E5E7EB`, borderTop: `2.5px solid ${card.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div key={ci} style={{ background: '#fff', border: `1.5px solid ${card.accentBd}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
                     <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
