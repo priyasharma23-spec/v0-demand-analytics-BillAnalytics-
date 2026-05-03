@@ -621,9 +621,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
         </div>
       </div>
 
-      {/* Section 5: Bill reading distribution (existing, keep as-is) */}
-        ))}
-      </div>
+      {/* Section 5: Bill reading distribution */}
 
 
 
