@@ -284,65 +284,79 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
   return (
     <div style={{ background: '#f5f6fa', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-      {/* Summary cards with target design */}
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', background: '#fff', border: '1px solid #f0f1f5', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(25,39,68,.04)', alignItems: 'stretch' }}>
+        {(() => {
+          const leakPct = Math.round((leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1)) * 100);
+          const excessPct = Math.round((leakSummary.totalExcess / Math.max(leakSummary.totalLeak, 1)) * 100);
+          const pfPct = Math.round((leakSummary.totalPF / Math.max(leakSummary.totalLeak, 1)) * 100);
+          const lpPct = Math.round((leakSummary.totalLP / Math.max(leakSummary.totalLeak, 1)) * 100);
+          const fmtL = (v: number) => '\u20b9' + (v / 100000).toFixed(1) + 'L';
+          const cards = [
+            { label: 'Total leakages',      value: fmtL(leakSummary.totalLeak),   sub: leakPct + '% of total bill',  subColor: leakPct > 10 ? '#e53935' : '#f59e0b' },
+            { label: 'Excess demand',        value: fmtL(leakSummary.totalExcess), sub: excessPct + '% of leakages',  subColor: excessPct > 30 ? '#e53935' : '#f59e0b' },
+            { label: 'PF penalty',           value: fmtL(leakSummary.totalPF),     sub: pfPct + '% of leakages',      subColor: pfPct > 30 ? '#e53935' : '#f59e0b' },
+            { label: 'Late payment charges', value: fmtL(leakSummary.totalLP),     sub: lpPct + '% of leakages',      subColor: '#36b37e' },
+          ];
+          return cards.map((card, i) => (
+            <div key={card.label} style={{ padding: '16px 20px', borderRight: i < cards.length - 1 ? '1px solid #f0f1f5' : 'none', position: 'relative' }}>
+              {i < cards.length - 1 && <div style={{ position: 'absolute', right: 0, top: '16px', bottom: '16px', width: '1px', background: '#f0f1f5' }} />}
+              <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{card.label}</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: '#192744', lineHeight: 1, marginBottom: '4px' }}>{card.value}</div>
+              <div style={{ fontSize: '12px', color: card.subColor, fontWeight: 500 }}>{card.sub}</div>
+            </div>
+          ));
+        })()}
+      </div>
+
+      {/* Alert insight cards - Enhanced with circular progress and color-coded design */}
       <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>
-            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Leakage analysis</div>
-            <div style={{ fontSize: '13px', color: '#858ea2', marginTop: '2px' }}>Monthly impact on your bill</div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Security deposit impact</div>
+            <div style={{ fontSize: '13px', color: '#858ea2', marginTop: '2px' }}>If contracted demand revised from 409 kVA → 510 kVA</div>
           </div>
-          <div style={{ fontSize: '12px', color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>BASED ON 12-MONTH ANALYSIS</div>
+          <div style={{ fontSize: '12px', color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>BASED ON 2-MONTH DEMAND CHARGE FORMULA</div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
           {(() => {
-            const leakPct = Math.round((leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1)) * 100);
-            const excessPct = Math.round((leakSummary.totalExcess / Math.max(leakSummary.totalLeak, 1)) * 100);
-            const pfPct = Math.round((leakSummary.totalPF / Math.max(leakSummary.totalLeak, 1)) * 100);
-            const lpPct = Math.round((leakSummary.totalLP / Math.max(leakSummary.totalLeak, 1)) * 100);
-            const fmtL = (v: number) => (v / 100000).toFixed(1);
-            
-            const cards = [
-              { 
-                color: '#1c5af4', 
-                value: fmtL(leakSummary.totalLeak), 
-                label: 'Total leakages', 
-                percentage: leakPct,
-                detail: leakPct + '% of total bill',
-                detailWeight: 'normal'
+            const cardData = [
+              {
+                color: '#1c5af4',
+                value: '₹4.1L',
+                label: 'CURRENT SECURITY DEPOSIT',
+                detail: '409 kVA × ₹500/kVA × 2 months',
+                percentage: 80,
               },
-              { 
-                color: '#f59e0b', 
-                value: fmtL(leakSummary.totalExcess), 
-                label: 'Excess demand', 
-                percentage: excessPct,
-                detail: excessPct + '% of leakages',
-                detailWeight: 'normal'
+              {
+                color: '#1c5af4',
+                value: '₹5.1L',
+                label: 'REVISED SECURITY DEPOSIT',
+                detail: '510 kVA × ₹500/kVA × 2 months',
+                percentage: 100,
               },
-              { 
-                color: '#f59e0b', 
-                value: fmtL(leakSummary.totalPF), 
-                label: 'PF penalty', 
-                percentage: pfPct,
-                detail: pfPct + '% of leakages',
-                detailWeight: 'normal'
+              {
+                color: '#f59e0b',
+                value: '₹1.0L',
+                label: 'ADDITIONAL DEPOSIT REQUIRED',
+                detail: 'One-time outflow to utility',
+                percentage: 20,
               },
-              { 
-                color: '#36b37e', 
-                value: fmtL(leakSummary.totalLP), 
-                label: 'Late payment', 
-                percentage: lpPct,
-                detail: lpPct + '% of leakages',
-                detailWeight: 'normal'
+              {
+                color: '#36b37e',
+                value: '101000 months',
+                label: 'RECOVERY PERIOD',
+                detail: 'Annual savings recover deposit',
+                percentage: 100,
               },
             ];
 
-            return cards.map((card, i) => {
-              // Calculate circle progress
+            return cardData.map((card, i) => {
               const circleRadius = 28;
               const circumference = 2 * Math.PI * circleRadius;
               const strokeDashoffset = circumference - (card.percentage / 100) * circumference;
-              
+
               return (
                 <div key={i} style={{
                   background: '#fff',
@@ -353,28 +367,29 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  minHeight: '160px',
+                  minHeight: '180px',
+                  position: 'relative',
                 }}>
-                  {/* Header with label */}
+                  {/* Value display */}
                   <div style={{ marginBottom: '12px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '6px', letterSpacing: '-0.02em' }}>
+                      {card.value}
+                    </div>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
                       {card.label}
                     </div>
-                    <div style={{ fontSize: '26px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '6px' }}>
-                      ₹{card.value}L
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#858ea2' }}>
+                    <div style={{ fontSize: '11px', color: '#858ea2' }}>
                       {card.detail}
                     </div>
                   </div>
 
-                  {/* Circular progress on the right */}
+                  {/* Circular progress indicator on the right */}
                   <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-                    <svg width="70" height="70" style={{ transform: 'rotate(-90deg)' }}>
+                    <svg width="60" height="60" style={{ transform: 'rotate(-90deg)' }}>
                       {/* Background circle */}
                       <circle
-                        cx="35"
-                        cy="35"
+                        cx="30"
+                        cy="30"
                         r={circleRadius}
                         fill="none"
                         stroke="#f0f1f5"
@@ -382,8 +397,8 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
                       />
                       {/* Progress circle */}
                       <circle
-                        cx="35"
-                        cy="35"
+                        cx="30"
+                        cy="30"
                         r={circleRadius}
                         fill="none"
                         stroke={card.color}
@@ -395,14 +410,14 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
                       />
                       {/* Percentage text */}
                       <text
-                        x="35"
-                        y="35"
+                        x="30"
+                        y="30"
                         textAnchor="middle"
                         dy="0.3em"
-                        fontSize="14"
+                        fontSize="12"
                         fontWeight="700"
                         fill={card.color}
-                        style={{ transform: 'rotate(90deg)', transformOrigin: '35px 35px' }}
+                        style={{ transform: 'rotate(90deg)', transformOrigin: '30px 30px' }}
                       >
                         {card.percentage}%
                       </text>
@@ -434,37 +449,14 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
           </div>
           <div>
             <div style={{
-              fontSize: '13px',
+              fontSize: '12px',
               color: '#78350f',
               lineHeight: '1.5',
             }}>
-              Leakage includes avoidable charges from power factor penalties, excess demand, and late payment surcharges. Annual savings of ₹{(leakSummary.totalLeak / 100000).toFixed(1)}L can be recovered through operational optimization and timely payments.
+              The additional security deposit of ₹1.0L is a one-time outflow but is refundable when the connection is surrendered. Annual savings of ₹421.6L will recover this within 101000 months.
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Alert insight cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
-        {([
-          { color: '#DC2626', label: 'Power factor <0.92',    value: (breakdownRows.filter(r => r.util < 92).length || 14) + ' CAs', sub: '₹' + (leakSummary.totalPF / 100000).toFixed(1) + 'L monthly leakage',    desc: 'Capacitors non-compliant for 6+ consecutive months.', cta: 'View CAs' },
-          { color: '#DC2626', label: 'Demand shrinkage',      value: 'All CAs',                                                       sub: '₹' + (leakSummary.totalExcess / 100000).toFixed(1) + 'L monthly leakage', desc: 'Contracted demand declined every month this year.',    cta: 'Review'   },
-          { color: '#F59E0B', label: 'Late payment surcharge',value: (breakdownRows.length * 3 || 55) + ' CAs',                       sub: '₹' + (leakSummary.totalLP / 100000).toFixed(1) + 'L monthly leakage',    desc: '3+ consecutive months of late payment charges.',      cta: 'View CAs' },
-          { color: '#22C55E', label: 'Under-utilised demand', value: 'TOD mismatch',                                                  sub: '₹' + (leakSummary.totalLeak * 0.05 / 100000).toFixed(1) + 'L recoverable',desc: 'Wrong TOD slot or under-utilised contracted demand.',  cta: 'Fix now'  },
-        ] as Array<{ color: string; label: string; value: string; sub: string; desc: string; cta: string }>).map((a, i) => (
-          <div key={i} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + a.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'default', minHeight: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 12 }}>
-              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: a.color, flexShrink: 0 }} />
-              <div style={{ fontSize: '10px', fontWeight: 600, color: a.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{a.label}</div>
-            </div>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: a.color, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{a.value}</div>
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: 3 }}>{a.sub}</div>
-              <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{a.desc}</div>
-            </div>
-            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: a.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>{a.cta} →</button>
-          </div>
-        ))}
       </div>
 
       {/* Inline header stats strip */}
