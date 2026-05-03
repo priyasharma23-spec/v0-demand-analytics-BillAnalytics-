@@ -156,12 +156,12 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
         <div style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '12px' }}>Billers Advance</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
           {[
-            { accent: '#DC2626', title: 'FAILED BILL COPIES', value: '10', valueSub: '8% failure rate', detail: 'Check biller API. Repeated failures block payment.', action: 'Fix now' },
-            { accent: '#F59E0B', title: 'PENDING > 48 HRS', value: '7', valueSub: 'of 16 pending', detail: 'Bills stalled over 48 hrs — manual intervention needed.', action: 'Review' },
-            { accent: '#22C55E', title: 'OPT-IN COVERAGE', value: '75%', valueSub: '120 of 160 CAs', detail: '40 CAs yet to opt in. Consider nudging.', action: 'View' },
-            { accent: '#2563EB', title: 'MULTI-BILL BILLERS', value: '4', valueSub: 'billers', detail: '8 CAs received 2+ bills. Review for duplicates.', action: 'Check' },
+            { accent: '#DC2626', accentLight: '#FECACA', title: 'FAILED BILL COPIES', value: '10', valueSub: '8% failure rate', detail: 'Check biller API. Repeated failures block payment.', action: 'Fix now' },
+            { accent: '#F59E0B', accentLight: '#FDE68A', title: 'PENDING > 48 HRS', value: '7', valueSub: 'of 16 pending', detail: 'Bills stalled over 48 hrs — manual intervention needed.', action: 'Review' },
+            { accent: '#22C55E', accentLight: '#BBF7D0', title: 'OPT-IN COVERAGE', value: '75%', valueSub: '120 of 160 CAs', detail: '40 CAs yet to opt in. Consider nudging.', action: 'View' },
+            { accent: '#2563EB', accentLight: '#BFDBFE', title: 'MULTI-BILL BILLERS', value: '4', valueSub: 'billers', detail: '8 CAs received 2+ bills. Review for duplicates.', action: 'Check' },
           ].map((card, idx) => (
-            <div key={idx} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', borderTop: `3px solid ${card.accent}`, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div key={idx} style={{ background: '#fff', border: `1.5px solid ${card.accentLight}`, borderRadius: '12px', padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
                 <div style={{ fontSize: '11px', fontWeight: 700, color: card.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{card.title}</div>
