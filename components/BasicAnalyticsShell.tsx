@@ -2482,27 +2482,17 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
 
             {/* Bill copy status — donut grid */}
             <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px 20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
                 <div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#192744', letterSpacing: '-0.01em' }}>Bill Copy Status</div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#192744', letterSpacing: '-0.01em' }}>Biller Breakdown</div>
                   <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>Opt-in CAs · delivery status and coverage · Apr 2024 – Mar 2025</div>
                 </div>
                 <div style={{ fontSize: '12px', color: '#858ea2' }}>Updated daily · May 2025</div>
               </div>
 
-              {/* Toolbar */}
-              <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '8px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', marginBottom: '16px' }}>
-                {/* Search input */}
-                <div style={{ position: 'relative', flex: 1, maxWidth: 400 }}>
-                  <svg style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#192744" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
-                  </svg>
-                  <input placeholder="Search biller or state..." style={{ width: '100%', padding: '7px 10px 7px 32px', border: '1px solid #f0f1f5', borderRadius: '6px', fontSize: '12px', fontFamily: 'inherit', color: '#192744', background: '#f5f6fa', outline: 'none' }} />
-                </div>
-
-                {/* Summary stats + mini ring */}
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              {/* Summary stats row - left aligned */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
                   {(() => {
                     const totalExpected = items.reduce((a, b) => a + b.opted, 0)
                     const totalRcvd = items.reduce((a, b) => a + b.received, 0)
@@ -2519,29 +2509,29 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                           { val: totalFail, label: 'failed', color: '#EF4444' },
                         ].map((s, i) => (
                           <div key={i} style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '18px', fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.val}</div>
-                            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
+                            <div style={{ fontSize: '20px', fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.val}</div>
+                            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>{s.label}</div>
                           </div>
                         ))}
 
                         {/* Divider */}
-                        <div style={{ width: '1px', height: '32px', background: '#f0f1f5' }} />
+                        <div style={{ width: '1px', height: '40px', background: '#f0f1f5' }} />
 
                         {/* Overall ring mini */}
-                        <svg width="48" height="48" viewBox="0 0 48 48" style={{ transform: 'rotate(-90deg)' }}>
-                          <circle cx="24" cy="24" r="19" fill="none" stroke={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} strokeOpacity="0.15" strokeWidth="7" />
-                          <circle cx="24" cy="24" r="19" fill="none" stroke={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} strokeWidth="7" strokeLinecap="round" strokeDasharray={`${(overallPct / 100) * (2 * Math.PI * 19)} ${2 * Math.PI * 19}`} />
-                          <text x="24" y="28" textAnchor="middle" fontSize="15" fontWeight="700" fill={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} fontFamily="Inter, sans-serif">{overallPct}%</text>
+                        <svg width="52" height="52" viewBox="0 0 52 52" style={{ transform: 'rotate(-90deg)' }}>
+                          <circle cx="26" cy="26" r="20" fill="none" stroke={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} strokeOpacity="0.15" strokeWidth="6" />
+                          <circle cx="26" cy="26" r="20" fill="none" stroke={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(overallPct / 100) * (2 * Math.PI * 20)} ${2 * Math.PI * 20}`} />
+                          <text x="26" y="30" textAnchor="middle" fontSize="16" fontWeight="700" fill={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} fontFamily="Inter, sans-serif">{overallPct}%</text>
                         </svg>
                       </>
                     )
                   })()}
                 </div>
 
-                {/* View toggle pill */}
+                {/* View toggle pill - right side */}
                 <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
                   {(['Biller','State','Branch'] as const).map(v => (
-                    <button key={v} onClick={() => setDbcView(v)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '3px 12px', fontSize: '11px', background: dbcView === v ? '#1c5af4' : 'transparent', color: dbcView === v ? '#fff' : '#858ea2', fontWeight: dbcView === v ? 600 : 400, transition: 'all .12s', textTransform: 'capitalize' }}>{v}</button>
+                    <button key={v} onClick={() => setDbcView(v)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '4px 14px', fontSize: '11px', background: dbcView === v ? '#1c5af4' : 'transparent', color: dbcView === v ? '#fff' : '#858ea2', fontWeight: dbcView === v ? 600 : 400, transition: 'all .12s', textTransform: 'capitalize' }}>{v}</button>
                   ))}
                 </div>
               </div>
