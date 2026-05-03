@@ -282,8 +282,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Due this month</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, color: '#B45309', marginBottom: '2px' }}>{billsDueCount}</div>
-                <div style={{ fontSize: '11px', color: '#858ea2' }}>{inr(billsDueAmount)} · next 30 days</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#B45309' }}>{billsDueCount}</div>
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
