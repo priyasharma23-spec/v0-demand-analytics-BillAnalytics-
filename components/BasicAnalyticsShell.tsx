@@ -776,13 +776,14 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       {analyticsMode === 'advanced' && (() => {
         const allBranches = Object.values(BRANCHES).flat()
         const branchMetrics = allBranches.map(br => {
-          const d = getBranchBills(br, 'monthly')
+          const cas = CAS[br] ?? []
+          const allBills = cas.flatMap(ca => getCABills(ca, 'monthly'))
           return {
             name: br,
-            latePayment:        d.reduce((s: number, r: any) => s + r.latePayment, 0),
-            earlyPayment:       d.reduce((s: number, r: any) => s + r.earlyPaymentDiscount, 0),
-            pfPenalty:          d.reduce((s: number, r: any) => s + r.pfPenalty, 0),
-            pfIncentive:        d.reduce((s: number, r: any) => s + r.pfIncentive, 0),
+            latePayment:        allBills.reduce((s: number, r: any) => s + (r.latePayment ?? 0), 0),
+            earlyPayment:       allBills.reduce((s: number, r: any) => s + (r.earlyPaymentDiscount ?? 0), 0),
+            pfPenalty:          allBills.reduce((s: number, r: any) => s + (r.pfPenalty ?? 0), 0),
+            pfIncentive:        allBills.reduce((s: number, r: any) => s + (r.pfIncentive ?? 0), 0),
             onHold:             Math.round((br.charCodeAt(0) + br.charCodeAt(br.length-1)) % 8),
           }
         })
