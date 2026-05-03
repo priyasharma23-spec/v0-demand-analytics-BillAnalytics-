@@ -116,33 +116,91 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
   )
 
   // Due date calendar and weekly capital plan data
-  const caSchedule = allCAs.map((ca) => {
-    const seed      = ca.charCodeAt(0) + ca.charCodeAt(ca.length - 1)
-    const dueDay    = (seed % 25) + 3
-    const billAmt   = Math.round(180000 + (seed % 50) * 4200)
-    const isPaid    = (seed % 10) < 6
-    const isOverdue = !isPaid && (seed % 10) < 8
-    const isDueSoon = !isPaid && !isOverdue
-    return { ca, dueDay, billAmt, isPaid, isOverdue, isDueSoon }
+  // State-level due days based on real utility billing cycles
+  const STATE_DUE_DAYS: Record<string, number> = {
+    'Maharashtra': 7,   // MSEDCL
+    'Karnataka':   10,  // BESCOM
+    'Tamil Nadu':  12,  // TANGEDCO
+    'Gujarat':     8,   // DGVCL/UGVCL
+    'Delhi':       5,   // BSES/Tata Power
+    'Rajasthan':   15,  // JVVNL
+    'Uttar Pradesh': 18, // UPPCL
+    'West Bengal': 20,  // WBSEDCL
+  }
+  // Find which state each branch belongs to
+  const branchToState: Record<string, string> = {}
+  Object.entries(BRANCHES).forEach(([state, branches]) => {
+    branches.forEach(br => { branchToState[br] = state })
   })
+  // Find which branch each CA belongs to
+  const caToState: Record<string, string> = {}
+  Object.entries(CAS).forEach(([branch, cas]) => {
+    cas.forEach(ca => { caToState[ca] = branchToState[branch] ?? 'Maharashtra' })
+  })
+
+  // Rolling 4-week window from today
+  const today = new Date()
+  const windowStart = new Date(today)
+  windowStart.setDate(today.getDate() - today.getDay()) // start of current week (Sunday)
+
+  const caSchedule = allCAs.map((ca) => {
+    const state   = caToState[ca] ?? 'Maharashtra'
+    const dueDay  = STATE_DUE_DAYS[state] ?? 10
+    const seed    = ca.charCodeAt(0) + ca.charCodeAt(ca.length - 1)
+
+    // Get real bill amount from latest month
+    const bills   = getCABills(ca, 'monthly')
+    const latestBill = bills[bills.length - 1]
+    const billAmt = latestBill ? latestBill.totalBill : Math.round(180000 + (seed % 50) * 4200)
+
+    // Payment status — use latePayment as signal for overdue
+    const isPaid    = latestBill ? latestBill.latePayment === 0 && (seed % 10) < 6 : (seed % 10) < 6
+    const isOverdue = !isPaid && latestBill ? latestBill.latePayment > 0 : !isPaid && (seed % 10) < 8
+    const isDueSoon = !isPaid && !isOverdue
+
+    // Determine which rolling week this CA falls into (0=this week, 1=next, 2=week after, 3=week+3)
+    // Due day within month → map to rolling week offset
+    const thisMonthDue  = new Date(today.getFullYear(), today.getMonth(), dueDay)
+    const nextMonthDue  = new Date(today.getFullYear(), today.getMonth() + 1, dueDay)
+    const dueDate       = thisMonthDue >= today ? thisMonthDue : nextMonthDue
+    const daysUntilDue  = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    const weekOffset    = Math.floor(daysUntilDue / 7)
+    const rollingWeek   = Math.min(Math.max(weekOffset, 0), 3)
+
+    return { ca, state, dueDay, dueDate, billAmt, isPaid, isOverdue, isDueSoon, rollingWeek, daysUntilDue }
+  })
+
+  // Rolling 4-week buckets
+  const getWeekLabel = (offset: number) => {
+    const start = new Date(today)
+    start.setDate(today.getDate() + offset * 7 - today.getDay())
+    const end = new Date(start)
+    end.setDate(start.getDate() + 6)
+    const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    return offset === 0 ? `This week (${fmt(start)}–${fmt(end)})` : offset === 1 ? `Next week (${fmt(start)}–${fmt(end)})` : `Week ${offset + 1} (${fmt(start)}–${fmt(end)})`
+  }
+
+  const weeks = [0, 1, 2, 3].map(offset => ({
+    label: getWeekLabel(offset),
+    offset,
+    cas: caSchedule.filter(c => c.rollingWeek === offset),
+  }))
+
+  const weeklyAmounts = weeks.map(w => {
+    const unpaid  = w.cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+    const overdue = w.cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
+    return { ...w, unpaid, overdue, count: w.cas.length, unpaidCount: w.cas.filter(c => !c.isPaid).length }
+  })
+
+  // Calendar view — use due days for current month
   const byDay: Record<number, typeof caSchedule> = {}
   caSchedule.forEach(ca => {
-    if (!byDay[ca.dueDay]) byDay[ca.dueDay] = []
-    byDay[ca.dueDay].push(ca)
+    const day = ca.dueDay
+    if (!byDay[day]) byDay[day] = []
+    byDay[day].push(ca)
   })
-  const weeks = [
-    { label: 'Week 1 (1–7)',   days: [1,2,3,4,5,6,7]       },
-    { label: 'Week 2 (8–14)',  days: [8,9,10,11,12,13,14]   },
-    { label: 'Week 3 (15–21)', days: [15,16,17,18,19,20,21] },
-    { label: 'Week 4 (22–28)', days: [22,23,24,25,26,27,28] },
-  ]
-  const weeklyAmounts = weeks.map(w => {
-    const cas     = w.days.flatMap(d => byDay[d] ?? [])
-    const unpaid  = cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
-    const overdue = cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
-    return { ...w, unpaid, overdue, count: cas.length, unpaidCount: cas.filter(c => !c.isPaid).length }
-  })
-  const totalUnpaid  = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+
+  const totalUnpaid = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
   const calendarDays = Array.from({ length: 28 }, (_, i) => i + 1)
 
   return (
