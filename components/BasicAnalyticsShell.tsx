@@ -423,9 +423,8 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 { label: 'Duplicate bills',   sub: 'Same bill fetched more than once',     count: 8,                tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
                 { label: 'Meter reading alert', sub: 'Zero or same as last month · check meter', count: faultyMeterCount, tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
               ].map(a => (
-                <div key={a.label} style={{ padding: '10px 12px', background: a.tone.bg, border: `1px solid ${a.tone.bd}`, borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div key={a.label} style={{ padding: '10px 12px', background: a.tone.bg, border: `1px solid ${a.tone.bd}`, borderTop: `2.5px solid ${a.tone.accent}`, borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '3px', alignSelf: 'stretch', borderRadius: '2px', background: a.tone.accent, flexShrink: 0 }}/>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: a.tone.text }}>{a.label}</div>
                       <div style={{ fontSize: '12px', color: a.tone.text, opacity: 0.7 }}>{a.sub}</div>
@@ -2161,7 +2160,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 { accent: '#22C55E', accentL: '#F0FDF4', accentBd: '#BBF7D0', accentD: '#15803D', title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', sub: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs', detail: (TOTAL_CAS_DBC - optedIn) + ' CAs yet to opt in. Consider nudging.', cta: 'View' },
                 { accent: '#3B82F6', accentL: '#EFF6FF', accentBd: '#BFDBFE', accentD: '#1D4ED8', title: 'Multi-bill billers', value: String(multiBillCount), sub: 'billers',                                                     detail: multiBillCAs + ' CAs received 2+ bills. Review for duplicates.', cta: 'Check' },
               ] as const).map((card, ci) => (
-                <div key={ci} style={{ background: '#fff', border: `1px solid #E5E7EB`, borderLeft: `3px solid ${card.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div key={ci} style={{ background: '#fff', border: `1px solid #E5E7EB`, borderTop: `2.5px solid ${card.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
                     <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
