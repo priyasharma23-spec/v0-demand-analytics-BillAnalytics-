@@ -2482,73 +2482,91 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
 
             {/* Bill copy status — donut grid */}
             <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#192744' }}>Bill Copy Status — by {dbcView}</div>
-                  <div style={{ fontSize: '11.5px', color: '#858ea2', marginTop: '2px' }}>Opt-in CAs, delivery status and coverage</div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#192744', letterSpacing: '-0.01em' }}>Biller Breakdown</div>
+                  <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>Opt-in CAs · delivery status and coverage · Apr 2024 – Mar 2025</div>
                 </div>
-                <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
+                <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
                   {(['Biller','State','Branch'] as const).map(v => (
-                    <button key={v} onClick={() => setDbcView(v)} style={{ background: dbcView === v ? '#4F46E5' : 'transparent', color: dbcView === v ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: dbcView === v ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s' }}>{v}</button>
+                    <button key={v} onClick={() => setDbcView(v)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '4px 14px', fontSize: '11px', background: dbcView === v ? '#1c5af4' : 'transparent', color: dbcView === v ? '#fff' : '#858ea2', fontWeight: dbcView === v ? 600 : 400, transition: 'all .12s', textTransform: 'capitalize' }}>{v}</button>
                   ))}
                 </div>
               </div>
 
-              {/* Donut cards grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '12px' }}>
+              {/* Card grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '12px' }}>
                 {items.map((b, i) => {
-                  const color = b.pct >= 85 ? '#22C55E' : b.pct >= 75 ? '#F59E0B' : '#EF4444'
-                  const bg    = b.pct >= 85 ? '#F0FDF4' : b.pct >= 75 ? '#FFFBEB' : '#FEF2F2'
-                  const bd    = b.pct >= 85 ? '#BBF7D0' : b.pct >= 75 ? '#FDE68A' : '#FECACA'
-                  const textC = b.pct >= 85 ? '#15803D' : b.pct >= 75 ? '#B45309' : '#B91C1C'
-                  const r3 = 26, stroke3 = 5, size3 = 64
-                  const circ3 = 2 * Math.PI * r3
-                  const dash3 = (b.pct / 100) * circ3
+                  const color = b.pct >= 85 ? '#36b37e' : b.pct >= 70 ? '#f59e0b' : '#e53935'
+                  const r = (80 - 10) / 2
+                  const circ = 2 * Math.PI * r
+                  const filled = (b.pct / 100) * circ
+                  const cx = 80 / 2
+                  const cy = 80 / 2
+                  const rcvdW = (b.received / Math.max(b.opted, 1)) * 100
+                  const pendW = (b.pending / Math.max(b.opted, 1)) * 100
+                  const failW = (b.failed / Math.max(b.opted, 1)) * 100
+
                   return (
-                    <div key={b.name} style={{ background: '#fff', border: `1px solid #E5E7EB`, borderRadius: '12px', padding: '16px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                      {/* Donut */}
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <svg width={size3} height={size3} viewBox={`0 0 ${size3} ${size3}`} style={{ transform: 'rotate(-90deg)' }}>
-                          <circle cx={size3/2} cy={size3/2} r={r3} fill="none" stroke={color + '33'} strokeWidth={stroke3}/>
-                          <circle cx={size3/2} cy={size3/2} r={r3} fill="none" stroke={color} strokeWidth={stroke3} strokeDasharray={`${dash3} ${circ3 - dash3}`} strokeLinecap="round"/>
+                    <div key={b.name} style={{ background: '#fff', border: `1px solid #f0f1f5`, borderRadius: '8px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'default' }}>
+                      {/* Card body */}
+                      <div style={{ padding: '18px 16px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', flex: 1 }}>
+                        {/* Ring chart */}
+                        <svg width="80" height="80" viewBox="0 0 80 80" style={{ transform: 'rotate(-90deg)' }}>
+                          <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeOpacity="0.15" strokeWidth="7" />
+                          <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="7" strokeLinecap="round" strokeDasharray={`${filled} ${circ}`} />
+                          <text x={cx} y={cy + 5} textAnchor="middle" fontSize="15" fontWeight="700" fill={color} fontFamily="Inter, sans-serif" style={{ transform: 'rotate(90deg)', transformOrigin: `${cx}px ${cy}px` }}>{b.pct}%</text>
                         </svg>
-                        <div style={{ position: 'absolute', fontSize: '13px', fontWeight: 700, color: textC }}>{b.pct}%</div>
-                      </div>
-                      {/* Name */}
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744', lineHeight: 1.3 }}>{b.name}</div>
-                        {b.sub && <div style={{ fontSize: '10.5px', color: '#858ea2', marginTop: '3px' }}>{b.sub}</div>}
-                      </div>
-                      {/* Expected */}
-                      <div style={{ fontSize: '12px', color: '#858ea2', textAlign: 'center' }}>
-                        <span style={{ fontWeight: 700, color: '#192744' }}>{b.opted}</span> Expected Bill Copies
-                      </div>
-                      {/* Stats */}
-                      <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+
+                        {/* Biller name + state */}
                         <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#15803D' }}>{b.received}</div>
-                          <div style={{ fontSize: '9.5px', color: '#858ea2' }}>rcvd</div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#192744', lineHeight: 1.2 }}>{b.name}</div>
+                          <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '3px' }}>{b.sub}</div>
                         </div>
-                        <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#B45309' }}>{b.pending}</div>
-                          <div style={{ fontSize: '9.5px', color: '#858ea2' }}>pend</div>
+
+                        {/* Expected count */}
+                        <div style={{ fontSize: '11px', color: '#858ea2' }}>
+                          <span style={{ fontWeight: 600, color: '#192744' }}>{b.opted}</span> Expected Bill Copies
                         </div>
-                        <div style={{ width: '1px', height: '24px', background: '#E5E7EB' }}/>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#B91C1C' }}>{b.failed}</div>
-                          <div style={{ fontSize: '9.5px', color: '#858ea2' }}>fail</div>
+
+                        {/* rcvd · pend · fail stats */}
+                        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                          {[
+                            { val: b.received, label: 'rcvd', color: '#36b37e' },
+                            { val: b.pending, label: 'pend', color: '#f59e0b' },
+                            { val: b.failed, label: 'fail', color: '#e53935' },
+                          ].map((item, i) => (
+                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                              <span style={{ fontSize: '16px', fontWeight: 700, color: item.color, lineHeight: 1 }}>{item.val}</span>
+                              <span style={{ fontSize: '9px', color: '#858ea2', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      {/* Stacked bar */}
-                      <div style={{ display: 'flex', height: '4px', borderRadius: '99px', overflow: 'hidden', background: '#F3F4F6', gap: '1px', width: '100%' }}>
-                        <div style={{ width: `${(b.received/Math.max(b.opted,1))*100}%`, background: '#22C55E' }}/>
-                        <div style={{ width: `${(b.pending/Math.max(b.opted,1))*100}%`, background: '#F59E0B' }}/>
-                        <div style={{ width: `${(b.failed/Math.max(b.opted,1))*100}%`, background: '#EF4444' }}/>
+
+                      {/* Bottom status bar */}
+                      <div style={{ height: '6px', display: 'flex' }}>
+                        <div style={{ width: `${rcvdW}%`, background: '#36b37e', opacity: 0.8 }} />
+                        <div style={{ width: `${pendW}%`, background: '#f59e0b', opacity: 0.8 }} />
+                        <div style={{ width: `${failW}%`, background: '#e53935', opacity: 0.8 }} />
                       </div>
                     </div>
                   )
                 })}
+              </div>
+
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', paddingTop: '4px' }}>
+                {[
+                  { color: '#36b37e', label: 'Received' },
+                  { color: '#f59e0b', label: 'Pending' },
+                  { color: '#e53935', label: 'Failed' },
+                ].map((l, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ width: '10px', height: '4px', borderRadius: '99px', background: l.color, opacity: 0.8 }} />
+                    <span style={{ fontSize: '11px', color: '#858ea2' }}>{l.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
