@@ -481,90 +481,119 @@ return (
 
 
 
-      {/* New Chart 1: Unit consumption vs bill amount */}
+      {/* Section 1: Total consumption trend */}
       <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Unit consumption vs bill amount</div>
-            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>kWh consumed (left axis) vs total bill ₹ (right axis) · monthly</div>
-          </div>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
+          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Total consumption trend</div>
+          <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Monthly kWh ('000) · All states · Apr 2024 – Mar 2025</div>
         </div>
         <div style={{ padding: '14px 20px 16px' }}>
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '10px', fontSize: '12px', color: '#9aa0b0' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#36b37e', display: 'inline-block' }} />
-            Unit consumption (kWh)
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1c5af4', display: 'inline-block' }} />
-            Total bill amount (₹)
-          </span>
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '240px' }}>
-          <canvas ref={consumptionVsBillRef}></canvas>
-        </div>
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '10px', fontSize: '12px', color: '#9aa0b0' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1c5af4', display: 'inline-block' }} />
+              FY 2024-25
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '10px', height: '2px', borderRadius: '1px', background: '#d0d5e0', display: 'inline-block' }} />
+              FY 2023-24
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#36b37e', fontWeight: 500 }}>
+              +5.6% YoY
+            </span>
+          </div>
+          <div style={{ position: 'relative', width: '100%', height: '240px' }}>
+            <canvas ref={consumptionVsBillRef}></canvas>
+          </div>
         </div>
       </div>
 
-      {/* New Chart 2: Top consuming states */}
-      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
-          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Top consuming states</div>
-          <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Total kWh consumed per state · ranked highest to lowest · current period</div>
+      {/* Section 2: Two-column layout - Consumption by state + Bill composition */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+        {/* Consumption by state */}
+        <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Consumption by state</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Annual kWh ('000) · Apr 2024 – Mar 2025</div>
+          </div>
+          <div style={{ padding: '14px 20px 16px' }}>
+            <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+              <canvas ref={topStatesRef}></canvas>
+            </div>
+          </div>
         </div>
-        <div style={{ padding: '14px 20px 16px' }}>
-        <div style={{ position: 'relative', width: '100%', height: '280px' }}>
-          <canvas ref={topStatesRef}></canvas>
+
+        {/* Bill composition */}
+        <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Bill composition</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Aggregated · All states · Apr 2024 – Mar 2025</div>
+          </div>
+          <div style={{ padding: '14px 20px 16px' }}>
+            <div style={{ display:'flex', gap:'14px', marginBottom:'10px', flexWrap:'wrap', fontSize:'12px', color:'#9aa0b0' }}>
+              {[
+                { color:'#1c5af4', label:'Energy charges' },
+                { color:'#6c7fc7', label:'Demand charges' },
+                { color:'#a5b4e0', label:'Fixed charges' },
+                { color:'#f59e0b', label:'Taxes & duties' },
+                { color:'#e53935', label:'PF penalty' },
+              ].map(item => (
+                <span key={item.label} style={{ display:'flex', alignItems:'center', gap:'5px' }}>
+                  <span style={{ width:'10px', height:'10px', borderRadius:'50%', background:item.color, display:'inline-block' }} />
+                  {item.label}
+                </span>
+              ))}
+            </div>
+            <div style={{ position:'relative', width:'100%', height:'240px' }}>
+              <canvas ref={compChartRef}></canvas>
+            </div>
+          </div>
         </div>
-        {/* Summary table */}
-        <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '6px' }}>
-          {stateConsumption.map((s, i) => (
+      </div>
+
+      {/* Section 3: State breakdown cards */}
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 20px' }}>
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>State breakdown</div>
+          <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Apr 2024 – Mar 2025 · All states</div>
+        </div>
+        {/* Tab toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
+            {['kWh', 'KVA', 'Green'].map(tab => (
+              <button key={tab} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '4px 12px', fontSize: '11px', background: tab === 'kWh' ? '#1c5af4' : 'transparent', color: tab === 'kWh' ? '#fff' : '#858ea2', fontWeight: tab === 'kWh' ? 600 : 400, transition: 'all .12s' }}>
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* State cards grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
+          {stateConsumption.slice(0, 8).map((s, i) => (
             <div key={s.state} style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              padding: '6px 10px', borderRadius: '6px',
-              background: i === 0 ? '#eef3fe' : '#f5f6fa',
-              border: i === 0 ? '1px solid #c7d2fe' : '1px solid #f0f1f5',
+              background: '#f5f6fa',
+              border: '1px solid #f0f1f5',
+              borderRadius: '8px',
+              padding: '14px 12px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              transition: 'border-color .15s, box-shadow .15s',
             }}>
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', width: '14px', flexShrink: 0 }}>{i+1}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.state}</div>
-                <div style={{ fontSize: '11px', color: '#858ea2' }}>{(s.totalKwh/1000).toFixed(0)}K kWh</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: ['#1755c8', '#378add', '#5a9fdb', '#85b7eb'][Math.min(i, 3)], flexShrink: 0 }} />
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744' }}>{s.state}</div>
+                <div style={{ marginLeft: 'auto', fontSize: '11px', color: '#9aa0b0' }}>{Math.round(s.totalKwh / 1000000 * 100)}%</div>
               </div>
-              <div style={{ fontSize: '11px', color: '#36b37e', fontWeight: 500, flexShrink: 0 }}>₹{s.avgRate}/u</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744', lineHeight: 1 }}>{(s.totalKwh / 1000000).toFixed(1)}M</div>
+              <div style={{ fontSize: '11px', color: '#9aa0b0' }}>kWh · ₹{(s.avgRate * 100).toFixed(0)}L</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#858ea2', marginTop: '4px', paddingTop: '6px', borderTop: '1px solid #f0f1f5' }}>
+                <span>{s.totalKwh > 0 ? Math.round(s.totalKwh / 187 / 1000) : 0}K CAs · 8 hr</span>
+                <span style={{ marginLeft: 'auto', color: '#36b37e', fontWeight: 600 }}>LF 74%</span>
+              </div>
             </div>
           ))}
         </div>
-        </div>
       </div>
-
-      {/* Section 3 — Bill component split */}
-      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
-          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Bill component breakdown</div>
-          <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Fixed / energy / penalties / taxes per period</div>
-        </div>
-        <div style={{ padding: '14px 20px 16px' }}>
-        <div style={{ display:'flex', gap:'14px', marginBottom:'10px', flexWrap:'wrap', fontSize:'12px', color:'#9aa0b0' }}>
-          {[
-            { color:'#1c5af4', label:'Fixed charges' },
-            { color:'#36b37e', label:'Energy charges' },
-            { color:'#e53935', label:'Penalties' },
-            { color:'#f59e0b', label:'Arrears' },
-            { color:'#9aa0b0', label:'Taxes' },
-          ].map(item => (
-            <span key={item.label} style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-              <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:item.color, display:'inline-block' }} />
-              {item.label}
-            </span>
-          ))}
-        </div>
-        <div style={{ position:'relative', width:'100%', height:'240px' }}>
-          <canvas ref={compChartRef}></canvas>
-        </div>
-        </div>
-      </div>
-
-      {/* Section 4 — Bill reading distribution */}
       <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 20px' }}>
 
         {/* Header row */}
