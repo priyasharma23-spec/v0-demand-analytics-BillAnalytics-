@@ -2155,10 +2155,10 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             {/* Attention needed cards — white + borderLeft */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
               {([
-                { accent: '#EF4444', accentL: '#FEF2F2', accentBd: '#FECACA', accentD: '#B91C1C', title: 'Failed bill copies', value: String(failed),   sub: failedPct + '% failure rate',                                          detail: 'Check biller API. Repeated failures block payment.',           cta: 'Fix now' },
+                { accent: '#DC2626', accentL: '#FEF2F2', accentBd: '#FECACA', accentD: '#B91C1C', title: 'Failed bill copies', value: String(failed),   sub: failedPct + '% failure rate',                                          detail: 'Check biller API. Repeated failures block payment.',           cta: 'Fix now' },
                 { accent: '#F59E0B', accentL: '#FFFBEB', accentBd: '#FDE68A', accentD: '#B45309', title: 'Pending > 48 hrs',   value: String(Math.round(pending * 0.44)), sub: 'of ' + pending + ' pending',                     detail: 'Bills stalled over 48 hrs — manual intervention needed.', cta: 'Review' },
                 { accent: '#22C55E', accentL: '#F0FDF4', accentBd: '#BBF7D0', accentD: '#15803D', title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', sub: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs', detail: (TOTAL_CAS_DBC - optedIn) + ' CAs yet to opt in. Consider nudging.', cta: 'View' },
-                { accent: '#3B82F6', accentL: '#EFF6FF', accentBd: '#BFDBFE', accentD: '#1D4ED8', title: 'Multi-bill billers', value: String(multiBillCount), sub: 'billers',                                                     detail: multiBillCAs + ' CAs received 2+ bills. Review for duplicates.', cta: 'Check' },
+                { accent: '#2563EB', accentL: '#EFF6FF', accentBd: '#BFDBFE', accentD: '#1D4ED8', title: 'Multi-bill billers', value: String(multiBillCount), sub: 'billers',                                                     detail: multiBillCAs + ' CAs received 2+ bills. Review for duplicates.', cta: 'Check' },
               ] as const).map((card, ci) => (
                 <div key={ci} style={{ background: '#fff', border: `1px solid #E5E7EB`, borderTop: `2.5px solid ${card.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
