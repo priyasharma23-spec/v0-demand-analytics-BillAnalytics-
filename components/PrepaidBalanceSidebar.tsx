@@ -38,7 +38,7 @@ export function PrepaidBalanceSidebar({
           fontSize: 10, fontWeight: 600, color: '#858ea2',
           textTransform: 'uppercase', letterSpacing: '0.07em',
         }}>
-          Prepaid balance
+          Postpaid Arrears
         </span>
         {onViewAll && (
           <button onClick={onViewAll} style={{
@@ -117,34 +117,6 @@ export function PrepaidBalanceSidebar({
           {arrearCount}
         </span>
       </div>
-
-      {/* Footer alert — only shown if arrears exist */}
-      {arrearCount > 0 && (
-        <div style={{
-          margin: '0 10px 10px',
-          padding: '7px 10px',
-          borderRadius: 4,
-          background: '#fef2f2',
-          border: '1px solid #fecaca',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#e53935', marginBottom: 1 }}>
-              {arrearCount} meter{arrearCount !== 1 ? 's' : ''} need recharge
-            </div>
-            <div style={{ fontSize: 10, color: '#858ea2' }}>
-              Disconnect risk
-            </div>
-          </div>
-          <span style={{
-            fontSize: 16, fontWeight: 700, color: '#e53935',
-          }}>
-            {arrearCount}
-          </span>
-        </div>
-      )}
     </div>
   );
 }
