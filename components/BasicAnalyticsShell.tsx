@@ -512,7 +512,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
   // Drill-down variables
   const spendData = showBranches 
     ? Object.fromEntries(locationRows.map(r => [r.name, r]))
-    : Object.fromEntries(stateData.map(r => [r.name, r]))
+    : Object.fromEntries(stateData.map(r => [r.state, r]))
   const sd = spendSel ? spendData[spendSel] : { total: 0, months: [] }
   const peakMthIdx = sd && sd.months ? sd.months.indexOf(Math.max(...sd.months)) : 0
   const lowMthIdx = sd && sd.months ? sd.months.indexOf(Math.min(...sd.months)) : 0
