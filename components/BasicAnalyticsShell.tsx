@@ -454,12 +454,13 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
     const bills    = getStateBills(st, 'monthly')
     const total    = bills.reduce((s, d) => s + d.totalBill, 0)
     const avgBill  = Math.round(total / Math.max(cas, 1))
+    const months   = bills.map(d => d.totalBill)
     // Simulate prior year — ±5-15% variance per state deterministically
     const seed     = st.charCodeAt(0) % 20
     const priorTotal = Math.round(total * (0.88 + seed * 0.015))
     const yoy      = Math.round((total - priorTotal) / Math.max(priorTotal, 1) * 100)
     const isOutlier = Math.abs(yoy) > 10
-    return { state: st, cas, total, avgBill, priorTotal, yoy, isOutlier }
+    return { state: st, cas, total, avgBill, months, priorTotal, yoy, isOutlier }
   }).sort((a, b) => b.total - a.total)
 
   // If a state is selected, show branches of that state instead of all states
@@ -471,9 +472,13 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         const seed  = br.charCodeAt(0) % 20
         const prior = Math.round(bills * (0.88 + seed * 0.015))
         const yoy   = Math.round((bills - prior) / Math.max(prior, 1) * 100)
-        return { name: br, cas, branches: 0, total: bills, priorTotal: prior, yoy, isOutlier: Math.abs(yoy) > 10 }
+        const monthlyBills = (CAS[br] ?? []).reduce((acc, ca) => {
+          const caBills = getCABills(ca, 'monthly')
+          return acc.map((v, i) => v + (caBills[i]?.totalBill ?? 0))
+        }, Array(12).fill(0))
+        return { name: br, cas, branches: 0, total: bills, months: monthlyBills, priorTotal: prior, yoy, isOutlier: Math.abs(yoy) > 10 }
       }).sort((a, b) => b.total - a.total)
-    : stateData.map(d => ({ name: d.state, cas: d.cas, branches: (BRANCHES[d.state] ?? []).length, total: d.total, priorTotal: d.priorTotal, yoy: d.yoy, isOutlier: d.isOutlier }))
+    : stateData.map(d => ({ name: d.state, cas: d.cas, branches: (BRANCHES[d.state] ?? []).length, total: d.total, months: d.months, priorTotal: d.priorTotal, yoy: d.yoy, isOutlier: d.isOutlier }))
 
   const branchRows = Object.entries(BRANCHES)
     .filter(([st]) => appState.stateF === 'all' || st === appState.stateF)
