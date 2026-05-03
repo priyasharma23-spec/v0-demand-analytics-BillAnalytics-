@@ -161,7 +161,7 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
             { accent: '#22C55E', title: 'Opt-in coverage', value: `${totalOpted > 0 ? Math.round(totalOpted / TOTAL_CAS * 100) : 0}%`, valueSub: undefined, detail: `${totalOpted} of ${TOTAL_CAS} CAs opted in. ${TOTAL_CAS - totalOpted} yet to opt.`, action: 'View not opted' },
             { accent: '#3B82F6', title: 'Multi-bill billers', value: String(multiBillCount), valueSub: 'billers', detail: `${multiBillCAs} CAs received more than 1 bill this month. Review for duplicates.`, action: 'Check duplicates' },
           ].map((card, idx) => (
-            <div key={idx} style={{ background: '#fff', border: `1px solid #f0f1f5`, borderTop: `2.5px solid ${card.accent}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div key={idx} style={{ background: '#fff', border: `1px solid #f0f1f5`, borderTop: `2.5px solid ${card.accent}`, borderRadius: '6px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
                 <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
