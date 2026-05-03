@@ -692,6 +692,70 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         </div>
       </div>
 
+      {/* Portfolio breakup — Option A: large donut + legend right with branch/CA counts */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginBottom: '16px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>Portfolio breakup</div>
+        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '16px' }}>Bill spend by {showBranches ? 'branch' : 'state'} · Apr 2024 – Mar 2025</div>
+        <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
+          {(() => {
+            const COLORS = ['#4F46E5','#1c5af4','#06b6d4','#8b5cf6','#f59e0b','#10b981','#ef4444','#f97316']
+            const rows = showBranches
+              ? locationRows.map(r => ({ name: r.name, total: r.total, branches: 1, cas: CAS[r.name]?.length ?? 0 }))
+              : stateData.map(d => ({ name: d.state, total: d.total, branches: (BRANCHES[d.state] ?? []).length, cas: (BRANCHES[d.state] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0) }))
+            const total = rows.reduce((s, r) => s + r.total, 0)
+            const circ = 2 * Math.PI * 72
+            let offset = 0
+            const totalBranches = rows.reduce((s, r) => s + r.branches, 0)
+            const totalCAsAll = rows.reduce((s, r) => s + r.cas, 0)
+            return (
+              <>
+                <div style={{ flexShrink: 0 }}>
+                  <svg width="180" height="180" viewBox="0 0 180 180">
+                    <circle cx="90" cy="90" r="72" fill="none" stroke="#f3f4f6" strokeWidth="32"/>
+                    {rows.map((r, i) => {
+                      const pct = r.total / Math.max(total, 1)
+                      const dash = pct * circ
+                      const gap = circ - dash
+                      const el = (
+                        <circle key={r.name} cx="90" cy="90" r="72" fill="none"
+                          stroke={COLORS[i % COLORS.length]}
+                          strokeWidth="32"
+                          strokeDasharray={`${dash} ${gap}`}
+                          strokeDashoffset={-offset}
+                          strokeLinecap="butt"
+                        />
+                      )
+                      offset += dash
+                      return el
+                    })}
+                    <text x="90" y="84" textAnchor="middle" fontSize="13" fontWeight="600" fill="#192744" fontFamily="Inter, sans-serif">{rows.length} states</text>
+                    <text x="90" y="100" textAnchor="middle" fontSize="11" fill="#858ea2" fontFamily="Inter, sans-serif">{totalCAsAll} CAs total</text>
+                  </svg>
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                  {rows.map((r, i) => {
+                    const pct = Math.round(r.total / Math.max(total, 1) * 100)
+                    return (
+                      <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: COLORS[i % COLORS.length], flexShrink: 0 }} />
+                        <div style={{ flex: 1, fontSize: '12px', color: '#192744' }}>{r.name}</div>
+                        <div style={{ fontSize: '11px', color: '#858ea2' }}>{r.branches} br</div>
+                        <div style={{ fontSize: '11px', color: '#858ea2' }}>{r.cas} CAs</div>
+                        <div style={{ width: '60px', height: '4px', background: '#f3f4f6', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{ width: pct + '%', height: '100%', background: COLORS[i % COLORS.length], borderRadius: '2px' }} />
+                        </div>
+                        <div style={{ width: '32px', fontSize: '11px', color: '#858ea2', textAlign: 'right' }}>{pct}%</div>
+                        <div style={{ width: '52px', fontSize: '11px', fontWeight: 600, color: '#192744', textAlign: 'right' }}>{inr(r.total)}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )
+          })()}
+        </div>
+      </div>
+
             {/* Spend by state */}
       <div style={{ marginTop: '24px' }} />
       {/* Spend heatmap — India map */}
