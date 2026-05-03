@@ -1,7 +1,7 @@
 // ── 2. RIGHT SIDEBAR — matches Payment Status / Action Required style exactly ─
 // Drop this as a new sidebar section, between or after existing sidebar cards:
 
-function PrepaidBalanceSidebar({
+export function PrepaidBalanceSidebar({
   creditAmount,   // number in lakhs e.g. 34.1
   creditCount,    // number of meters
   arrearAmount,   // number in lakhs e.g. 20.2
