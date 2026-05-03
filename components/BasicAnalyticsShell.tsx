@@ -2482,53 +2482,11 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
 
             {/* Bill copy status — donut grid */}
             <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px 20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                 <div>
                   <div style={{ fontSize: '16px', fontWeight: 700, color: '#192744', letterSpacing: '-0.01em' }}>Biller Breakdown</div>
                   <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>Opt-in CAs · delivery status and coverage · Apr 2024 – Mar 2025</div>
                 </div>
-                <div style={{ fontSize: '12px', color: '#858ea2' }}>Updated daily · May 2025</div>
-              </div>
-
-              {/* Summary stats row - left aligned */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-                  {(() => {
-                    const totalExpected = items.reduce((a, b) => a + b.opted, 0)
-                    const totalRcvd = items.reduce((a, b) => a + b.received, 0)
-                    const totalPend = items.reduce((a, b) => a + b.pending, 0)
-                    const totalFail = items.reduce((a, b) => a + b.failed, 0)
-                    const overallPct = Math.round((totalRcvd / Math.max(totalExpected, 1)) * 100)
-                    
-                    return (
-                      <>
-                        {[
-                          { val: totalExpected, label: 'expected', color: '#192744' },
-                          { val: totalRcvd, label: 'received', color: '#22C55E' },
-                          { val: totalPend, label: 'pending', color: '#F59E0B' },
-                          { val: totalFail, label: 'failed', color: '#EF4444' },
-                        ].map((s, i) => (
-                          <div key={i} style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '20px', fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.val}</div>
-                            <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>{s.label}</div>
-                          </div>
-                        ))}
-
-                        {/* Divider */}
-                        <div style={{ width: '1px', height: '40px', background: '#f0f1f5' }} />
-
-                        {/* Overall ring mini */}
-                        <svg width="52" height="52" viewBox="0 0 52 52" style={{ transform: 'rotate(-90deg)' }}>
-                          <circle cx="26" cy="26" r="20" fill="none" stroke={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} strokeOpacity="0.15" strokeWidth="6" />
-                          <circle cx="26" cy="26" r="20" fill="none" stroke={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(overallPct / 100) * (2 * Math.PI * 20)} ${2 * Math.PI * 20}`} />
-                          <text x="26" y="30" textAnchor="middle" fontSize="16" fontWeight="700" fill={overallPct >= 85 ? '#22C55E' : overallPct >= 70 ? '#F59E0B' : '#EF4444'} fontFamily="Inter, sans-serif">{overallPct}%</text>
-                        </svg>
-                      </>
-                    )
-                  })()}
-                </div>
-
-                {/* View toggle pill - right side */}
                 <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
                   {(['Biller','State','Branch'] as const).map(v => (
                     <button key={v} onClick={() => setDbcView(v)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '4px 14px', fontSize: '11px', background: dbcView === v ? '#1c5af4' : 'transparent', color: dbcView === v ? '#fff' : '#858ea2', fontWeight: dbcView === v ? 600 : 400, transition: 'all .12s', textTransform: 'capitalize' }}>{v}</button>
@@ -2557,7 +2515,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                         <svg width="80" height="80" viewBox="0 0 80 80" style={{ transform: 'rotate(-90deg)' }}>
                           <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeOpacity="0.15" strokeWidth="7" />
                           <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="7" strokeLinecap="round" strokeDasharray={`${filled} ${circ}`} />
-                          <text x={cx} y={cy + 5} textAnchor="middle" fontSize="15" fontWeight="700" fill={color} fontFamily="Inter, sans-serif">{b.pct}%</text>
+                          <text x={cx} y={cy + 5} textAnchor="middle" fontSize="15" fontWeight="700" fill={color} fontFamily="Inter, sans-serif" style={{ transform: 'rotate(90deg)', transformOrigin: `${cx}px ${cy}px` }}>{b.pct}%</text>
                         </svg>
 
                         {/* Biller name + state */}
