@@ -466,14 +466,14 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
   }, [billComponentData])
 
 return (
-    <div style={{ background: '#f0f5fa', padding: '20px' }}>
+    <div style={{ background: '#f5f6fa', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Section 1 — Summary metric cards */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', display: 'flex', marginBottom: '16px' }}>
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', display: 'flex', overflow: 'hidden' }}>
         {summaryMetrics.map((m, i) => (
           <div key={m.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
-            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
-            <div style={{ fontSize: '11px', fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{m.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{m.value}</div>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '16px', bottom: '16px', width: '1px', background: '#f0f1f5' }} />}
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{m.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#192744', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{m.value}</div>
             <div style={{ fontSize: '12px', color: m.subColor }}>{m.sub}</div>
           </div>
         ))}
@@ -482,32 +482,37 @@ return (
 
 
       {/* New Chart 1: Unit consumption vs bill amount */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
-        <div style={{ marginBottom: '14px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Unit consumption vs bill amount</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>kWh consumed (left axis) vs total bill ₹ (right axis) · monthly</div>
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Unit consumption vs bill amount</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>kWh consumed (left axis) vs total bill ₹ (right axis) · monthly</div>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '10px', fontSize: '12px', color: '#6b6b67' }}>
+        <div style={{ padding: '14px 20px 16px' }}>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '10px', fontSize: '12px', color: '#9aa0b0' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1D9E75', display: 'inline-block' }} />
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#36b37e', display: 'inline-block' }} />
             Unit consumption (kWh)
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#2500D7', display: 'inline-block' }} />
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1c5af4', display: 'inline-block' }} />
             Total bill amount (₹)
           </span>
         </div>
         <div style={{ position: 'relative', width: '100%', height: '240px' }}>
           <canvas ref={consumptionVsBillRef}></canvas>
         </div>
+        </div>
       </div>
 
       {/* New Chart 2: Top consuming states */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
-        <div style={{ marginBottom: '14px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Top consuming states</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Total kWh consumed per state · ranked highest to lowest · current period</div>
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
+          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Top consuming states</div>
+          <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Total kWh consumed per state · ranked highest to lowest · current period</div>
         </div>
+        <div style={{ padding: '14px 20px 16px' }}>
         <div style={{ position: 'relative', width: '100%', height: '280px' }}>
           <canvas ref={topStatesRef}></canvas>
         </div>
@@ -517,33 +522,35 @@ return (
             <div key={s.state} style={{
               display: 'flex', alignItems: 'center', gap: '8px',
               padding: '6px 10px', borderRadius: '6px',
-              background: i === 0 ? '#E6F1FB' : '#f9f9f9',
-              border: i === 0 ? '0.5px solid #B5D4F4' : '0.5px solid rgba(0,0,0,0.07)',
+              background: i === 0 ? '#eef3fe' : '#f5f6fa',
+              border: i === 0 ? '1px solid #c7d2fe' : '1px solid #f0f1f5',
             }}>
               <span style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', width: '14px', flexShrink: 0 }}>{i+1}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: '12px', fontWeight: 500, color: '#192744', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.state}</div>
                 <div style={{ fontSize: '11px', color: '#858ea2' }}>{(s.totalKwh/1000).toFixed(0)}K kWh</div>
               </div>
-              <div style={{ fontSize: '11px', color: '#3B6D11', fontWeight: 500, flexShrink: 0 }}>₹{s.avgRate}/u</div>
+              <div style={{ fontSize: '11px', color: '#36b37e', fontWeight: 500, flexShrink: 0 }}>₹{s.avgRate}/u</div>
             </div>
           ))}
+        </div>
         </div>
       </div>
 
       {/* Section 3 — Bill component split */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
-        <div style={{ marginBottom: '14px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill component breakdown</div>
-          <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Fixed / energy / penalties / taxes per period</div>
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
+          <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Bill component breakdown</div>
+          <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Fixed / energy / penalties / taxes per period</div>
         </div>
-        <div style={{ display:'flex', gap:'14px', marginBottom:'10px', flexWrap:'wrap', fontSize:'12px', color:'#6b6b67' }}>
+        <div style={{ padding: '14px 20px 16px' }}>
+        <div style={{ display:'flex', gap:'14px', marginBottom:'10px', flexWrap:'wrap', fontSize:'12px', color:'#9aa0b0' }}>
           {[
-            { color:'#85B7EB', label:'Fixed charges' },
-            { color:'#1D9E75', label:'Energy charges' },
-            { color:'#E24B4A', label:'Penalties' },
-            { color:'#EF9F27', label:'Arrears' },
-            { color:'#888780', label:'Taxes' },
+            { color:'#1c5af4', label:'Fixed charges' },
+            { color:'#36b37e', label:'Energy charges' },
+            { color:'#e53935', label:'Penalties' },
+            { color:'#f59e0b', label:'Arrears' },
+            { color:'#9aa0b0', label:'Taxes' },
           ].map(item => (
             <span key={item.label} style={{ display:'flex', alignItems:'center', gap:'5px' }}>
               <span style={{ width:'10px', height:'10px', borderRadius:'2px', background:item.color, display:'inline-block' }} />
@@ -554,15 +561,16 @@ return (
         <div style={{ position:'relative', width:'100%', height:'240px' }}>
           <canvas ref={compChartRef}></canvas>
         </div>
+        </div>
       </div>
 
       {/* Section 4 — Bill reading distribution */}
-      <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.10)', borderRadius: '16px', padding: '16px 18px', marginBottom: '12px' }}>
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 20px' }}>
 
         {/* Header row */}
         <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'12px' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill reading distribution</div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Bill reading distribution</div>
             <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>
               Count of bills by unit consumption range · opening to closing reading · monthly
             </div>
@@ -573,7 +581,7 @@ return (
             <div style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '6px 12px', borderRadius: '8px',
-              background: '#FCEBEB', border: '0.5px solid #F7C1C1',
+              background: '#fef2f2', border: '1px solid #fecaca',
               fontSize: '12px', flexShrink: 0,
             }}>
               <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#E24B4A', flexShrink:0 }} />
@@ -585,7 +593,7 @@ return (
         </div>
 
         {/* Custom legend */}
-        <div style={{ display:'flex', gap:'14px', marginBottom:'16px', flexWrap:'wrap', fontSize:'12px', color:'#6b6b67' }}>
+        <div style={{ display:'flex', gap:'14px', marginBottom:'16px', flexWrap:'wrap', fontSize:'12px', color:'#9aa0b0' }}>
           {DISTRIBUTION_BUCKETS.map(r => (
             <span key={r.rangeLabel} style={{ display:'flex', alignItems:'center', gap:'5px' }}>
               <span style={{
@@ -604,7 +612,7 @@ return (
 
         {/* Faulty meter months breakdown */}
         {totalFaulty > 0 && (
-          <div style={{ marginTop:'12px', padding:'10px 12px', background:'#FFF8F8', borderRadius:'8px', border:'0.5px solid #F7C1C1' }}>
+          <div style={{ marginTop:'12px', padding:'10px 12px', background:'#fef2f2', borderRadius:'8px', border:'1px solid #fecaca' }}>
             <div style={{ fontSize:'11px', fontWeight:500, color:'#791F1F', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.04em' }}>
               Possible faulty meter — bills with zero unit consumption
             </div>
@@ -615,7 +623,7 @@ return (
                   <div key={month} style={{
                     display:'flex', alignItems:'center', gap:'4px',
                     padding:'3px 8px', borderRadius:'4px',
-                    background:'#FCEBEB', fontSize:'11px',
+                    background:'#fef2f2', fontSize:'11px',
                   }}>
                     <span style={{ fontWeight:500, color:'#A32D2D' }}>{month}</span>
                     <span style={{ color:'#791F1F' }}>{faultyCount} bills</span>
