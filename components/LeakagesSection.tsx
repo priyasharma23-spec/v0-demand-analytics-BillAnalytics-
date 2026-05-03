@@ -333,7 +333,7 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
       </div>
 
       {/* Inline header stats strip - New design with cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
         {(() => {
           const leakPct = Math.round((leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1)) * 100);
           const biggestType = leakSummary.totalExcess >= leakSummary.totalPF && leakSummary.totalExcess >= leakSummary.totalLP ? 'Excess Demand' : leakSummary.totalPF >= leakSummary.totalLP ? 'Power Factor' : 'Late Payment';
@@ -380,7 +380,7 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
           ];
 
           return cards.map((card, i) => {
-            const circleRadius = 32;
+            const circleRadius = 22;
             const circumference = 2 * Math.PI * circleRadius;
             const strokeDashoffset = circumference - (card.percentage / 100) * circumference;
 
@@ -388,49 +388,48 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
               <div key={i} style={{
                 background: card.bgColor,
                 border: `1px solid ${card.accentColor}`,
-                borderRadius: '12px',
-                padding: '20px',
+                borderRadius: '8px',
+                padding: '12px 14px',
                 display: 'flex',
-                flexDirection: 'column',
+                alignItems: 'center',
                 justifyContent: 'space-between',
-                minHeight: '140px',
-                position: 'relative',
+                gap: '10px',
               }}>
                 {/* Left side content */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '28px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '8px', letterSpacing: '-0.01em' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '3px', letterSpacing: '-0.01em' }}>
                     {card.value}
                   </div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '8px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>
                     {card.label}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '10px', color: '#6b7280', marginBottom: '4px' }}>
                     {card.sub}
                   </div>
                   {/* Colored accent line */}
-                  <div style={{ width: '36px', height: '3px', background: card.accentColor, borderRadius: '2px' }} />
+                  <div style={{ width: '24px', height: '2px', background: card.accentColor, borderRadius: '1px' }} />
                 </div>
 
                 {/* Right side circular progress */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', marginTop: '12px' }}>
-                  <svg width="68" height="68" style={{ transform: 'rotate(-90deg)' }}>
+                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="52" height="52" style={{ transform: 'rotate(-90deg)' }}>
                     {/* Background circle */}
                     <circle
-                      cx="34"
-                      cy="34"
+                      cx="26"
+                      cy="26"
                       r={circleRadius}
                       fill="none"
                       stroke="#e5e7eb"
-                      strokeWidth="3"
+                      strokeWidth="2"
                     />
                     {/* Progress circle */}
                     <circle
-                      cx="34"
-                      cy="34"
+                      cx="26"
+                      cy="26"
                       r={circleRadius}
                       fill="none"
                       stroke={card.accentColor}
-                      strokeWidth="3"
+                      strokeWidth="2"
                       strokeDasharray={circumference}
                       strokeDashoffset={strokeDashoffset}
                       strokeLinecap="round"
@@ -438,14 +437,14 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
                     />
                     {/* Percentage text */}
                     <text
-                      x="34"
-                      y="34"
+                      x="26"
+                      y="26"
                       textAnchor="middle"
                       dy="0.3em"
-                      fontSize="14"
+                      fontSize="10"
                       fontWeight="700"
                       fill={card.accentColor}
-                      style={{ transform: 'rotate(90deg)', transformOrigin: '34px 34px' }}
+                      style={{ transform: 'rotate(90deg)', transformOrigin: '26px 26px' }}
                     >
                       {card.percentage}%
                     </text>
