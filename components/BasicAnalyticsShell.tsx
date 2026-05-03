@@ -408,10 +408,11 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Action required</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               {[
-                { label: 'Fetch failed',    sub: 'BBPS error · payment blocked',  count: 34,  tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
-                { label: 'Not generated',   sub: 'Active CAs · no bill yet',      count: 170, tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
-                { label: 'Copy pending',    sub: 'Bill copy being fetched',        count: 62,  tone: { bg: '#EFF6FF', bd: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
-                { label: 'Duplicate bills', sub: 'Same bill fetched more than once', count: 8,   tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+                { label: 'Fetch failed',      sub: 'BBPS error · payment blocked',         count: 34,               tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
+                { label: 'Not generated',     sub: 'Active CAs · no bill yet',             count: 170,              tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+                { label: 'Copy pending',      sub: 'Bill copy being fetched',               count: 62,               tone: { bg: '#EFF6FF', bd: '#BFDBFE', text: '#1D4ED8', accent: '#3B82F6' } },
+                { label: 'Duplicate bills',   sub: 'Same bill fetched more than once',     count: 8,                tone: { bg: '#FFFBEB', bd: '#FDE68A', text: '#B45309', accent: '#F59E0B' } },
+                { label: 'Meter reading alert', sub: 'Zero or same as last month · check meter', count: faultyMeterCount, tone: { bg: '#FEF2F2', bd: '#FECACA', text: '#B91C1C', accent: '#EF4444' } },
               ].map(a => (
                 <div key={a.label} style={{ padding: '10px 12px', background: a.tone.bg, border: `1px solid ${a.tone.bd}`, borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1785,6 +1786,16 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     byDay[ca.dueDay].push(ca)
   })
   const totalUnpaid  = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+  const allCAs2 = Object.values(CAS).flat()
+  const faultyMeterCount = allCAs2.filter((ca, ci) => {
+    const bills = getCABills(ca, 'monthly')
+    const latestIdx = bills.length - 1
+    const latest = bills[latestIdx]
+    const prior  = bills[latestIdx - 1]
+    const isFaultyLatest = ((ci * 7 + latestIdx * 13) % 33 === 0)
+    const isSameAsPrior  = prior && latest && Math.abs(latest.kwh - prior.kwh) < 100
+    return isFaultyLatest || isSameAsPrior
+  }).length
   const totalOverdue = caSchedule.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
   const overdueCount = caSchedule.filter(c => c.isOverdue).length
   const paidAmt      = caSchedule.filter(c => c.isPaid).reduce((s, c) => s + c.billAmt, 0)
