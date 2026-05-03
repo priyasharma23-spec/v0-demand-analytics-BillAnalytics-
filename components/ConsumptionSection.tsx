@@ -307,21 +307,21 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
             <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Bill composition</div>
             <div style={{ fontSize: '12px', color: '#9AA0B0', marginTop: '4px' }}>Aggregated · All states · Apr 2024 – Mar 2025</div>
           </div>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+          <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+            <div style={{ position: 'relative', width: '160px', height: '160px', flexShrink: 0 }}>
               <canvas ref={billChartRef}></canvas>
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#9AA0B0' }}>total bill</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, color: '#192744' }}>₹42,279L</div>
+                <div style={{ fontSize: '12px', fontWeight: 500, color: '#9AA0B0' }}>total bill</div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744' }}>₹42,279L</div>
               </div>
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '8px' }}>
               {billCompositionData.map(item => (
-                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: item.color }} />
+                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
                   <span style={{ flex: 1, color: '#192744' }}>{item.label}</span>
-                  <span style={{ color: '#192744', fontWeight: 600, minWidth: '55px' }}>{item.value}</span>
-                  <span style={{ color: '#9AA0B0', minWidth: '30px', textAlign: 'right' }}>{item.percentage}%</span>
+                  <span style={{ color: '#192744', fontWeight: 600, minWidth: '65px', textAlign: 'right' }}>{item.value}</span>
+                  <span style={{ color: '#9AA0B0', minWidth: '35px', textAlign: 'right' }}>{item.percentage}%</span>
                 </div>
               ))}
             </div>
