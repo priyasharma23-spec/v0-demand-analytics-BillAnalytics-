@@ -2152,27 +2152,25 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               })}
             </div>
 
-            {/* Attention needed cards — white + borderLeft */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+            {/* Attention needed cards — BranchHighlights style */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '20px' }}>
               {([
-                { accent: '#DC2626', accentL: '#FEF2F2', accentBd: '#FECACA', accentD: '#B91C1C', title: 'Failed bill copies', value: String(failed),   sub: failedPct + '% failure rate',                                          detail: 'Check biller API. Repeated failures block payment.',           cta: 'Fix now' },
-                { accent: '#F59E0B', accentL: '#FFFBEB', accentBd: '#FDE68A', accentD: '#B45309', title: 'Pending > 48 hrs',   value: String(Math.round(pending * 0.44)), sub: 'of ' + pending + ' pending',                     detail: 'Bills stalled over 48 hrs — manual intervention needed.', cta: 'Review' },
-                { accent: '#22C55E', accentL: '#F0FDF4', accentBd: '#BBF7D0', accentD: '#15803D', title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', sub: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs', detail: (TOTAL_CAS_DBC - optedIn) + ' CAs yet to opt in. Consider nudging.', cta: 'View' },
-                { accent: '#2563EB', accentL: '#EFF6FF', accentBd: '#BFDBFE', accentD: '#1D4ED8', title: 'Multi-bill billers', value: String(multiBillCount), sub: 'billers',                                                     detail: multiBillCAs + ' CAs received 2+ bills. Review for duplicates.', cta: 'Check' },
+                { accent: '#DC2626', accentBd: '#FECACA', title: 'Failed bill copies', value: String(failed),   sub: failedPct + '% failure rate',                                          detail: 'Check biller API. Repeated failures block payment.',           cta: 'Fix now' },
+                { accent: '#F59E0B', accentBd: '#FDE68A', title: 'Pending > 48 hrs',   value: String(Math.round(pending * 0.44)), sub: 'of ' + pending + ' pending',                     detail: 'Bills stalled over 48 hrs — manual intervention needed.', cta: 'Review' },
+                { accent: '#22C55E', accentBd: '#BBF7D0', title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', sub: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs', detail: (TOTAL_CAS_DBC - optedIn) + ' CAs yet to opt in. Consider nudging.', cta: 'View' },
+                { accent: '#2563EB', accentBd: '#BFDBFE', title: 'Multi-bill billers', value: String(multiBillCount), sub: 'billers',                                                     detail: multiBillCAs + ' CAs received 2+ bills. Review for duplicates.', cta: 'Check' },
               ] as const).map((card, ci) => (
-                <div key={ci} style={{ background: '#fff', border: `1.5px solid ${card.accentBd}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
-                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
+                <div key={ci} style={{ background: '#ffffff', borderLeft: `1px solid #f0f1f5`, borderRight: `1px solid #f0f1f5`, borderBottom: `1px solid #f0f1f5`, borderTop: `2.5px solid ${card.accent}`, borderRadius: 6, boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'default', minHeight: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
+                    <span style={{ fontSize: 10, fontWeight: 600, color: card.accent, textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: 1 }}>{card.title}</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                    <div style={{ fontSize: '28px', fontWeight: 700, color: card.accentD, lineHeight: 1 }}>{card.value}</div>
-                    <div style={{ fontSize: '11.5px', color: card.accentD, opacity: 0.65 }}>{card.sub}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: card.accent, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{card.value}</div>
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 11, color: '#858ea2', marginBottom: 3 }}>{card.sub}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{card.detail}</div>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#858ea2', lineHeight: 1.5, flex: 1 }}>{card.detail}</div>
-                  <button style={{ alignSelf: 'flex-start', background: '#fff', border: `1px solid ${card.accentBd}`, borderRadius: '6px', color: card.accentD, fontSize: '11px', fontWeight: 600, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                    {card.cta} →
-                  </button>
+                  <button style={{ alignSelf: 'flex-start', fontSize: 12, fontWeight: 500, color: card.accent, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>{card.cta} →</button>
                 </div>
               ))}
             </div>

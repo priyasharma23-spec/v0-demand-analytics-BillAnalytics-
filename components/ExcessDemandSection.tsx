@@ -170,24 +170,24 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
       </div>
 
       {/* Insight cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
         {([
-          { color: '#e53935', bdColor: '#fecaca', label: 'Consistently over-contracted',  value: edMetrics.overPct + '%',                                                                                    sub: edMetrics.overN + ' / 12 months exceeded limit',  desc: edMetrics.overPct === 100 ? 'Every single month exceeded the contracted level — the contract is structurally under-sized.' : edMetrics.overN + ' of 12 periods exceeded contracted demand.', cta: 'View CAs' },
-          { color: '#f59e0b', bdColor: '#fde68a', label: 'Recommended contract revision', value: edMetrics.recommended + ' kVA',                                                                             sub: 'P90 of MDI + 10% buffer',                         desc: 'Revising eliminates excess charges and covers most peak months.',                                                                                                                              cta: 'Model revision' },
-          { color: '#36b37e', bdColor: '#bbf7d0', label: 'Estimated annual savings',      value: (edMetrics.netSavings > 0 ? '' : '−') + '₹' + (Math.abs(edMetrics.netSavings) / 100000).toFixed(1) + 'L', sub: 'net after higher tariff adjustment',               desc: 'Net benefit after accounting for higher contracted demand tariff at revised level.',                                                                                                           cta: 'See breakdown' },
-          { color: '#1c5af4', bdColor: '#c7d2fe', label: 'Utilisation efficiency',        value: edMetrics.utilEff + '%',                                                                                    sub: 'Avg MDI / contracted kVA',                        desc: 'Demand profile is consistent — contract revision is low risk.',                                                                                                                               cta: 'View profile' },
+          { color: '#DC2626', bdColor: '#fecaca', label: 'Consistently over-contracted',  value: edMetrics.overPct + '%',                                                                                    sub: edMetrics.overN + ' / 12 months exceeded limit',  desc: edMetrics.overPct === 100 ? 'Every single month exceeded the contracted level — the contract is structurally under-sized.' : edMetrics.overN + ' of 12 periods exceeded contracted demand.', cta: 'View CAs' },
+          { color: '#F59E0B', bdColor: '#fde68a', label: 'Recommended contract revision', value: edMetrics.recommended + ' kVA',                                                                             sub: 'P90 of MDI + 10% buffer',                         desc: 'Revising eliminates excess charges and covers most peak months.',                                                                                                                              cta: 'Model revision' },
+          { color: '#22C55E', bdColor: '#bbf7d0', label: 'Estimated annual savings',      value: (edMetrics.netSavings > 0 ? '' : '−') + '₹' + (Math.abs(edMetrics.netSavings) / 100000).toFixed(1) + 'L', sub: 'net after higher tariff adjustment',               desc: 'Net benefit after accounting for higher contracted demand tariff at revised level.',                                                                                                           cta: 'See breakdown' },
+          { color: '#2563EB', bdColor: '#c7d2fe', label: 'Utilisation efficiency',        value: edMetrics.utilEff + '%',                                                                                    sub: 'Avg MDI / contracted kVA',                        desc: 'Demand profile is consistent — contract revision is low risk.',                                                                                                                               cta: 'View profile' },
         ] as Array<{ color: string; bdColor: string; label: string; value: string; sub: string; desc: string; cta: string }>).map((k, i) => (
-          <div key={i} style={{ background: '#fff', border: '1px solid #f0f1f5', borderTop: '2.5px solid ' + k.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div key={i} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + k.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'default', minHeight: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 12 }}>
               <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: k.color, flexShrink: 0 }} />
-              <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{k.label}</div>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: k.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{k.label}</div>
             </div>
-            <div>
-              <div style={{ fontSize: '20px', fontWeight: 600, color: k.color, lineHeight: 1 }}>{k.value}</div>
-              <div style={{ fontSize: '12px', color: k.color, opacity: 0.75, marginTop: '3px' }}>{k.sub}</div>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: k.color, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{k.value}</div>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: 3 }}>{k.sub}</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{k.desc}</div>
             </div>
-            <div style={{ fontSize: '12px', color: '#9aa0b0', lineHeight: 1.5, flex: 1 }}>{k.desc}</div>
-            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: k.color, background: '#fff', border: '1px solid ' + k.bdColor, borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>{k.cta} →</button>
+            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: k.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>{k.cta} →</button>
           </div>
         ))}
       </div>

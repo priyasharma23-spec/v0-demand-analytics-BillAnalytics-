@@ -347,22 +347,24 @@ export default function SavingsSection({ appState }: SavingsSectionProps) {
       </div>
 
       {/* KPI insight cards */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4, minmax(0,1fr))', gap:'12px' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4, minmax(0,1fr))', gap:'14px' }}>
         {([
-          { color: '#e53935', label: 'Contract revision saving', value: inr(summary.contractSaving), valueSub: 'No excess demand charges', desc: 'Raise contracted demand to P80 MDI + 10% buffer — eliminates all excess demand charges.', cta: 'Model revision' },
-          { color: '#f59e0b', label: 'PF improvement saving',    value: inr(summary.pfSaving),       valueSub: 'Maintain PF ≥ 0.95 via capacitor banks', desc: 'Eliminating PF penalties by maintaining power factor above 0.95 across all CAs.', cta: 'View CA list' },
-          { color: '#36b37e', label: 'Total recoverable',        value: inr(summary.totalSaving),    valueSub: Math.round(summary.totalSaving / Math.max(summary.totalBill,1)*100) + '% of total bills avoidable', desc: 'Total savings achievable with recommended contract and PF improvement actions.', cta: 'See breakdown' },
-          { color: '#1c5af4', label: 'Clean bill rate',          value: summary.cleanPct + '%',       valueSub: 'Avg across all CAs · higher is better', desc: 'Bills at ' + summary.cleanPct + '% clean — ' + (100 - summary.cleanPct) + '% still carry avoidable charges that can be eliminated.', cta: 'View profile' },
+          { color: '#DC2626', label: 'Contract revision saving', value: inr(summary.contractSaving), valueSub: 'No excess demand charges', desc: 'Raise contracted demand to P80 MDI + 10% buffer — eliminates all excess demand charges.', cta: 'Model revision' },
+          { color: '#F59E0B', label: 'PF improvement saving',    value: inr(summary.pfSaving),       valueSub: 'Maintain PF ≥ 0.95 via capacitor banks', desc: 'Eliminating PF penalties by maintaining power factor above 0.95 across all CAs.', cta: 'View CA list' },
+          { color: '#22C55E', label: 'Total recoverable',        value: inr(summary.totalSaving),    valueSub: Math.round(summary.totalSaving / Math.max(summary.totalBill,1)*100) + '% of total bills avoidable', desc: 'Total savings achievable with recommended contract and PF improvement actions.', cta: 'See breakdown' },
+          { color: '#2563EB', label: 'Clean bill rate',          value: summary.cleanPct + '%',       valueSub: 'Avg across all CAs · higher is better', desc: 'Bills at ' + summary.cleanPct + '% clean — ' + (100 - summary.cleanPct) + '% still carry avoidable charges that can be eliminated.', cta: 'View profile' },
         ] as Array<{ color: string; label: string; value: string; valueSub: string; desc: string; cta: string }>).map((item, i) => (
-          <div key={i} style={{ background: '#fff', border: '1px solid #f0f1f5', borderTop: '2.5px solid ' + item.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+          <div key={i} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + item.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'default', minHeight: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
               <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
               <div style={{ fontSize: '10px', fontWeight: 600, color: item.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{item.label}</div>
             </div>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: item.color, lineHeight: 1, marginBottom: '4px' }}>{item.value}</div>
-            <div style={{ fontSize: '12px', color: item.color, opacity: 0.7, marginBottom: '10px' }}>{item.valueSub}</div>
-            <div style={{ fontSize: '12px', color: '#9aa0b0', lineHeight: 1.55, flex: 1, marginBottom: '14px' }}>{item.desc}</div>
-            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: item.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}>{item.cta} →</button>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: item.color, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: '10px' }}>{item.value}</div>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '3px' }}>{item.valueSub}</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{item.desc}</div>
+            </div>
+            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: item.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>{item.cta} →</button>
           </div>
         ))}
       </div>
