@@ -159,7 +159,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
           },
           y: {
             grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { color: '#9AA0B0', font: { size: 11 }, callback: (v) => `${v/1000}K` }
+            ticks: { color: '#9AA0B0', font: { size: 11 }, callback: (v: any) => `${Number(v)/1000}K` }
           }
         }
       }
