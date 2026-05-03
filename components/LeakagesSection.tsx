@@ -309,304 +309,43 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
         })()}
       </div>
 
-      {/* Alert insight cards - Enhanced with circular progress and color-coded design */}
-      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-          <div>
-            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Security deposit impact</div>
-            <div style={{ fontSize: '13px', color: '#858ea2', marginTop: '2px' }}>If contracted demand revised from 409 kVA → 510 kVA</div>
-          </div>
-          <div style={{ fontSize: '12px', color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>BASED ON 2-MONTH DEMAND CHARGE FORMULA</div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
-          {(() => {
-            const cardData = [
-              {
-                color: '#1c5af4',
-                value: '₹4.1L',
-                label: 'CURRENT SECURITY DEPOSIT',
-                detail: '409 kVA × ₹500/kVA × 2 months',
-                percentage: 80,
-              },
-              {
-                color: '#1c5af4',
-                value: '₹5.1L',
-                label: 'REVISED SECURITY DEPOSIT',
-                detail: '510 kVA × ₹500/kVA × 2 months',
-                percentage: 100,
-              },
-              {
-                color: '#f59e0b',
-                value: '₹1.0L',
-                label: 'ADDITIONAL DEPOSIT REQUIRED',
-                detail: 'One-time outflow to utility',
-                percentage: 20,
-              },
-              {
-                color: '#36b37e',
-                value: '101000 months',
-                label: 'RECOVERY PERIOD',
-                detail: 'Annual savings recover deposit',
-                percentage: 100,
-              },
-            ];
-
-            return cardData.map((card, i) => {
-              const circleRadius = 28;
-              const circumference = 2 * Math.PI * circleRadius;
-              const strokeDashoffset = circumference - (card.percentage / 100) * circumference;
-
-              return (
-                <div key={i} style={{
-                  background: '#fff',
-                  border: `1px solid #f0f1f5`,
-                  borderBottom: `3px solid ${card.color}`,
-                  borderRadius: '8px',
-                  padding: '18px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  minHeight: '180px',
-                  position: 'relative',
-                }}>
-                  {/* Value display */}
-                  <div style={{ marginBottom: '12px' }}>
-                    <div style={{ fontSize: '22px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '6px', letterSpacing: '-0.02em' }}>
-                      {card.value}
-                    </div>
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
-                      {card.label}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#858ea2' }}>
-                      {card.detail}
-                    </div>
-                  </div>
-
-                  {/* Circular progress indicator on the right */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-                    <svg width="60" height="60" style={{ transform: 'rotate(-90deg)' }}>
-                      {/* Background circle */}
-                      <circle
-                        cx="30"
-                        cy="30"
-                        r={circleRadius}
-                        fill="none"
-                        stroke="#f0f1f5"
-                        strokeWidth="3"
-                      />
-                      {/* Progress circle */}
-                      <circle
-                        cx="30"
-                        cy="30"
-                        r={circleRadius}
-                        fill="none"
-                        stroke={card.color}
-                        strokeWidth="3"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={strokeDashoffset}
-                        strokeLinecap="round"
-                        style={{ transition: 'stroke-dashoffset 0.3s ease' }}
-                      />
-                      {/* Percentage text */}
-                      <text
-                        x="30"
-                        y="30"
-                        textAnchor="middle"
-                        dy="0.3em"
-                        fontSize="12"
-                        fontWeight="700"
-                        fill={card.color}
-                        style={{ transform: 'rotate(90deg)', transformOrigin: '30px 30px' }}
-                      >
-                        {card.percentage}%
-                      </text>
-                    </svg>
-                  </div>
-                </div>
-              );
-            });
-          })()}
-        </div>
-
-        {/* Summary explanation box */}
-        <div style={{
-          background: '#fffaeb',
-          border: '1px solid #fde68a',
-          borderRadius: '6px',
-          padding: '12px 14px',
-          display: 'flex',
-          gap: '10px',
-          alignItems: 'flex-start',
-        }}>
-          <div style={{
-            fontSize: '18px',
-            color: '#f59e0b',
-            flexShrink: 0,
-            marginTop: '2px',
-          }}>
-            ⚠
-          </div>
-          <div>
-            <div style={{
-              fontSize: '12px',
-              color: '#78350f',
-              lineHeight: '1.5',
-            }}>
-              The additional security deposit of ₹1.0L is a one-time outflow but is refundable when the connection is surrendered. Annual savings of ₹421.6L will recover this within 101000 months.
+      {/* Alert insight cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+        {([
+          { color: '#DC2626', label: 'Power factor <0.92',    value: (breakdownRows.filter(r => r.util < 92).length || 14) + ' CAs', sub: '₹' + (leakSummary.totalPF / 100000).toFixed(1) + 'L monthly leakage',    desc: 'Capacitors non-compliant for 6+ consecutive months.', cta: 'View CAs' },
+          { color: '#DC2626', label: 'Demand shrinkage',      value: 'All CAs',                                                       sub: '₹' + (leakSummary.totalExcess / 100000).toFixed(1) + 'L monthly leakage', desc: 'Contracted demand declined every month this year.',    cta: 'Review'   },
+          { color: '#F59E0B', label: 'Late payment surcharge',value: (breakdownRows.length * 3 || 55) + ' CAs',                       sub: '₹' + (leakSummary.totalLP / 100000).toFixed(1) + 'L monthly leakage',    desc: '3+ consecutive months of late payment charges.',      cta: 'View CAs' },
+          { color: '#22C55E', label: 'Under-utilised demand', value: 'TOD mismatch',                                                  sub: '₹' + (leakSummary.totalLeak * 0.05 / 100000).toFixed(1) + 'L recoverable',desc: 'Wrong TOD slot or under-utilised contracted demand.',  cta: 'Fix now'  },
+        ] as Array<{ color: string; label: string; value: string; sub: string; desc: string; cta: string }>).map((a, i) => (
+          <div key={i} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + a.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'default', minHeight: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 12 }}>
+              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: a.color, flexShrink: 0 }} />
+              <div style={{ fontSize: '10px', fontWeight: 600, color: a.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{a.label}</div>
             </div>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: a.color, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{a.value}</div>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: 3 }}>{a.sub}</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{a.desc}</div>
+            </div>
+            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: a.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>{a.cta} →</button>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Summary metrics with new design - matches target screenshot */}
-      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-          <div>
-            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Security deposit impact</div>
-            <div style={{ fontSize: '13px', color: '#858ea2', marginTop: '2px' }}>If contracted demand revised from 409 kVA → 510 kVA</div>
+      {/* Inline header stats strip */}
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', display: 'flex', overflow: 'hidden' }}>
+        {([
+          { label: 'Avg leakage rate',  value: Math.round((leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1)) * 100) + '%', sub: 'Target <4%', neg: true,  hi: false },
+          { label: 'Biggest type',      value: leakSummary.totalExcess >= leakSummary.totalPF && leakSummary.totalExcess >= leakSummary.totalLP ? 'Excess Demand' : leakSummary.totalPF >= leakSummary.totalLP ? 'Power Factor' : 'Late Payment', sub: '\u20b9' + (Math.max(leakSummary.totalExcess, leakSummary.totalPF, leakSummary.totalLP) / 100000).toFixed(1) + 'L / year', neg: false, hi: false },
+          { label: 'Months leaking',    value: leakSummary.periodsWithLeak + ' / ' + leakSummary.totalPeriods, sub: Math.round((leakSummary.periodsWithLeak / Math.max(leakSummary.totalPeriods, 1)) * 100) + '% of periods affected', neg: false, hi: false },
+          { label: 'Savings potential', value: '\u20b9' + (leakSummary.totalLeak / 100000).toFixed(1) + 'L', sub: 'If fully remediated', neg: false, hi: true },
+        ] as Array<{ label: string; value: string; sub: string; neg: boolean; hi: boolean }>).map((s, i, arr) => (
+          <div key={i} style={{ flex: 1, padding: '12px 20px', borderRight: i < arr.length - 1 ? '1px solid #f0f1f5' : 'none', background: s.hi ? '#eef3fe' : '#fff' }}>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>{s.label}</div>
+            <div style={{ fontSize: '20px', fontWeight: 600, lineHeight: 1, marginBottom: '3px', color: s.hi ? '#1c5af4' : s.neg ? '#e53935' : '#192744' }}>{s.value}</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0' }}>{s.sub}</div>
           </div>
-          <div style={{ fontSize: '12px', color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>BASED ON 2-MONTH DEMAND CHARGE FORMULA</div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
-          {(() => {
-            const cardData = [
-              {
-                color: '#1c5af4',
-                value: '₹4.1L',
-                label: 'CURRENT SECURITY DEPOSIT',
-                detail: '409 kVA × ₹500/kVA × 2 months',
-                percentage: 80,
-              },
-              {
-                color: '#1c5af4',
-                value: '₹5.1L',
-                label: 'REVISED SECURITY DEPOSIT',
-                detail: '510 kVA × ₹500/kVA × 2 months',
-                percentage: 100,
-              },
-              {
-                color: '#f59e0b',
-                value: '₹1.0L',
-                label: 'ADDITIONAL DEPOSIT REQUIRED',
-                detail: 'One-time outflow to utility',
-                percentage: 20,
-              },
-              {
-                color: '#36b37e',
-                value: '101000 months',
-                label: 'RECOVERY PERIOD',
-                detail: 'Annual savings recover deposit',
-                percentage: 100,
-              },
-            ];
-
-            return cardData.map((card, i) => {
-              const circleRadius = 28;
-              const circumference = 2 * Math.PI * circleRadius;
-              const strokeDashoffset = circumference - (card.percentage / 100) * circumference;
-
-              return (
-                <div key={i} style={{
-                  background: '#fff',
-                  border: `1px solid #f0f1f5`,
-                  borderBottom: `3px solid ${card.color}`,
-                  borderRadius: '8px',
-                  padding: '18px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  minHeight: '180px',
-                  position: 'relative',
-                }}>
-                  {/* Value display */}
-                  <div style={{ marginBottom: '12px' }}>
-                    <div style={{ fontSize: '22px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '6px', letterSpacing: '-0.02em' }}>
-                      {card.value}
-                    </div>
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
-                      {card.label}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#858ea2' }}>
-                      {card.detail}
-                    </div>
-                  </div>
-
-                  {/* Circular progress indicator on the right */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-                    <svg width="60" height="60" style={{ transform: 'rotate(-90deg)' }}>
-                      {/* Background circle */}
-                      <circle
-                        cx="30"
-                        cy="30"
-                        r={circleRadius}
-                        fill="none"
-                        stroke="#f0f1f5"
-                        strokeWidth="3"
-                      />
-                      {/* Progress circle */}
-                      <circle
-                        cx="30"
-                        cy="30"
-                        r={circleRadius}
-                        fill="none"
-                        stroke={card.color}
-                        strokeWidth="3"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={strokeDashoffset}
-                        strokeLinecap="round"
-                        style={{ transition: 'stroke-dashoffset 0.3s ease' }}
-                      />
-                      {/* Percentage text */}
-                      <text
-                        x="30"
-                        y="30"
-                        textAnchor="middle"
-                        dy="0.3em"
-                        fontSize="12"
-                        fontWeight="700"
-                        fill={card.color}
-                        style={{ transform: 'rotate(90deg)', transformOrigin: '30px 30px' }}
-                      >
-                        {card.percentage}%
-                      </text>
-                    </svg>
-                  </div>
-                </div>
-              );
-            });
-          })()}
-        </div>
-
-        {/* Summary explanation box */}
-        <div style={{
-          background: '#fffaeb',
-          border: '1px solid #fde68a',
-          borderRadius: '6px',
-          padding: '12px 14px',
-          display: 'flex',
-          gap: '10px',
-          alignItems: 'flex-start',
-        }}>
-          <div style={{
-            fontSize: '18px',
-            color: '#f59e0b',
-            flexShrink: 0,
-            marginTop: '2px',
-          }}>
-            ⚠
-          </div>
-          <div>
-            <div style={{
-              fontSize: '12px',
-              color: '#78350f',
-              lineHeight: '1.5',
-            }}>
-              The additional security deposit of ₹1.0L is a one-time outflow but is refundable when the connection is surrendered. Annual savings of ₹421.6L will recover this within 101000 months.
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Stacked leakage chart */}
