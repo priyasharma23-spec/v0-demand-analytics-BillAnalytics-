@@ -98,6 +98,15 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
   const pending = Math.round(totalCAs * 0.25)
   const hold    = Math.round(totalCAs * 0.10)
   const overdue = totalCAs - paid - pending - hold
+  const faultyMeterCount = allCAs.filter((ca, ci) => {
+    const bills = getCABills(ca, 'monthly')
+    const latestIdx = bills.length - 1
+    const latest = bills[latestIdx]
+    const prior  = bills[latestIdx - 1]
+    const isFaultyLatest = ((ci * 7 + latestIdx * 13) % 33 === 0)
+    const isSameAsPrior  = prior && latest && Math.abs(latest.kwh - prior.kwh) < 100
+    return isFaultyLatest || isSameAsPrior
+  }).length
   const stateAmounts = STATES.map(st => ({
     state: st,
     total: getStateBills(st, 'monthly').reduce((s, d) => s + d.totalBill, 0),
@@ -1786,16 +1795,6 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     byDay[ca.dueDay].push(ca)
   })
   const totalUnpaid  = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
-  const allCAs2 = Object.values(CAS).flat()
-  const faultyMeterCount = allCAs2.filter((ca, ci) => {
-    const bills = getCABills(ca, 'monthly')
-    const latestIdx = bills.length - 1
-    const latest = bills[latestIdx]
-    const prior  = bills[latestIdx - 1]
-    const isFaultyLatest = ((ci * 7 + latestIdx * 13) % 33 === 0)
-    const isSameAsPrior  = prior && latest && Math.abs(latest.kwh - prior.kwh) < 100
-    return isFaultyLatest || isSameAsPrior
-  }).length
   const totalOverdue = caSchedule.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
   const overdueCount = caSchedule.filter(c => c.isOverdue).length
   const paidAmt      = caSchedule.filter(c => c.isPaid).reduce((s, c) => s + c.billAmt, 0)
