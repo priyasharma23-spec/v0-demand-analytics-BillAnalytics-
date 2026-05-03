@@ -59,92 +59,22 @@ const SortPill = ({ label, active, onClick }: any) => (
 
 const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta, iconBg, iconColor, onAnomalyClick, where }: any) => {
   const [hov, setHov] = React.useState(false)
-  const getIcon = () => {
-    if (anomalyKey === 'over_contracted_every_month') return (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M9 2.5L1.5 15.5h15L9 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="currentColor" fillOpacity="0.15" />
-        <path d="M9 7v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <circle cx="9" cy="13" r="0.8" fill="currentColor" />
-      </svg>
-    )
-    if (anomalyKey === 'pf_below_threshold') return (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.12" />
-        <path d="M9 5.5v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <circle cx="9" cy="12" r="0.8" fill="currentColor" />
-      </svg>
-    )
-    if (anomalyKey === 'recurring_late_payment') return (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.1" />
-        <path d="M2 7h14" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M6 1.5v3M12 1.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      </svg>
-    )
-    return (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M2 13l4-4 3 2.5 5-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    )
-  }
-  return (
-    <div
-      onClick={() => onAnomalyClick?.(anomalyKey)}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background: hov ? '#FAFAFA' : '#fff',
-        border: '1.5px solid ' + (hov ? '#2500D7' : '#f3f4f6'),
-        borderRadius: '14px',
-        padding: '20px 20px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        cursor: 'pointer',
-        transition: 'all .16s',
-        boxShadow: hov ? '0 4px 16px rgba(0,0,0,.07)' : 'none',
-      }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: iconColor, flexShrink: 0 }}>
-          {getIcon()}
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '22px', fontWeight: 800, color: amountColor, letterSpacing: '-0.5px' }}>{amount}</div>
-          <div style={{ fontSize: '11px', color: '#858ea2' }}>{amountLabel}</div>
-        </div>
-      </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', lineHeight: 1.4 }}>{title}</div>
-        {where && <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '6px' }}>{where}</div>}
-      </div>
-      <button
-        onClick={(e) => { e.stopPropagation(); onAnomalyClick?.(anomalyKey) }}
-        style={{
-          alignSelf: 'flex-start',
-          background: hov ? '#2500D7' : '#EBEAFF',
-          color: hov ? '#fff' : '#2500D7',
-          border: 'none', borderRadius: '8px',
-          padding: '7px 14px', fontSize: '12px', fontWeight: 600,
-          cursor: 'pointer', transition: 'all .16s', fontFamily: 'inherit',
-        }}>
-        {cta} →
-      </button>
-    </div>
-  )
-};
-
-export default function OverviewSection({ appState, onStateChange, onBranchChange, onCAChange, onSectionChange, onHeatmapCellClick, onAnomalyClick }: OverviewSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
-
-  const MAX_PINS = 10;
+  const [isHydrated, setIsHydrated] = React.useState(false);
 
   const [pinnedEntities, setPinnedEntities] = useState([
-    { name: 'Maharashtra', type: 'state' },
-    { name: 'Mumbai North', type: 'branch' },
-    { name: 'MH-MN-0101', type: 'ca' },
-    { name: 'DL-DS-4202', type: 'ca' },
+    { type: 'ca', name: 'Mumbai - Tech Hub', meta: 'CA # 123456' },
+    { type: 'branch', name: 'Bangalore East', meta: 'Branch code KA-02' },
   ]);
+  const [recentEntities] = useState([
+    { type: 'state', name: 'Maharashtra', meta: '24 CAs' },
+    { type: 'branch', name: 'Delhi South', meta: '8 CAs' },
+  ]);
+
+  React.useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const [recentEntities] = useState([
     { name: 'Delhi South', type: 'branch' },
@@ -675,14 +605,14 @@ export default function OverviewSection({ appState, onStateChange, onBranchChang
                   const totalSpend = branches.reduce((a, b) => a + b[1], 0)
                   const cas = { 'Maharashtra':24,'Delhi':21,'Tamil Nadu':21,'Karnataka':21,'Gujarat':20,'Uttar Pradesh':20,'West Bengal':17,'Rajasthan':16 } as Record<string,number>
                   return (
-                    <div>
+                    <div suppressHydrationWarning>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
                         <div>
                           <button onClick={() => setSel(null)} style={{ fontSize: '11px', color: '#2500D7', border: 'none', background: 'none', cursor: 'pointer', padding: 0, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             ← All states
                           </button>
                           <div style={{ fontSize: '15px', fontWeight: 600, color: '#192744' }}>{sel}</div>
-                          <div style={{ fontSize: '11px', color: '#858ea2' }}>{cas[sel] || 0} CAs · Apr 2024 �� Mar 2025</div>
+                          <div style={{ fontSize: '11px', color: '#858ea2' }}>{cas[sel] || 0} CAs · Apr 2024 – Mar 2025</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: '20px', fontWeight: 700, color: '#534AB7' }}>₹{totalSpend.toLocaleString()}L</div>

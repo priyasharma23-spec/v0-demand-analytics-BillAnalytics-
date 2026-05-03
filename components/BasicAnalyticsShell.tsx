@@ -145,7 +145,8 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     cas.forEach((ca: string) => { caToState[ca] = branchToState[branch] ?? 'Maharashtra' })
   })
 
-  const today = new Date()
+  const today = new Date(2025, 4, 3) // Fixed reference date: May 3, 2025
+
 
   const caSchedule = allCAs.map((ca) => {
     const state   = caToState[ca] ?? 'Maharashtra'
@@ -320,7 +321,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                   return (
                     <div key={wi} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', cursor: 'pointer' }}
                       onMouseEnter={() => setActiveWeek(wi)} onMouseLeave={() => setActiveWeek(null)}>
-                      <div style={{ fontSize: '11px', fontWeight: isAct ? 600 : 400, color: isAct ? '#192744' : '#858ea2' }}>{inr(w.unpaid)}</div>
+                      <div suppressHydrationWarning style={{ fontSize: '11px', fontWeight: isAct ? 600 : 400, color: isAct ? '#192744' : '#858ea2' }}>{inr(w.unpaid)}</div>
                       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '72px', borderRadius: '5px', overflow: 'hidden', background: isAct ? (hasOD ? '#FEF2F2' : '#EEF2FF') : '#F3F4F6' }}>
                         {safeH > 0 && <div style={{ height: safeH+'px', background: isAct ? '#7B6FE8' : '#C7D2FE' }} />}
                         {overdueH > 0 && <div style={{ height: overdueH+'px', background: isAct ? '#EF4444' : '#FECACA' }} />}

@@ -543,14 +543,14 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
                   const totalSpend = branches.reduce((a, b) => a + b[1], 0)
                   const cas = { 'Maharashtra':24,'Delhi':21,'Tamil Nadu':21,'Karnataka':21,'Gujarat':20,'Uttar Pradesh':20,'West Bengal':17,'Rajasthan':16 } as Record<string,number>
                   return (
-                    <div>
+                    <div suppressHydrationWarning>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
                         <div>
                           <button onClick={() => setMapSel(null)} style={{ fontSize: '11px', color: '#2500D7', border: 'none', background: 'none', cursor: 'pointer', padding: 0, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             ← All states
                           </button>
                           <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>{mapSel}</div>
-                          <div style={{ fontSize: '11px', color: '#858ea2' }}>{cas[mapSel] || 0} CAs · Apr 2024 �� Mar 2025</div>
+                          <div style={{ fontSize: '11px', color: '#858ea2' }}>{cas[mapSel] || 0} CAs · Apr 2024 – Mar 2025</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: '20px', fontWeight: 700, color: '#534AB7' }}>₹{totalSpend.toLocaleString()}L</div>
