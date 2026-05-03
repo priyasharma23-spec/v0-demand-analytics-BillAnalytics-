@@ -186,7 +186,7 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
               </div>
 
               {/* Value */}
-              <div style={{ fontSize: 32, fontWeight: 700, color: card.accent, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>
+              <div style={{ fontSize: 28, fontWeight: 700, color: card.accent, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>
                 {card.value}
               </div>
 

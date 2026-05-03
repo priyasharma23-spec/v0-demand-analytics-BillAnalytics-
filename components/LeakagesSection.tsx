@@ -322,7 +322,7 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
               <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: a.color, flexShrink: 0 }} />
               <div style={{ fontSize: '10px', fontWeight: 600, color: a.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{a.label}</div>
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 700, color: a.color, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{a.value}</div>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: a.color, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{a.value}</div>
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: 3 }}>{a.sub}</div>
               <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{a.desc}</div>

@@ -2165,7 +2165,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
                     <span style={{ fontSize: 10, fontWeight: 600, color: card.accent, textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: 1 }}>{card.title}</span>
                   </div>
-                  <div style={{ fontSize: 32, fontWeight: 700, color: card.accent, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{card.value}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: card.accent, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{card.value}</div>
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontSize: 11, color: '#858ea2', marginBottom: 3 }}>{card.sub}</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{card.detail}</div>
