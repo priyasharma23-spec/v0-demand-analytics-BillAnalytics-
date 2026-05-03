@@ -1874,9 +1874,291 @@ function BasicTrends({ appState }: BasicSectionProps) {
         )}
       </div>
 
+      {/* Prepaid Recharge Trend Card */}
+      <PrepaidRechargeTrend />
+
     </div>
   )
 }
+
+// ── Prepaid Recharge Trend Chart Component ──────────────────────────────────
+function PrepaidRechargeTrend() {
+  const [hovIdx, setHovIdx] = React.useState<number | null>(null)
+
+  const PREPAID_RECHARGE_DATA = [
+    { month: 'Apr', amount: 12.4, moM: null },
+    { month: 'May', amount: 14.1, moM: 13.7 },
+    { month: 'Jun', amount: 13.8, moM: -2.1 },
+    { month: 'Jul', amount: 15.2, moM: 10.1 },
+    { month: 'Aug', amount: 16.8, moM: 10.5 },
+    { month: 'Sep', amount: 15.5, moM: -7.7 },
+    { month: 'Oct', amount: 17.2, moM: 11.0 },
+    { month: 'Nov', amount: 18.9, moM: 9.9 },
+    { month: 'Dec', amount: 16.3, moM: -13.8 },
+    { month: 'Jan', amount: 19.1, moM: 17.2 },
+    { month: 'Feb', amount: 20.4, moM: 6.8 },
+    { month: 'Mar', amount: 22.1, moM: 8.3 },
+  ]
+
+  // Chart dimensions
+  const W = 900, H = 160, PL = 48, PR = 20, PT = 16, PB = 28
+  const cW = W - PL - PR, cH = H - PT - PB
+
+  const amounts = PREPAID_RECHARGE_DATA.map(d => d.amount)
+  const minVal = Math.floor(Math.min(...amounts) - 1)
+  const maxVal = Math.ceil(Math.max(...amounts) + 1)
+
+  const toX = (i: number) => PL + (i / (PREPAID_RECHARGE_DATA.length - 1)) * cW
+  const toY = (v: number) => PT + (1 - (v - minVal) / (maxVal - minVal)) * cH
+
+  // Smooth bezier path
+  const pts = PREPAID_RECHARGE_DATA.map((d, i) => ({ x: toX(i), y: toY(d.amount) }))
+  const linePath = pts.map((p, i) => {
+    if (i === 0) return `M${p.x.toFixed(1)},${p.y.toFixed(1)}`
+    const prev = pts[i - 1]
+    const cx1 = prev.x + (p.x - prev.x) / 2.8
+    const cx2 = p.x - (p.x - prev.x) / 2.8
+    return `C${cx1.toFixed(1)},${prev.y.toFixed(1)} ${cx2.toFixed(1)},${p.y.toFixed(1)} ${p.x.toFixed(1)},${p.y.toFixed(1)}`
+  }).join(' ')
+
+  const areaPath = `${linePath} L${toX(PREPAID_RECHARGE_DATA.length - 1)},${PT + cH} L${toX(0)},${PT + cH} Z`
+
+  const ticks = [14, 16, 18, 20, 22]
+
+  // Summary stats
+  const latestMoM = PREPAID_RECHARGE_DATA[PREPAID_RECHARGE_DATA.length - 1].moM!
+  const totalAnnual = amounts.reduce((a, b) => a + b, 0)
+
+  return (
+    <div style={{
+      background: '#ffffff',
+      border: '1px solid #f0f1f5',
+      borderRadius: 6,
+      boxShadow: '0 1px 3px rgba(25,39,68,.04)',
+    }}>
+      {/* Card Header */}
+      <div style={{
+        padding: '14px 20px',
+        borderBottom: '1px solid #f0f1f5',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}>
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>
+            Prepaid recharge
+          </div>
+          <div style={{ fontSize: 12, color: '#858ea2', marginTop: 2 }}>
+            Monthly recharge amount (₹L) · Apr 2024 – Mar 2025
+          </div>
+        </div>
+
+        {/* Right: summary pills */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 11, color: '#858ea2' }}>Annual total</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#192744' }}>
+              ₹{totalAnnual.toFixed(1)}L
+            </div>
+          </div>
+          <div style={{
+            padding: '4px 10px',
+            borderRadius: 99,
+            background: latestMoM >= 0 ? '#f0faf6' : '#fef2f2',
+            border: `1px solid ${latestMoM >= 0 ? '#bbf7d0' : '#fecaca'}`,
+          }}>
+            <span style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: latestMoM >= 0 ? '#36b37e' : '#e53935',
+            }}>
+              {latestMoM >= 0 ? '+' : ''}{latestMoM}% MoM
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div style={{ padding: '16px 20px 12px' }}>
+        <svg
+          width="100%"
+          viewBox={`0 0 ${W} ${H + 8}`}
+          style={{ display: 'block', overflow: 'visible' }}
+        >
+          <defs>
+            <linearGradient id="rechargeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#36b37e" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#36b37e" stopOpacity="0.01" />
+            </linearGradient>
+            <clipPath id="rechargeClip">
+              <rect x={PL} y={PT} width={cW} height={cH} />
+            </clipPath>
+          </defs>
+
+          {/* Y-axis gridlines + labels */}
+          {ticks.map(t => {
+            const y = toY(t)
+            return (
+              <g key={t}>
+                <line x1={PL} y1={y} x2={W - PR} y2={y} stroke="#f0f1f5" strokeWidth="1" />
+                <text
+                  x={PL - 6} y={y + 4}
+                  textAnchor="end" fontSize="9"
+                  fill="#858ea2" fontFamily="Inter, sans-serif"
+                >
+                  ₹{t}L
+                </text>
+              </g>
+            )
+          })}
+
+          {/* Area fill */}
+          <g clipPath="url(#rechargeClip)">
+            <path d={areaPath} fill="url(#rechargeGrad)" />
+          </g>
+
+          {/* Line */}
+          <path
+            d={linePath}
+            fill="none"
+            stroke="#36b37e"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+
+          {/* Hover crosshair */}
+          {hovIdx !== null && (
+            <line
+              x1={pts[hovIdx].x} y1={PT}
+              x2={pts[hovIdx].x} y2={PT + cH}
+              stroke="#f0f1f5" strokeWidth="1.2" strokeDasharray="4 3"
+            />
+          )}
+
+          {/* Dots + hover zones + tooltips */}
+          {pts.map((p, i) => {
+            const d = PREPAID_RECHARGE_DATA[i]
+            const isH = hovIdx === i
+            const tooltipX = Math.max(PL, Math.min(p.x - 48, W - PR - 100))
+            const moMColor = d.moM === null ? '#858ea2' : d.moM >= 0 ? '#36b37e' : '#e53935'
+            const moMText = d.moM === null ? '–' : `${d.moM >= 0 ? '+' : ''}${d.moM}% MoM`
+
+            return (
+              <g key={i}>
+                {/* Tooltip */}
+                {isH && (
+                  <g>
+                    <rect x={tooltipX} y={p.y - 62} width={96} height={54} rx="4"
+                      fill="#192744" opacity="0.93" />
+                    <text x={tooltipX + 48} y={p.y - 46}
+                      textAnchor="middle" fill="#fff"
+                      fontSize="13" fontWeight="700" fontFamily="Inter, sans-serif">
+                      ₹{d.amount}L
+                    </text>
+                    <text x={tooltipX + 48} y={p.y - 30}
+                      textAnchor="middle" fill="#858ea2"
+                      fontSize="9" fontFamily="Inter, sans-serif">
+                      {d.month} 2024–25
+                    </text>
+                    <text x={tooltipX + 48} y={p.y - 16}
+                      textAnchor="middle" fill={moMColor}
+                      fontSize="9" fontWeight="600" fontFamily="Inter, sans-serif">
+                      {moMText}
+                    </text>
+                  </g>
+                )}
+
+                {/* Dot */}
+                <circle
+                  cx={p.x} cy={p.y}
+                  r={isH ? 5 : 3}
+                  fill={isH ? '#36b37e' : '#fff'}
+                  stroke="#36b37e"
+                  strokeWidth="2"
+                />
+
+                {/* Invisible hover zone */}
+                <rect
+                  x={p.x - cW / PREPAID_RECHARGE_DATA.length / 2}
+                  y={0}
+                  width={cW / PREPAID_RECHARGE_DATA.length}
+                  height={H + 8}
+                  fill="transparent"
+                  style={{ cursor: 'crosshair' }}
+                  onMouseEnter={() => setHovIdx(i)}
+                  onMouseLeave={() => setHovIdx(null)}
+                />
+
+                {/* X-axis label */}
+                <text
+                  x={p.x} y={H + PT + 4}
+                  textAnchor="middle" fontSize="9"
+                  fill={isH ? '#192744' : '#858ea2'}
+                  fontWeight={isH ? 600 : 400}
+                  fontFamily="Inter, sans-serif"
+                >
+                  {d.month}
+                </text>
+              </g>
+            )
+          })}
+        </svg>
+      </div>
+
+      {/* MoM bar strip — shows relative change magnitude per month */}
+      <div style={{
+        padding: '0 20px 16px',
+        display: 'flex',
+        gap: 4,
+        alignItems: 'flex-end',
+      }}>
+        {PREPAID_RECHARGE_DATA.map((d, i) => {
+          const isH = hovIdx === i
+          if (d.moM === null) {
+            return (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <div style={{ height: 20, width: '100%' }} />
+              </div>
+            )
+          }
+          const maxMoM = Math.max(...PREPAID_RECHARGE_DATA.filter(x => x.moM !== null).map(x => Math.abs(x.moM!)))
+          const barH = Math.max(3, Math.round((Math.abs(d.moM) / maxMoM) * 20))
+          const barColor = d.moM >= 0 ? '#36b37e' : '#e53935'
+          return (
+            <div key={i} style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 3,
+              opacity: hovIdx !== null && !isH ? 0.3 : 1,
+              transition: 'opacity .15s',
+            }}>
+              <div style={{
+                width: '100%',
+                height: barH,
+                background: barColor,
+                borderRadius: '2px 2px 0 0',
+                opacity: isH ? 1 : 0.45,
+                transition: 'opacity .15s',
+              }} />
+              <span style={{
+                fontSize: 8,
+                color: isH ? barColor : '#858ea2',
+                fontWeight: isH ? 700 : 400,
+                fontFamily: 'Inter, sans-serif',
+              }}>
+                {d.moM >= 0 ? '+' : ''}{d.moM}%
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps & { analyticsMode?: 'basic' | 'advanced' }) {
   const [statusView, setStatusView] = useState<'state'|'biller'>('state')
 
