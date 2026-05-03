@@ -1883,7 +1883,7 @@ function BasicTrends({ appState }: BasicSectionProps) {
 
 // ── Prepaid Recharge Trend Chart Component ──────────────────────────────────
 function PrepaidRechargeTrend() {
-  const [hovIdx, setHovIdx] = React.useState<number | null>(null)
+  const [hovIdx, setHovIdx] = useState<number | null>(null)
 
   const PREPAID_RECHARGE_DATA = [
     { month: 'Apr', amount: 12.4, moM: null },
