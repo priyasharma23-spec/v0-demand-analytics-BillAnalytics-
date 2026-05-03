@@ -125,11 +125,20 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
       distDataSample: distData[0],
       stateDataLen: stateData.length,
       consBillLen: consBill.length,
+      consBillSample: consBill[0],
     })
+
+    // If getConsumptionVsBill returns empty, fallback to trendData
+    const finalConsBill = consBill.length > 0 ? consBill : trendData.map(d => ({
+      month: d.period_label,
+      totalKwh: d.total_kwh,
+      totalBill: d.energy_charges * 1.25, // Estimate total bill
+      ratePerUnit: d.rate_per_unit,
+    }))
 
     // Derive bill component data from getFilteredBills
     const filteredData = getFilteredBills('monthly', appState?.stateF ?? 'all', appState?.branchF ?? 'all', appState?.caF ?? 'all')
-    const compData = filteredData.map(d => ({
+    const compData = filteredData.length > 0 ? filteredData.map(d => ({
       period_label: d.label,
       fixed_charges:   d.fixedCharge,
       energy_charges:  d.energyCharge,
@@ -137,15 +146,15 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
       arrears:         Math.abs(d.arrears ?? 0),
       taxes:           Math.round(d.totalBill * 0.05),
       total_bill:      d.totalBill,
-    }))
+    })) : []
     setBillComponentData(compData)
 
     setDistribution(distData)
-    setStateConsumption(stateData)
-    setConsBillData(consBill)
+    setStateConsumption(stateData.length > 0 ? stateData : []) // Use empty fallback if no data
+    setConsBillData(finalConsBill)
 
     // Compute total faulty meters (bucket 0 is faulty)
-    const faulty = distData.reduce((sum, m) => sum + m.buckets[0], 0)
+    const faulty = distData.reduce((sum: number, m: any) => sum + m.buckets[0], 0)
     setTotalFaulty(faulty)
   }, [appState.stateF, appState.branchF, appState.caF])
 
@@ -221,7 +230,10 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
 
   // Render top states chart
   useEffect(() => {
-    if (!topStatesRef.current || stateConsumption.length === 0) return
+    if (!topStatesRef.current || !stateConsumption || stateConsumption.length === 0) {
+      console.log('[v0] Skipping top states chart - no data', { ref: !!topStatesRef.current, dataLen: stateConsumption?.length })
+      return
+    }
     const ctx = topStatesRef.current.getContext('2d')
     if (!ctx) return
     if (topStatesInstance.current) topStatesInstance.current.destroy()
