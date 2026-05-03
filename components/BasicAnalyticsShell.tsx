@@ -128,12 +128,12 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     'West Bengal': 20,
   }
   const branchToState: Record<string, string> = {}
-  Object.entries(BRANCHES).forEach(([state, branches]) => {
-    branches.forEach(br => { branchToState[br] = state })
+  Object.entries(BRANCHES).forEach(([state, branches]: [string, string[]]) => {
+    branches.forEach((br: string) => { branchToState[br] = state })
   })
   const caToState: Record<string, string> = {}
-  Object.entries(CAS).forEach(([branch, cas]) => {
-    cas.forEach(ca => { caToState[ca] = branchToState[branch] ?? 'Maharashtra' })
+  Object.entries(CAS).forEach(([branch, cas]: [string, string[]]) => {
+    cas.forEach((ca: string) => { caToState[ca] = branchToState[branch] ?? 'Maharashtra' })
   })
 
   const today = new Date()
@@ -186,6 +186,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
 
   const totalUnpaid = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
   const calendarDays = Array.from({ length: 28 }, (_, i) => i + 1)
+  const mthLabels = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']
 
   return (
     <div>
@@ -508,6 +509,14 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
     ? Math.round(portfolioTotal / locationRows.length)
     : Math.round(portfolioTotal / STATES.length)
 
+  // Drill-down variables
+  const sd = spendSel ? spendData[spendSel] : { total: 0, months: [] }
+  const peakMthIdx = sd && sd.months ? sd.months.indexOf(Math.max(...sd.months)) : 0
+  const lowMthIdx = sd && sd.months ? sd.months.indexOf(Math.min(...sd.months)) : 0
+  const avgPerBranch = spendSel && showBranches 
+    ? Math.round((locationRows.find(r => r.name === spendSel)?.total || 0) / Math.max(BRANCHES[spendSel]?.length || 1, 1))
+    : 0
+
   return (
     <div>
       {/* Full-screen drill-down overlay */}
@@ -528,7 +537,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           <div style={{ flex: 1, padding: '20px 24px' }}>
             {drillPage === 'branches' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {(BRANCHES[spendSel] ?? []).map(br => {
+                {(BRANCHES[spendSel ?? ''] ?? []).map((br: string) => {
                   const brCAs = CAS[br] ?? []
                   const brTotal = brCAs.reduce((sum: number, ca: string) => {
                     const bills = getCABills(ca, 'monthly')
@@ -549,7 +558,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             )}
             {drillPage === 'cas' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {(BRANCHES[spendSel] ?? []).flatMap(br => (CAS[br] ?? []).map((ca: string) => {
+                {(BRANCHES[spendSel ?? ''] ?? []).flatMap((br: string) => (CAS[br] ?? []).map((ca: string) => {
                   const bills = getCABills(ca, 'monthly')
                   const avg = bills.reduce((s: number, d: any) => s + d.totalBill, 0) / bills.length || 0
                   return (
