@@ -655,7 +655,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
         </div>
         <div style={{ padding: '14px 20px 16px' }}>
           <div style={{ position: 'relative', width: '100%', height: '240px', marginBottom: '12px' }}>
-            <canvas ref={distRef}></canvas>
+            <canvas ref={distChartRef}></canvas>
           </div>
           {/* Legend */}
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '10px', color: '#858ea2' }}>
