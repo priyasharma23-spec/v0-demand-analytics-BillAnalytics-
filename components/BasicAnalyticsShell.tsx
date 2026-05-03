@@ -629,8 +629,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
       {/* Portfolio breakup */}
       {(() => {
         const COLORS = ['#1c5af4','#8b5cf6','#06b6d4','#6366f1','#f59e0b','#36b37e','#e53935','#f97316']
-        const [pieHov, setPieHov] = React.useState<string|null>(null)
-        const [pieMetric, setPieMetric] = React.useState<'cas'|'branches'>('cas')
+        const [pieHov, setPieHov] = useState<string|null>(null)
+        const [pieMetric, setPieMetric] = useState<'cas'|'branches'>('cas')
         const rows = stateData.map((d, i) => ({
           name: d.state,
           cas: (BRANCHES[d.state] ?? []).reduce((s: number, br: string) => s + (CAS[br]?.length ?? 0), 0),
