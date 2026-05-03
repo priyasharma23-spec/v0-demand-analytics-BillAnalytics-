@@ -177,120 +177,107 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
         </div>
       </div>
 
-      {/* Bill copy status table */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px 24px', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-          {['Biller', 'State', 'Branch'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setStatusView(tab.toLowerCase() as 'biller'|'state'|'branch')}
-              style={{
-                background: statusView === tab.toLowerCase() ? '#4F46E5' : '#fff',
-                color: statusView === tab.toLowerCase() ? '#fff' : '#6B7280',
-                border: `1px solid ${statusView === tab.toLowerCase() ? '#4F46E5' : '#E5E7EB'}`,
-                borderRadius: '99px',
-                padding: '6px 16px',
-                fontSize: '12px',
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
-            >
-              {tab}
-            </button>
-          ))}
+      {/* Bill copy status — card grid */}
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 20px' }}>
+        {/* Toolbar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>Bill Copy Status — by {statusView.charAt(0).toUpperCase() + statusView.slice(1)}</div>
+            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Opt-in CAs · delivery status and coverage</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Summary stats */}
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              {[
+                { val: tableData.reduce((s: number, r: any) => s + (r.opted || 0), 0), label: 'expected', color: '#192744' },
+                { val: tableData.reduce((s: number, r: any) => s + (r.received || 0), 0), label: 'received', color: '#36b37e' },
+                { val: tableData.reduce((s: number, r: any) => s + (r.pending || 0), 0), label: 'pending', color: '#f59e0b' },
+                { val: tableData.reduce((s: number, r: any) => s + (r.failed || 0), 0), label: 'failed', color: '#e53935' },
+              ].map((s, i) => (
+                <div key={i} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.val}</div>
+                  <div style={{ fontSize: '10px', color: '#858ea2', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ width: '1px', height: '32px', background: '#f0f1f5' }} />
+            {/* View toggle */}
+            <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
+              {(['biller', 'state', 'branch'] as const).map(tab => (
+                <button key={tab} onClick={() => setStatusView(tab)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '3px 12px', fontSize: '11px', background: statusView === tab ? '#1c5af4' : 'transparent', color: statusView === tab ? '#fff' : '#858ea2', fontWeight: statusView === tab ? 600 : 400, transition: 'all .12s' }}>
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #E5E7EB' }}>
-                {statusView === 'biller' ? (
-                  <>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '180px' }}>Biller</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '90px' }}>State</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '70px' }}>Opted</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '70px' }}>Received</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '70px' }}>Pending</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '70px' }}>Failed</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>Delivery</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '80px' }}>Coverage</th>
-                  </>
-                ) : (
-                  <>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '180px' }}>State</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '70px' }}>Opted</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '70px' }}>Received</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '70px' }}>Pending</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '70px' }}>Failed</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>Delivery</th>
-                    <th style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textAlign: 'left', padding: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '80px' }}>Coverage</th>
-                  </>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map((row: any, idx) => {
-                const optedVal = row.opted || 0
-                const receivedVal = row.received || 0
-                const pendingVal = row.pending || 0
-                const failedVal = row.failed || 0
-                const coverage = optedVal > 0 ? Math.round(receivedVal / optedVal * 100) : 0
-                const greenPct = optedVal > 0 ? Math.round(receivedVal / optedVal * 100) : 0
-                const amberPct = optedVal > 0 ? Math.round(pendingVal / optedVal * 100) : 0
-                const redPct = optedVal > 0 ? Math.round(failedVal / optedVal * 100) : 0
-                const coverageBg = coverage >= 80 ? '#F0FDF4' : coverage >= 70 ? '#FFFBEB' : '#FEF2F2'
-                const coverageColor = coverage >= 80 ? '#15803D' : coverage >= 70 ? '#B45309' : '#B91C1C'
-                
-                return (
-                  <tr
-                    key={idx}
-                    style={{ borderBottom: '1px solid #E5E7EB' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#EEF2FF'}
-                    onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                  >
-                    {statusView === 'biller' ? (
-                      <>
-                        <td style={{ padding: '12px', color: '#111827', fontWeight: 500 }}>{(row as any).biller}</td>
-                        <td style={{ padding: '12px', color: '#6B7280' }}>{(row as any).state}</td>
-                        <td style={{ padding: '12px', color: '#111827' }}>{optedVal}</td>
-                        <td style={{ padding: '12px', color: '#15803D', fontWeight: 500 }}>{receivedVal}</td>
-                        <td style={{ padding: '12px', color: '#B45309' }}>{pendingVal}</td>
-                        <td style={{ padding: '12px', color: '#B91C1C', fontWeight: 500 }}>{failedVal}</td>
-                        <td style={{ padding: '12px' }}>
-                          <div style={{ display: 'flex', height: '8px', borderRadius: '99px', overflow: 'hidden', gap: '1px' }}>
-                            {greenPct > 0 && <div style={{ flex: greenPct / 100, background: '#22C55E' }} />}
-                            {amberPct > 0 && <div style={{ flex: amberPct / 100, background: '#F59E0B' }} />}
-                            {redPct > 0 && <div style={{ flex: redPct / 100, background: '#EF4444' }} />}
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px' }}>
-                          <span style={{ background: coverageBg, color: coverageColor, padding: '2px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 500 }}>{coverage}%</span>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td style={{ padding: '12px', color: '#111827', fontWeight: 500 }}>{(row as any).state}</td>
-                        <td style={{ padding: '12px', color: '#111827' }}>{optedVal}</td>
-                        <td style={{ padding: '12px', color: '#15803D', fontWeight: 500 }}>{receivedVal}</td>
-                        <td style={{ padding: '12px', color: '#B45309' }}>{pendingVal}</td>
-                        <td style={{ padding: '12px', color: '#B91C1C', fontWeight: 500 }}>{failedVal}</td>
-                        <td style={{ padding: '12px' }}>
-                          <div style={{ display: 'flex', height: '8px', borderRadius: '99px', overflow: 'hidden', gap: '1px' }}>
-                            {greenPct > 0 && <div style={{ flex: greenPct / 100, background: '#22C55E' }} />}
-                            {amberPct > 0 && <div style={{ flex: amberPct / 100, background: '#F59E0B' }} />}
-                            {redPct > 0 && <div style={{ flex: redPct / 100, background: '#EF4444' }} />}
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px' }}>
-                          <span style={{ background: coverageBg, color: coverageColor, padding: '2px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 500 }}>{coverage}%</span>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+        {/* Card grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
+          {tableData.map((row: any, idx: number) => {
+            const name       = row.biller || row.state || row.branch || ''
+            const stateName  = row.state || ''
+            const opted      = row.opted    || 0
+            const received   = row.received || 0
+            const pending    = row.pending  || 0
+            const failed     = row.failed   || 0
+            const pct        = opted > 0 ? Math.round(received / opted * 100) : 0
+            const color      = pct >= 85 ? '#36b37e' : pct >= 70 ? '#f59e0b' : '#e53935'
+            const rcvdW      = opted > 0 ? (received / opted) * 100 : 0
+            const pendW      = opted > 0 ? (pending  / opted) * 100 : 0
+            const failW      = opted > 0 ? (failed   / opted) * 100 : 0
+            const r = 32, circ = 2 * Math.PI * r, filled = (pct / 100) * circ
+            return (
+              <div key={idx} style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '8px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'border-color .15s, box-shadow .15s', cursor: 'default' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = color + '55'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 16px rgba(25,39,68,.08)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#f0f1f5'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(25,39,68,.04)'; }}
+              >
+                <div style={{ padding: '16px 14px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+                  {/* Ring chart */}
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeOpacity="0.15" strokeWidth="7"/>
+                    <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="7" strokeLinecap="round"
+                      strokeDasharray={`${filled} ${circ}`} transform="rotate(-90 40 40)"/>
+                    <text x="40" y="45" textAnchor="middle" fontSize="15" fontWeight="700" fill={color} fontFamily="Inter,sans-serif">{pct}%</text>
+                  </svg>
+                  {/* Name + state */}
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#192744', lineHeight: 1.2 }}>{name}</div>
+                    {stateName && statusView === 'biller' && <div style={{ fontSize: '11px', color: '#858ea2', marginTop: '3px' }}>{stateName}</div>}
+                  </div>
+                  {/* Expected */}
+                  <div style={{ fontSize: '11px', color: '#858ea2' }}>
+                    <span style={{ fontWeight: 600, color: '#192744' }}>{opted}</span> Expected
+                  </div>
+                  {/* rcvd · pend · fail */}
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {[{ val: received, label: 'rcvd', color: '#36b37e' }, { val: pending, label: 'pend', color: '#f59e0b' }, { val: failed, label: 'fail', color: '#e53935' }].map((item, i) => (
+                      <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                        <span style={{ fontSize: '16px', fontWeight: 700, color: item.color, lineHeight: 1 }}>{item.val}</span>
+                        <span style={{ fontSize: '9px', color: '#858ea2', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Bottom status bar */}
+                <div style={{ height: '6px', display: 'flex' }}>
+                  <div style={{ width: rcvdW + '%', background: '#36b37e', opacity: 0.8 }} />
+                  <div style={{ width: pendW + '%', background: '#f59e0b', opacity: 0.8 }} />
+                  <div style={{ width: failW + '%', background: '#e53935', opacity: 0.8 }} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Legend */}
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', paddingTop: '12px' }}>
+          {[{ color: '#36b37e', label: 'Received' }, { color: '#f59e0b', label: 'Pending' }, { color: '#e53935', label: 'Failed' }].map((l, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '10px', height: '4px', borderRadius: '99px', background: l.color, opacity: 0.8 }} />
+              <span style={{ fontSize: '11px', color: '#858ea2' }}>{l.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
