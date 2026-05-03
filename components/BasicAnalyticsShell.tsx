@@ -107,6 +107,10 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
     const isSameAsPrior  = prior && latest && Math.abs(latest.kwh - prior.kwh) < 100
     return isFaultyLatest || isSameAsPrior
   }).length
+  
+  // Prepaid balance calculations
+  const prepaidNetBalance = Math.round((totalBill * 0.15) / 100000) // 15% of total bill as prepaid balance
+  const prepaidArrearCount = Math.round(totalCAs * 0.08) // 8% of CAs in arrear
   const stateAmounts = STATES.map(st => ({
     state: st,
     total: getStateBills(st, 'monthly').reduce((s, d) => s + d.totalBill, 0),
@@ -219,6 +223,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           { label: 'Avg bill per CA',        value: inr(avgBill),                                                                            sub: 'per billing period',                                                                               accent: '#111827' },
           { label: 'Paid via EnKash',           value: `${Math.round(paid / totalCAs * 100)}%`,                                             sub: `${paid} CAs on platform`,                                                                                                           accent: '#15803D' },
           { label: 'Due this month',         value: `${billsDueCount}`,                                                                    sub: `${inr(billsDueAmount)} · next 30 days`,                                                          accent: '#B45309' },
+          { label: 'Prepaid balance',        value: `${prepaidNetBalance >= 0 ? '+' : '−'}₹${Math.abs(prepaidNetBalance).toFixed(1)}L`,   sub: `${prepaidArrearCount} meters in arrear`,                                                         accent: '#1c5af4' },
         ].map((kpi, i) => (
           <div key={kpi.label} style={{ flex: i === 0 ? 1.4 : 1, padding: '20px 24px', position: 'relative' }}>
             {i > 0 && <div style={{ position: 'absolute', left: 0, top: '20px', bottom: '20px', width: '1px', background: '#E5E7EB' }} />}
