@@ -772,6 +772,81 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         )
       })()}
 
+      {/* Branch performance cards — advanced only */}
+      {analyticsMode === 'advanced' && (() => {
+        const allBranches = Object.values(BRANCHES).flat()
+        const branchMetrics = allBranches.map(br => {
+          const d = getBranchBills(br, 'monthly')
+          return {
+            name: br,
+            latePayment:        d.reduce((s: number, r: any) => s + r.latePayment, 0),
+            earlyPayment:       d.reduce((s: number, r: any) => s + r.earlyPaymentDiscount, 0),
+            pfPenalty:          d.reduce((s: number, r: any) => s + r.pfPenalty, 0),
+            pfIncentive:        d.reduce((s: number, r: any) => s + r.pfIncentive, 0),
+            onHold:             Math.round((br.charCodeAt(0) + br.charCodeAt(br.length-1)) % 8),
+          }
+        })
+        const fmtL = (v: number) => '₹' + (v / 100000).toFixed(1) + 'L'
+        const maxLate     = branchMetrics.reduce((a, b) => b.latePayment > a.latePayment ? b : a)
+        const maxEarly    = branchMetrics.reduce((a, b) => b.earlyPayment > a.earlyPayment ? b : a)
+        const maxHold     = branchMetrics.reduce((a, b) => b.onHold > a.onHold ? b : a)
+        const maxPFPen    = branchMetrics.reduce((a, b) => b.pfPenalty > a.pfPenalty ? b : a)
+        const maxPFInc    = branchMetrics.reduce((a, b) => b.pfIncentive > a.pfIncentive ? b : a)
+
+        const cards = [
+          {
+            color: '#e53935', label: 'CONTRACT REVISION SAVING', colorLight: '#fef2f2', colorBorder: '#fecaca',
+            value: fmtL(maxLate.latePayment),
+            sub: 'Highest late fee · ' + maxLate.name,
+            desc: 'This branch has the highest recurring late payment charges. Set up auto-payment or advance funding to eliminate this.',
+            cta: 'View CAs →',
+          },
+          {
+            color: '#f59e0b', label: 'PF IMPROVEMENT SAVING', colorLight: '#fffbeb', colorBorder: '#fde68a',
+            value: fmtL(maxPFPen.pfPenalty),
+            sub: 'Maintain PF ≥ 0.95 via capacitor banks',
+            desc: maxPFPen.name + ' has the highest PF penalty. Installing capacitor banks can eliminate this charge.',
+            cta: 'View CA list →',
+          },
+          {
+            color: '#36b37e', label: 'TOTAL RECOVERABLE', colorLight: '#f0faf6', colorBorder: '#bbf7d0',
+            value: fmtL(maxEarly.earlyPayment),
+            sub: 'Max early payment savings · ' + maxEarly.name,
+            desc: 'This branch captures the most early payment discounts. Replicate this payment discipline across all branches.',
+            cta: 'See breakdown →',
+          },
+          {
+            color: '#1c5af4', label: 'CLEAN BILL RATE', colorLight: '#eef3fe', colorBorder: '#c7d2fe',
+            value: fmtL(maxPFInc.pfIncentive),
+            sub: 'Max PF incentive · ' + maxPFInc.name,
+            desc: maxPFInc.name + ' earns the highest PF incentive. Avg PF above 0.95 across all CAs.',
+            cta: 'View profile →',
+          },
+        ]
+
+        return (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '12px' }}>Branch highlights</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+              {cards.map((card, i) => (
+                <div key={i} style={{ background: card.colorLight, border: `1px solid ${card.colorBorder}`, borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.color }} />
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.label}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '24px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '4px' }}>{card.value}</div>
+                    <div style={{ fontSize: '12px', color: card.color, fontWeight: 500 }}>{card.sub}</div>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#374151', lineHeight: 1.5, flex: 1 }}>{card.desc}</div>
+                  <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 600, color: card.color, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>{card.cta}</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
             {/* Spend by state */}
       <div style={{ marginTop: '24px' }} />
       {/* Spend heatmap — India map */}
