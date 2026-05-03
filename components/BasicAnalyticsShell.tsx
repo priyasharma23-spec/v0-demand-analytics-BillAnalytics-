@@ -830,7 +830,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '12px' }}>Branch highlights</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
               {cards.map((card, i) => (
-                <div key={i} style={{ background: card.colorLight, border: `1px solid ${card.colorBorder}`, borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div key={i} style={{ background: '#fff', border: '1px solid #f0f1f5', borderTop: `3px solid ${card.color}`, borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.color }} />
                     <div style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.label}</div>
@@ -839,7 +839,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                     <div style={{ fontSize: '24px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '4px' }}>{card.value}</div>
                     <div style={{ fontSize: '12px', color: card.color, fontWeight: 500 }}>{card.sub}</div>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#374151', lineHeight: 1.5, flex: 1 }}>{card.desc}</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.5, flex: 1 }}>{card.desc}</div>
                   <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 600, color: card.color, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>{card.cta}</button>
                 </div>
               ))}
