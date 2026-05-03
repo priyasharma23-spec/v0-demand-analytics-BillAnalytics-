@@ -626,69 +626,141 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         </div>
       </div>
 
-      {/* Portfolio breakup — Option A: large donut + legend right with branch/CA counts */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginBottom: '16px' }}>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744', marginBottom: '2px' }}>Portfolio breakup</div>
-        <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '16px' }}>Bill spend by {showBranches ? 'branch' : 'state'} · Apr 2024 – Mar 2025</div>
-        <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
-          {(() => {
-            const COLORS = ['#4F46E5','#1c5af4','#06b6d4','#8b5cf6','#f59e0b','#10b981','#ef4444','#f97316']
-            const rows = showBranches
-              ? locationRows.map(r => ({ name: r.name, total: r.total, branches: 1, cas: CAS[r.name]?.length ?? 0 }))
-              : stateData.map(d => ({ name: d.state, total: d.total, branches: (BRANCHES[d.state] ?? []).length, cas: (BRANCHES[d.state] ?? []).reduce((s, br) => s + (CAS[br]?.length ?? 0), 0) }))
-            const total = rows.reduce((s, r) => s + r.total, 0)
-            const circ = 2 * Math.PI * 72
-            let offset = 0
-            const totalBranches = rows.reduce((s, r) => s + r.branches, 0)
-            const totalCAsAll = rows.reduce((s, r) => s + r.cas, 0)
-            return (
-              <>
-                <div style={{ flexShrink: 0 }}>
-                  <svg width="180" height="180" viewBox="0 0 180 180">
-                    <circle cx="90" cy="90" r="72" fill="none" stroke="#f3f4f6" strokeWidth="32"/>
-                    {rows.map((r, i) => {
-                      const pct = r.total / Math.max(total, 1)
-                      const dash = pct * circ
-                      const gap = circ - dash
-                      const el = (
-                        <circle key={r.name} cx="90" cy="90" r="72" fill="none"
-                          stroke={COLORS[i % COLORS.length]}
-                          strokeWidth="32"
-                          strokeDasharray={`${dash} ${gap}`}
-                          strokeDashoffset={-offset}
-                          strokeLinecap="butt"
-                        />
-                      )
-                      offset += dash
-                      return el
-                    })}
-                    <text x="90" y="84" textAnchor="middle" fontSize="13" fontWeight="600" fill="#192744" fontFamily="Inter, sans-serif">{rows.length} states</text>
-                    <text x="90" y="100" textAnchor="middle" fontSize="11" fill="#858ea2" fontFamily="Inter, sans-serif">{totalCAsAll} CAs total</text>
-                  </svg>
+      {/* Portfolio breakup */}
+      {(() => {
+        const COLORS = ['#1c5af4','#8b5cf6','#06b6d4','#6366f1','#f59e0b','#36b37e','#e53935','#f97316']
+        const [pieHov, setPieHov] = React.useState<string|null>(null)
+        const [pieMetric, setPieMetric] = React.useState<'cas'|'branches'>('cas')
+        const rows = stateData.map((d, i) => ({
+          name: d.state,
+          cas: (BRANCHES[d.state] ?? []).reduce((s: number, br: string) => s + (CAS[br]?.length ?? 0), 0),
+          branches: (BRANCHES[d.state] ?? []).length,
+          color: COLORS[i % COLORS.length],
+        }))
+        const total = rows.reduce((s, r) => s + r[pieMetric], 0)
+        const totalCAsAll = rows.reduce((s, r) => s + r.cas, 0)
+        const totalBranchesAll = rows.reduce((s, r) => s + r.branches, 0)
+        const CX = 130, CY = 130, R_OUTER = 100, R_INNER = 62
+        const strokeW = R_OUTER - R_INNER
+        const circ = 2 * Math.PI * ((R_OUTER + R_INNER) / 2)
+        const gapAngle = (2 / circ) * 360
+        let angle = -90
+        const arcs = rows.map(r => {
+          const pct = r[pieMetric] / Math.max(total, 1)
+          const sweep = pct * 360 - gapAngle
+          const startA = angle
+          const endA = angle + sweep
+          angle += pct * 360
+          const toRad = (d: number) => (d * Math.PI) / 180
+          const midR = (R_OUTER + R_INNER) / 2
+          const x1 = CX + midR * Math.cos(toRad(startA))
+          const y1 = CY + midR * Math.sin(toRad(startA))
+          const x2 = CX + midR * Math.cos(toRad(endA))
+          const y2 = CY + midR * Math.sin(toRad(endA))
+          const large = sweep > 180 ? 1 : 0
+          return { ...r, pct, path: `M${x1.toFixed(2)},${y1.toFixed(2)} A${midR},${midR} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)}` }
+        })
+        const activeArc = pieHov ? arcs.find(a => a.name === pieHov) : null
+        const maxVal = Math.max(...rows.map(r => r[pieMetric]), 1)
+        return (
+          <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', marginBottom: '16px' }}>
+            {/* Header */}
+            <div style={{ padding: '14px 24px', borderBottom: '1px solid #f0f1f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#192744' }}>State distribution</span>
+                <div style={{ width: '1px', height: '16px', background: '#f0f1f5' }} />
+                {[
+                  { value: rows.length, label: 'states', color: '#1c5af4', bg: '#eef3fe' },
+                  { value: totalCAsAll, label: 'CAs', color: '#36b37e', bg: '#f0faf6' },
+                  { value: totalBranchesAll, label: 'branches', color: '#9aa0b0', bg: '#f5f6fa' },
+                ].map((item, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '4px', background: item.bg, border: `1px solid ${item.color}22`, borderRadius: '5px', padding: '3px 10px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 700, color: item.color, lineHeight: 1 }}>{item.value}</span>
+                    <span style={{ fontSize: '11px', color: '#9aa0b0', fontWeight: 500 }}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
+                {([{ id: 'cas', label: 'By CAs' }, { id: 'branches', label: 'By branches' }] as Array<{ id: 'cas'|'branches'; label: string }>).map(o => (
+                  <button key={o.id} onClick={() => setPieMetric(o.id)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '3px 14px', fontSize: '11px', background: pieMetric === o.id ? '#1c5af4' : 'transparent', color: pieMetric === o.id ? '#fff' : '#9aa0b0', fontWeight: pieMetric === o.id ? 600 : 400, transition: 'all .12s' }}>{o.label}</button>
+                ))}
+              </div>
+            </div>
+            {/* Body */}
+            <div style={{ display: 'flex', alignItems: 'center', padding: '24px 24px 20px' }}>
+              {/* Donut */}
+              <div style={{ flexShrink: 0 }}>
+                <svg width="260" height="260" viewBox="0 0 260 260">
+                  {arcs.map(arc => (
+                    <path key={arc.name} d={arc.path} fill="none" stroke={arc.color}
+                      strokeWidth={pieHov === arc.name ? strokeW + 6 : strokeW}
+                      strokeLinecap="butt"
+                      opacity={pieHov && pieHov !== arc.name ? 0.2 : 1}
+                      style={{ cursor: 'pointer', transition: 'stroke-width .15s, opacity .15s' }}
+                      onMouseEnter={() => setPieHov(arc.name)}
+                      onMouseLeave={() => setPieHov(null)}
+                    />
+                  ))}
+                  {activeArc ? (
+                    <>
+                      <text x={CX} y={CY - 10} textAnchor="middle" fontSize="22" fontWeight="700" fill={activeArc.color} fontFamily="Inter,sans-serif">{activeArc[pieMetric]}</text>
+                      <text x={CX} y={CY + 8} textAnchor="middle" fontSize="11" fill="#9aa0b0" fontFamily="Inter,sans-serif">{pieMetric === 'cas' ? 'CAs' : 'branches'}</text>
+                      <text x={CX} y={CY + 24} textAnchor="middle" fontSize="11" fontWeight="500" fill="#192744" fontFamily="Inter,sans-serif">{activeArc.name}</text>
+                    </>
+                  ) : (
+                    <>
+                      <text x={CX} y={CY - 6} textAnchor="middle" fontSize="26" fontWeight="700" fill="#192744" fontFamily="Inter,sans-serif">{total}</text>
+                      <text x={CX} y={CY + 14} textAnchor="middle" fontSize="12" fill="#9aa0b0" fontFamily="Inter,sans-serif">{rows.length} states · {pieMetric === 'cas' ? 'CAs' : 'branches'}</text>
+                    </>
+                  )}
+                </svg>
+              </div>
+              {/* Divider */}
+              <div style={{ width: '1px', alignSelf: 'stretch', background: '#f0f1f5', margin: '0 28px', flexShrink: 0 }} />
+              {/* Legend */}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '130px 64px 1fr', gap: '14px', paddingBottom: '6px', borderBottom: '1px solid #f0f1f5', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em' }}>State</div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{pieMetric === 'cas' ? 'CAs' : 'Branches'}</div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Share</div>
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px' }}>
-                  {rows.map((r, i) => {
-                    const pct = Math.round(r.total / Math.max(total, 1) * 100)
-                    return (
-                      <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: COLORS[i % COLORS.length], flexShrink: 0 }} />
-                        <div style={{ flex: 1, fontSize: '12px', color: '#192744' }}>{r.name}</div>
-                        <div style={{ fontSize: '11px', color: '#858ea2' }}>{r.branches} br</div>
-                        <div style={{ fontSize: '11px', color: '#858ea2' }}>{r.cas} CAs</div>
-                        <div style={{ width: '60px', height: '4px', background: '#f3f4f6', borderRadius: '2px', overflow: 'hidden' }}>
-                          <div style={{ width: pct + '%', height: '100%', background: COLORS[i % COLORS.length], borderRadius: '2px' }} />
-                        </div>
-                        <div style={{ width: '32px', fontSize: '11px', color: '#858ea2', textAlign: 'right' }}>{pct}%</div>
-                        <div style={{ width: '52px', fontSize: '11px', fontWeight: 600, color: '#192744', textAlign: 'right' }}>{inr(r.total)}</div>
+                {rows.map(r => {
+                  const pct = Math.round(r[pieMetric] / Math.max(total, 1) * 100)
+                  const isHov = pieHov === r.name
+                  const faded = pieHov && !isHov
+                  return (
+                    <div key={r.name}
+                      onMouseEnter={() => setPieHov(r.name)}
+                      onMouseLeave={() => setPieHov(null)}
+                      style={{ display: 'grid', gridTemplateColumns: '130px 64px 1fr', alignItems: 'center', gap: '14px', padding: '7px 0', opacity: faded ? 0.35 : 1, transition: 'opacity .15s', cursor: 'default' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: r.color, flexShrink: 0, boxShadow: isHov ? `0 0 0 3px ${r.color}30` : 'none', transition: 'box-shadow .15s' }} />
+                        <span style={{ fontSize: '13px', fontWeight: isHov ? 600 : 400, color: '#192744' }}>{r.name}</span>
                       </div>
-                    )
-                  })}
-                </div>
-              </>
-            )
-          })()}
-        </div>
-      </div>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: isHov ? r.color : '#192744' }}>{r[pieMetric]}</span>
+                        <span style={{ fontSize: '12px', color: '#9aa0b0', fontWeight: 500 }}>{pieMetric === 'cas' ? 'CAs' : 'br'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ flex: 1, height: '6px', background: '#f5f6fa', borderRadius: '99px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: (r[pieMetric] / maxVal * 100) + '%', borderRadius: '99px', background: r.color, opacity: isHov ? 1 : 0.6, transition: 'opacity .15s' }} />
+                        </div>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: isHov ? r.color : '#9aa0b0', minWidth: '30px', textAlign: 'right' }}>{pct}%</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            {/* Footer */}
+            <div style={{ padding: '10px 24px', borderTop: '1px solid #f0f1f5', display: 'flex', gap: '24px' }}>
+              <span style={{ fontSize: '12px', color: '#9aa0b0' }}>Avg <strong style={{ color: '#192744', fontWeight: 600 }}>{(totalCAsAll / rows.length).toFixed(1)}</strong> CAs per state</span>
+              <span style={{ fontSize: '12px', color: '#9aa0b0' }}>Avg <strong style={{ color: '#192744', fontWeight: 600 }}>{(totalBranchesAll / rows.length).toFixed(1)}</strong> branches per state</span>
+              <span style={{ fontSize: '12px', color: '#9aa0b0' }}>Hover a segment or row to highlight</span>
+            </div>
+          </div>
+        )
+      })()}
 
             {/* Spend by state */}
       <div style={{ marginTop: '24px' }} />
