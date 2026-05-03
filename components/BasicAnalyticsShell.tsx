@@ -186,7 +186,6 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
 
   const totalUnpaid = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
   const calendarDays = Array.from({ length: 28 }, (_, i) => i + 1)
-  const mthLabels = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']
 
   return (
     <div>
