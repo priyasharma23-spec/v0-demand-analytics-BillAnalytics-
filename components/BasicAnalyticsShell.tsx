@@ -800,7 +800,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             value: fmtL(maxLate.latePayment),
             sub: 'Highest late fee',
             branch: maxLate.name,
-            desc: 'This branch has the highest recurring late payment charges. Set up auto-payment or advance funding to eliminate this.',
             cta: 'View CAs →',
           },
           {
@@ -808,7 +807,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             value: fmtL(maxPFPen.pfPenalty),
             sub: 'Maintain PF ≥ 0.95 via capacitor banks',
             branch: maxPFPen.name,
-            desc: maxPFPen.name + ' has the highest PF penalty. Installing capacitor banks can eliminate this charge.',
             cta: 'View CA list →',
           },
           {
@@ -816,7 +814,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             value: fmtL(maxEarly.earlyPayment),
             sub: 'Max early payment savings',
             branch: maxEarly.name,
-            desc: 'This branch captures the most early payment discounts. Replicate this payment discipline across all branches.',
             cta: 'See breakdown →',
           },
           {
@@ -824,7 +821,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             value: fmtL(maxPFInc.pfIncentive),
             sub: 'Max PF incentive',
             branch: maxPFInc.name,
-            desc: maxPFInc.name + ' earns the highest PF incentive. Avg PF above 0.95 across all CAs.',
             cta: 'View profile →',
           },
         ]
@@ -876,8 +872,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
                     <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '3px' }}>{card.sub}</div>
                     <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{card.branch}</div>
                   </div>
-                  {/* Description */}
-                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.5, flex: 1, marginBottom: '16px' }}>{card.desc}</div>
                   {/* CTA */}
                   <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: card.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>{card.cta}</button>
                 </div>
