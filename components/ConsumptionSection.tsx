@@ -641,7 +641,39 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
       </div>
 
       {/* Section 5: Bill reading distribution */}
-
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Bill reading distribution</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Count of bills & unit consumption range · monthly reporting</div>
+          </div>
+          {totalFaulty > 0 && (
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#dc2626' }}>
+              {totalFaulty.toLocaleString()} possibly faulty meters
+            </div>
+          )}
+        </div>
+        <div style={{ padding: '14px 20px 16px' }}>
+          <div style={{ position: 'relative', width: '100%', height: '240px', marginBottom: '12px' }}>
+            <canvas ref={distRef}></canvas>
+          </div>
+          {/* Legend */}
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '10px', color: '#858ea2' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#ff4757', display: 'inline-block' }} />
+              Zero or Low consumption
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#ffc107', display: 'inline-block' }} />
+              Pending
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#36b37e', display: 'inline-block' }} />
+              Normal consumption
+            </span>
+          </div>
+        </div>
+      </div>
 
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '10px' }}>
