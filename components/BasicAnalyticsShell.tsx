@@ -116,33 +116,75 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
   )
 
   // Due date calendar and weekly capital plan data
-  const caSchedule = allCAs.map((ca) => {
-    const seed      = ca.charCodeAt(0) + ca.charCodeAt(ca.length - 1)
-    const dueDay    = (seed % 25) + 3
-    const billAmt   = Math.round(180000 + (seed % 50) * 4200)
-    const isPaid    = (seed % 10) < 6
-    const isOverdue = !isPaid && (seed % 10) < 8
-    const isDueSoon = !isPaid && !isOverdue
-    return { ca, dueDay, billAmt, isPaid, isOverdue, isDueSoon }
+  // State-level due days based on real utility billing cycles
+  const STATE_DUE_DAYS: Record<string, number> = {
+    'Maharashtra': 7,
+    'Karnataka':   10,
+    'Tamil Nadu':  12,
+    'Gujarat':     8,
+    'Delhi':       5,
+    'Rajasthan':   15,
+    'Uttar Pradesh': 18,
+    'West Bengal': 20,
+  }
+  const branchToState: Record<string, string> = {}
+  Object.entries(BRANCHES).forEach(([state, branches]: [string, string[]]) => {
+    branches.forEach((br: string) => { branchToState[br] = state })
   })
+  const caToState: Record<string, string> = {}
+  Object.entries(CAS).forEach(([branch, cas]: [string, string[]]) => {
+    cas.forEach((ca: string) => { caToState[ca] = branchToState[branch] ?? 'Maharashtra' })
+  })
+
+  const today = new Date()
+
+  const caSchedule = allCAs.map((ca) => {
+    const state   = caToState[ca] ?? 'Maharashtra'
+    const dueDay  = STATE_DUE_DAYS[state] ?? 10
+    const seed    = ca.charCodeAt(0) + ca.charCodeAt(ca.length - 1)
+    const bills   = getCABills(ca, 'monthly')
+    const latestBill = bills[bills.length - 1]
+    const billAmt = latestBill ? latestBill.totalBill : Math.round(180000 + (seed % 50) * 4200)
+    const isPaid    = (seed % 10) < 6
+    const isOverdue = !isPaid && (latestBill ? latestBill.latePayment > 0 : (seed % 10) < 8)
+    const isDueSoon = !isPaid && !isOverdue
+    const thisMonthDue  = new Date(today.getFullYear(), today.getMonth(), dueDay)
+    const nextMonthDue  = new Date(today.getFullYear(), today.getMonth() + 1, dueDay)
+    const dueDate       = thisMonthDue >= today ? thisMonthDue : nextMonthDue
+    const daysUntilDue  = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    const rollingWeek   = Math.min(Math.max(Math.floor(daysUntilDue / 7), 0), 3)
+    return { ca, state, dueDay, dueDate, billAmt, isPaid, isOverdue, isDueSoon, rollingWeek, daysUntilDue }
+  })
+
+  const getWeekLabel = (offset: number) => {
+    const start = new Date(today)
+    start.setDate(today.getDate() + offset * 7 - today.getDay())
+    const end = new Date(start)
+    end.setDate(start.getDate() + 6)
+    const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    return offset === 0 ? `This week (${fmt(start)}–${fmt(end)})` : offset === 1 ? `Next week (${fmt(start)}–${fmt(end)})` : `Week ${offset + 1} (${fmt(start)}–${fmt(end)})`
+  }
+
+  const weeks = [0, 1, 2, 3].map(offset => ({
+    label: getWeekLabel(offset),
+    offset,
+    cas: caSchedule.filter(c => c.rollingWeek === offset),
+  }))
+
+  const weeklyAmounts = weeks.map(w => {
+    const unpaid  = w.cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+    const overdue = w.cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
+    return { ...w, unpaid, overdue, count: w.cas.length, unpaidCount: w.cas.filter(c => !c.isPaid).length }
+  })
+
   const byDay: Record<number, typeof caSchedule> = {}
   caSchedule.forEach(ca => {
-    if (!byDay[ca.dueDay]) byDay[ca.dueDay] = []
-    byDay[ca.dueDay].push(ca)
+    const day = ca.dueDay
+    if (!byDay[day]) byDay[day] = []
+    byDay[day].push(ca)
   })
-  const weeks = [
-    { label: 'Week 1 (1–7)',   days: [1,2,3,4,5,6,7]       },
-    { label: 'Week 2 (8–14)',  days: [8,9,10,11,12,13,14]   },
-    { label: 'Week 3 (15–21)', days: [15,16,17,18,19,20,21] },
-    { label: 'Week 4 (22–28)', days: [22,23,24,25,26,27,28] },
-  ]
-  const weeklyAmounts = weeks.map(w => {
-    const cas     = w.days.flatMap(d => byDay[d] ?? [])
-    const unpaid  = cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
-    const overdue = cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
-    return { ...w, unpaid, overdue, count: cas.length, unpaidCount: cas.filter(c => !c.isPaid).length }
-  })
-  const totalUnpaid  = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+
+  const totalUnpaid = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
   const calendarDays = Array.from({ length: 28 }, (_, i) => i + 1)
 
   return (
@@ -411,12 +453,13 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
     const bills    = getStateBills(st, 'monthly')
     const total    = bills.reduce((s, d) => s + d.totalBill, 0)
     const avgBill  = Math.round(total / Math.max(cas, 1))
+    const months   = bills.map(d => d.totalBill)
     // Simulate prior year — ±5-15% variance per state deterministically
     const seed     = st.charCodeAt(0) % 20
     const priorTotal = Math.round(total * (0.88 + seed * 0.015))
     const yoy      = Math.round((total - priorTotal) / Math.max(priorTotal, 1) * 100)
     const isOutlier = Math.abs(yoy) > 10
-    return { state: st, cas, total, avgBill, priorTotal, yoy, isOutlier }
+    return { state: st, cas, total, avgBill, months, priorTotal, yoy, isOutlier }
   }).sort((a, b) => b.total - a.total)
 
   // If a state is selected, show branches of that state instead of all states
@@ -428,9 +471,13 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
         const seed  = br.charCodeAt(0) % 20
         const prior = Math.round(bills * (0.88 + seed * 0.015))
         const yoy   = Math.round((bills - prior) / Math.max(prior, 1) * 100)
-        return { name: br, cas, branches: 0, total: bills, priorTotal: prior, yoy, isOutlier: Math.abs(yoy) > 10 }
+        const monthlyBills = (CAS[br] ?? []).reduce((acc, ca) => {
+          const caBills = getCABills(ca, 'monthly')
+          return acc.map((v, i) => v + (caBills[i]?.totalBill ?? 0))
+        }, Array(12).fill(0))
+        return { name: br, cas, branches: 0, total: bills, months: monthlyBills, priorTotal: prior, yoy, isOutlier: Math.abs(yoy) > 10 }
       }).sort((a, b) => b.total - a.total)
-    : stateData.map(d => ({ name: d.state, cas: d.cas, branches: (BRANCHES[d.state] ?? []).length, total: d.total, priorTotal: d.priorTotal, yoy: d.yoy, isOutlier: d.isOutlier }))
+    : stateData.map(d => ({ name: d.state, cas: d.cas, branches: (BRANCHES[d.state] ?? []).length, total: d.total, months: d.months, priorTotal: d.priorTotal, yoy: d.yoy, isOutlier: d.isOutlier }))
 
   const branchRows = Object.entries(BRANCHES)
     .filter(([st]) => appState.stateF === 'all' || st === appState.stateF)
@@ -466,6 +513,18 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
     ? Math.round(portfolioTotal / locationRows.length)
     : Math.round(portfolioTotal / STATES.length)
 
+  // Drill-down variables
+  const spendData = showBranches 
+    ? Object.fromEntries(locationRows.map(r => [r.name, r]))
+    : Object.fromEntries(stateData.map(r => [r.state, r]))
+  const sd = spendSel ? spendData[spendSel] : { total: 0, months: [] }
+  const peakMthIdx = sd && sd.months && (sd.months as number[]).length > 0 ? (sd.months as number[]).indexOf(Math.max(...(sd.months as number[]))) : 0
+  const lowMthIdx = sd && sd.months && (sd.months as number[]).length > 0 ? (sd.months as number[]).indexOf(Math.min(...(sd.months as number[]))) : 0
+  const avgPerBranch = spendSel && showBranches 
+    ? Math.round((locationRows.find(r => r.name === spendSel)?.total || 0) / Math.max(BRANCHES[spendSel]?.length || 1, 1))
+    : 0
+  const mthLabels = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']
+
   return (
     <div>
       {/* Full-screen drill-down overlay */}
@@ -486,7 +545,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           <div style={{ flex: 1, padding: '20px 24px' }}>
             {drillPage === 'branches' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {(BRANCHES[spendSel] ?? []).map(br => {
+                {(BRANCHES[spendSel ?? ''] ?? []).map((br: string) => {
                   const brCAs = CAS[br] ?? []
                   const brTotal = brCAs.reduce((sum: number, ca: string) => {
                     const bills = getCABills(ca, 'monthly')
@@ -507,7 +566,7 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             )}
             {drillPage === 'cas' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {(BRANCHES[spendSel] ?? []).flatMap(br => (CAS[br] ?? []).map((ca: string) => {
+                {(BRANCHES[spendSel ?? ''] ?? []).flatMap((br: string) => (CAS[br] ?? []).map((ca: string) => {
                   const bills = getCABills(ca, 'monthly')
                   const avg = bills.reduce((s: number, d: any) => s + d.totalBill, 0) / bills.length || 0
                   return (
