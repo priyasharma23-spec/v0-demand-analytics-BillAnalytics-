@@ -625,6 +625,73 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           <div style={{ fontSize: '12px', color: '#858ea2' }}>{caRows[0] ? '₹' + (caRows[0].total/100000).toFixed(1) + 'L' : 'No data'}</div>
         </div>
       </div>
+
+      {/* Portfolio breakup pie chart */}
+      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#192744' }}>Portfolio breakup</div>
+            <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Bill spend by {showBranches ? 'branch' : 'state'} · Apr 2024 – Mar 2025</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+          {(() => {
+            const rows = showBranches ? locationRows : stateData.map(d => ({ name: d.state, total: d.total }))
+            const total = rows.reduce((s, r) => s + r.total, 0)
+            const COLORS = ['#4F46E5','#1c5af4','#06b6d4','#8b5cf6','#f59e0b','#10b981','#ef4444','#f97316']
+            const circ = 2 * Math.PI * 52
+            let offset = 0
+            return (
+              <>
+                <div style={{ flexShrink: 0 }}>
+                  <svg width="140" height="140" viewBox="0 0 140 140">
+                    <circle cx="70" cy="70" r="52" fill="none" stroke="#f3f4f6" strokeWidth="24" />
+                    {rows.map((r, i) => {
+                      const pct = r.total / Math.max(total, 1)
+                      const dash = pct * circ
+                      const gap = circ - dash
+                      const el = (
+                        <circle
+                          key={r.name}
+                          cx="70" cy="70" r="52"
+                          fill="none"
+                          stroke={COLORS[i % COLORS.length]}
+                          strokeWidth="24"
+                          strokeDasharray={`${dash} ${gap}`}
+                          strokeDashoffset={-offset}
+                          strokeLinecap="butt"
+                          style={{ transition: 'stroke-dasharray .4s ease' }}
+                        />
+                      )
+                      offset += dash
+                      return el
+                    })}
+                    <text x="70" y="66" textAnchor="middle" fontSize="11" fontWeight="700" fill="#192744" fontFamily="Inter, sans-serif">{rows.length}</text>
+                    <text x="70" y="80" textAnchor="middle" fontSize="9" fill="#858ea2" fontFamily="Inter, sans-serif">{showBranches ? 'branches' : 'states'}</text>
+                  </svg>
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {rows.map((r, i) => {
+                    const pct = Math.round(r.total / Math.max(total, 1) * 100)
+                    return (
+                      <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: COLORS[i % COLORS.length], flexShrink: 0 }} />
+                        <div style={{ flex: 1, fontSize: '12px', color: '#192744', fontWeight: 500 }}>{r.name}</div>
+                        <div style={{ width: '80px', height: '5px', background: '#f3f4f6', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ width: pct + '%', height: '100%', background: COLORS[i % COLORS.length], borderRadius: '3px' }} />
+                        </div>
+                        <div style={{ width: '32px', fontSize: '11px', color: '#858ea2', textAlign: 'right' }}>{pct}%</div>
+                        <div style={{ width: '56px', fontSize: '11px', fontWeight: 600, color: '#192744', textAlign: 'right' }}>{inr(r.total)}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )
+          })()}
+        </div>
+      </div>
+
             {/* Spend by state */}
       <div style={{ marginTop: '24px' }} />
       {/* Spend heatmap — India map */}
