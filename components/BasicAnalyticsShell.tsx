@@ -222,7 +222,6 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           { label: 'Portfolio value',       value: inr(totalBill),                                                                          sub: `${totalStates} states · ${totalCAs} active CAs`,                                                 accent: '#4F46E5' },
           { label: 'Avg bill per CA',        value: inr(avgBill),                                                                            sub: 'per billing period',                                                                               accent: '#111827' },
           { label: 'Paid via EnKash',           value: `${Math.round(paid / totalCAs * 100)}%`,                                             sub: `${paid} CAs on platform`,                                                                                                           accent: '#15803D' },
-          { label: 'Due this month',         value: `${billsDueCount}`,                                                                    sub: `${inr(billsDueAmount)} · next 30 days`,                                                          accent: '#B45309' },
           { label: 'Prepaid balance',        value: `${prepaidNetBalance >= 0 ? '+' : '−'}₹${Math.abs(prepaidNetBalance).toFixed(1)}L`,   sub: `${prepaidArrearCount} meters in arrear`,                                                         accent: '#1c5af4' },
         ].map((kpi, i) => (
           <div key={kpi.label} style={{ flex: i === 0 ? 1.4 : 1, padding: '20px 24px', position: 'relative' }}>
@@ -276,8 +275,17 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             </div>
           {/* Due date calendar */}
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '16px 18px', marginTop: '16px' }}>
-            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Due date calendar</div>
-            <div style={{ fontSize: '12px', color: '#858ea2', marginBottom: '14px' }}>Bills due per day · current month</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', marginBottom: '2px' }}>Due date calendar</div>
+                <div style={{ fontSize: '12px', color: '#858ea2' }}>Bills due per day · current month</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Due this month</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#B45309', marginBottom: '2px' }}>{billsDueCount}</div>
+                <div style={{ fontSize: '11px', color: '#858ea2' }}>{inr(billsDueAmount)} · next 30 days</div>
+              </div>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {calendarDays.map(day => {
                 const dayCAs  = byDay[day] ?? []
