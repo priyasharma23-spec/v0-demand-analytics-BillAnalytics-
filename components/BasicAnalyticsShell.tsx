@@ -2160,17 +2160,17 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 { accent: '#22C55E', accentL: '#F0FDF4', accentBd: '#BBF7D0', accentD: '#15803D', title: 'Opt-in coverage',    value: Math.round(optedIn/Math.max(TOTAL_CAS_DBC,1)*100) + '%', sub: optedIn + ' of ' + TOTAL_CAS_DBC + ' CAs', detail: (TOTAL_CAS_DBC - optedIn) + ' CAs yet to opt in. Consider nudging.', cta: 'View' },
                 { accent: '#2563EB', accentL: '#EFF6FF', accentBd: '#BFDBFE', accentD: '#1D4ED8', title: 'Multi-bill billers', value: String(multiBillCount), sub: 'billers',                                                     detail: multiBillCAs + ' CAs received 2+ bills. Review for duplicates.', cta: 'Check' },
               ] as const).map((card, ci) => (
-                <div key={ci} style={{ background: '#fff', border: `1.5px solid ${card.accentBd}`, borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
-                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.title}</div>
+                <div key={ci} style={{ background: '#fff', border: `1.5px solid ${card.accentBd}`, borderRadius: '12px', padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: card.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{card.title}</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                    <div style={{ fontSize: '28px', fontWeight: 700, color: card.accentD, lineHeight: 1 }}>{card.value}</div>
-                    <div style={{ fontSize: '11.5px', color: card.accentD, opacity: 0.65 }}>{card.sub}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: 700, color: card.accent, lineHeight: 1 }}>{card.value}</div>
+                    <div style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>{card.sub}</div>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#858ea2', lineHeight: 1.5, flex: 1 }}>{card.detail}</div>
-                  <button style={{ alignSelf: 'flex-start', background: '#fff', border: `1px solid ${card.accentBd}`, borderRadius: '6px', color: card.accentD, fontSize: '11px', fontWeight: 600, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: '1.5', flex: 1 }}>{card.detail}</div>
+                  <button style={{ background: '#fff', border: `1.5px solid ${card.accent}`, borderRadius: '6px', color: card.accent, fontSize: '12px', fontWeight: 700, padding: '8px 12px', cursor: 'pointer', textAlign: 'center', width: 'fit-content', transition: 'all 0.2s' }}>
                     {card.cta} →
                   </button>
                 </div>
