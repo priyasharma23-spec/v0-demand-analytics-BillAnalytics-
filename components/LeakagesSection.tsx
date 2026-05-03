@@ -310,24 +310,24 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
       </div>
 
       {/* Alert insight cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
         {([
-          { color: '#e53935', label: 'Power factor <0.92',    value: (breakdownRows.filter(r => r.util < 92).length || 14) + ' CAs', sub: '\u20b9' + (leakSummary.totalPF / 100000).toFixed(1) + 'L monthly leakage',    desc: 'Capacitors non-compliant for 6+ consecutive months.', cta: 'View CAs' },
-          { color: '#e53935', label: 'Demand shrinkage',      value: 'All CAs',                                                       sub: '\u20b9' + (leakSummary.totalExcess / 100000).toFixed(1) + 'L monthly leakage', desc: 'Contracted demand declined every month this year.',    cta: 'Review'   },
-          { color: '#f59e0b', label: 'Late payment surcharge',value: (breakdownRows.length * 3 || 55) + ' CAs',                       sub: '\u20b9' + (leakSummary.totalLP / 100000).toFixed(1) + 'L monthly leakage',    desc: '3+ consecutive months of late payment charges.',      cta: 'View CAs' },
-          { color: '#f59e0b', label: 'Under-utilised demand', value: 'TOD mismatch',                                                  sub: '\u20b9' + (leakSummary.totalLeak * 0.05 / 100000).toFixed(1) + 'L recoverable',desc: 'Wrong TOD slot or under-utilised contracted demand.',  cta: 'Fix now'  },
+          { color: '#DC2626', label: 'Power factor <0.92',    value: (breakdownRows.filter(r => r.util < 92).length || 14) + ' CAs', sub: '₹' + (leakSummary.totalPF / 100000).toFixed(1) + 'L monthly leakage',    desc: 'Capacitors non-compliant for 6+ consecutive months.', cta: 'View CAs' },
+          { color: '#DC2626', label: 'Demand shrinkage',      value: 'All CAs',                                                       sub: '₹' + (leakSummary.totalExcess / 100000).toFixed(1) + 'L monthly leakage', desc: 'Contracted demand declined every month this year.',    cta: 'Review'   },
+          { color: '#F59E0B', label: 'Late payment surcharge',value: (breakdownRows.length * 3 || 55) + ' CAs',                       sub: '₹' + (leakSummary.totalLP / 100000).toFixed(1) + 'L monthly leakage',    desc: '3+ consecutive months of late payment charges.',      cta: 'View CAs' },
+          { color: '#22C55E', label: 'Under-utilised demand', value: 'TOD mismatch',                                                  sub: '₹' + (leakSummary.totalLeak * 0.05 / 100000).toFixed(1) + 'L recoverable',desc: 'Wrong TOD slot or under-utilised contracted demand.',  cta: 'Fix now'  },
         ] as Array<{ color: string; label: string; value: string; sub: string; desc: string; cta: string }>).map((a, i) => (
-          <div key={i} style={{ background: '#fff', border: '1px solid #f0f1f5', borderLeft: '3px solid ' + a.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div key={i} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + a.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'default', minHeight: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 12 }}>
               <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: a.color, flexShrink: 0 }} />
-              <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{a.label}</div>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: a.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{a.label}</div>
             </div>
-            <div>
-              <div style={{ fontSize: '20px', fontWeight: 600, color: '#192744', lineHeight: 1 }}>{a.value}</div>
-              <div style={{ fontSize: '12px', color: a.color, marginTop: '3px' }}>{a.sub}</div>
+            <div style={{ fontSize: '32px', fontWeight: 700, color: a.color, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>{a.value}</div>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: 3 }}>{a.sub}</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{a.desc}</div>
             </div>
-            <div style={{ fontSize: '12px', color: '#9aa0b0', lineHeight: 1.5, flex: 1 }}>{a.desc}</div>
-            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 600, color: a.color, background: '#fff', border: '1px solid ' + a.color + '33', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>{a.cta} &rarr;</button>
+            <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: a.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>{a.cta} →</button>
           </div>
         ))}
       </div>
