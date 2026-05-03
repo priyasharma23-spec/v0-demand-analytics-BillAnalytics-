@@ -465,8 +465,17 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
     return () => { if (compChartInstance.current) compChartInstance.current.destroy() }
   }, [billComponentData])
 
-return (
+  return (
     <div style={{ background: '#f5f6fa', padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {/* Page header row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+        <div>
+          <div style={{ fontSize: '16px', fontWeight: 700, color: '#192744', letterSpacing: '-0.01em' }}>Consumption</div>
+          <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>Energy consumption analysis · Apr 2024 – Mar 2025 · All states</div>
+        </div>
+        <div style={{ fontSize: '12px', color: '#858ea2' }}>Updated daily · May 2025</div>
+      </div>
+
       {/* Section 1 — Summary metric cards */}
       <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', display: 'flex', overflow: 'hidden' }}>
         {summaryMetrics.map((m, i) => (
@@ -476,6 +485,143 @@ return (
             <div style={{ fontSize: '22px', fontWeight: 700, color: '#192744', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{m.value}</div>
             <div style={{ fontSize: '12px', color: m.subColor }}>{m.sub}</div>
           </div>
+        ))}
+      </div>
+
+      {/* Section 2: Total consumption trend */}
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Total consumption trend</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Monthly kWh ('000) · All states · Apr 2024 – Mar 2025</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', fontSize: '11px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#9aa0b0' }}>
+                <span style={{ width: '8px', height: '2px', background: '#1c5af4', display: 'inline-block' }} />
+                FY 2024-25
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#9aa0b0' }}>
+                <span style={{ width: '8px', height: '2px', borderTop: '1px dashed #c8cbd6', display: 'inline-block' }} />
+                FY 2023-24
+              </span>
+            </div>
+            <div style={{ padding: '3px 10px', borderRadius: '4px', background: '#f0faf6', color: '#36b37e', fontSize: '11px', fontWeight: 600 }}>+5.6% YoY</div>
+          </div>
+        </div>
+        <div style={{ padding: '14px 20px 16px' }}>
+          <div style={{ position: 'relative', width: '100%', height: '240px' }}>
+            <canvas ref={consumptionVsBillRef}></canvas>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 3: Two-column layout - Consumption by state + Bill composition */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+        {/* Consumption by state */}
+        <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Consumption by state</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Annual kWh ('000) · Apr 2024 – Mar 2025</div>
+          </div>
+          <div style={{ padding: '14px 20px 16px' }}>
+            <div style={{ position: 'relative', width: '100%', height: '280px' }}>
+              <canvas ref={topStatesRef}></canvas>
+            </div>
+          </div>
+        </div>
+
+        {/* Bill composition */}
+        <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Bill composition</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Aggregated · All states · Apr 2024 – Mar 2025</div>
+          </div>
+          <div style={{ padding: '14px 20px 16px', display: 'flex', gap: '16px' }}>
+            <div style={{ position: 'relative', width: '140px', height: '140px', flexShrink: 0 }}>
+              <canvas ref={compChartRef}></canvas>
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '10px' }}>
+              {[
+                { label: 'Energy charges', value: '₹24522L', pct: '58%', color: '#1c5af4' },
+                { label: 'Demand charges', value: '₹7610L', pct: '18%', color: '#8b5cf6' },
+                { label: 'Fixed charges', value: '₹5072L', pct: '12%', color: '#06b6d4' },
+                { label: 'Taxes & duties', value: '₹3382L', pct: '8%', color: '#f59e0b' },
+                { label: 'PF penalty', value: '₹1691L', pct: '4%', color: '#e53935' },
+              ].map(item => (
+                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                  <span style={{ flex: 1, color: '#858ea2' }}>{item.label}</span>
+                  <span style={{ color: '#192744', fontWeight: 600, minWidth: '45px' }}>{item.value}</span>
+                  <span style={{ color: '#9aa0b0', minWidth: '28px', textAlign: 'right' }}>{item.pct}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 4: State breakdown cards */}
+      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '16px 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>State breakdown</div>
+            <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Apr 2024 – Mar 2025 · All states</div>
+          </div>
+          <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
+            {['kWh', 'kVA', 'Green'].map(tab => (
+              <button key={tab} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, background: tab === 'kWh' ? '#1c5af4' : 'transparent', color: tab === 'kWh' ? '#fff' : '#858ea2', transition: 'all .12s' }}>
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+          {stateConsumption.slice(0, 8).map((s, i) => {
+            const stateColors = ['#1755c8', '#378add', '#5a9fdb', '#85b7eb', '#1755c8', '#378add', '#5a9fdb', '#85b7eb'];
+            const color = stateColors[i];
+            return (
+              <div key={s.state} style={{
+                background: '#f5f6fa',
+                border: '1px solid #f0f1f5',
+                borderRadius: '8px',
+                padding: '13px 14px 10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                transition: 'border-color .15s, background-color .15s',
+                cursor: 'default',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = color + '66';
+                (e.currentTarget as HTMLDivElement).style.backgroundColor = color + '08';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = '#f0f1f5';
+                (e.currentTarget as HTMLDivElement).style.backgroundColor = '#f5f6fa';
+              }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#192744', flex: 1 }}>{s.state}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#9aa0b0' }}>16%</div>
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744', letterSpacing: '-0.02em', lineHeight: 1 }}>21.8M</div>
+                <div style={{ fontSize: '10px', color: '#9aa0b0' }}>kWh · ₹6,277L</div>
+                <div style={{ height: '4px', background: '#f0f1f5', borderRadius: '99px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: color, width: '55%', opacity: 0.8 }} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', fontSize: '10px', color: '#858ea2', marginTop: '2px', paddingTop: '6px', borderTop: '1px solid #f0f1f5' }}>
+                  <span>24 CAs · 8 br</span>
+                  <span style={{ marginLeft: 'auto', color: '#36b37e', fontWeight: 600 }}>LF 74%</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Section 5: Bill reading distribution (existing, keep as-is) */}
         ))}
       </div>
 
