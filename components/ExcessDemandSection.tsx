@@ -242,6 +242,7 @@ export default function ExcessDemandSection({ appState }: ExcessDemandSectionPro
                 )
               })
             })()}
+          </div>
           <div style={{ marginTop: '12px', padding: '10px 14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', fontSize: '12px', color: '#92400e' }}>
             💡 The additional security deposit of {(() => { const r = edMetrics.recommended * 500 * 2; const c = edMetrics.avgCont * 500 * 2; return '₹' + ((r - c) / 100000).toFixed(1) + 'L' })()} is a one-time outflow but is refundable when the connection is surrendered. Annual savings of {'₹' + (Math.abs(edMetrics.netSavings) / 100000).toFixed(1) + 'L'} will recover this within {Math.ceil((edMetrics.recommended * 500 * 2 - edMetrics.avgCont * 500 * 2) / Math.max(edMetrics.netSavings / 12, 1))} months.
           </div>
