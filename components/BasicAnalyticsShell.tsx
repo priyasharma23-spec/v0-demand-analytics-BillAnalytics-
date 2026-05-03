@@ -116,33 +116,75 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
   )
 
   // Due date calendar and weekly capital plan data
-  const caSchedule = allCAs.map((ca) => {
-    const seed      = ca.charCodeAt(0) + ca.charCodeAt(ca.length - 1)
-    const dueDay    = (seed % 25) + 3
-    const billAmt   = Math.round(180000 + (seed % 50) * 4200)
-    const isPaid    = (seed % 10) < 6
-    const isOverdue = !isPaid && (seed % 10) < 8
-    const isDueSoon = !isPaid && !isOverdue
-    return { ca, dueDay, billAmt, isPaid, isOverdue, isDueSoon }
+  // State-level due days based on real utility billing cycles
+  const STATE_DUE_DAYS: Record<string, number> = {
+    'Maharashtra': 7,
+    'Karnataka':   10,
+    'Tamil Nadu':  12,
+    'Gujarat':     8,
+    'Delhi':       5,
+    'Rajasthan':   15,
+    'Uttar Pradesh': 18,
+    'West Bengal': 20,
+  }
+  const branchToState: Record<string, string> = {}
+  Object.entries(BRANCHES).forEach(([state, branches]) => {
+    branches.forEach(br => { branchToState[br] = state })
   })
+  const caToState: Record<string, string> = {}
+  Object.entries(CAS).forEach(([branch, cas]) => {
+    cas.forEach(ca => { caToState[ca] = branchToState[branch] ?? 'Maharashtra' })
+  })
+
+  const today = new Date()
+
+  const caSchedule = allCAs.map((ca) => {
+    const state   = caToState[ca] ?? 'Maharashtra'
+    const dueDay  = STATE_DUE_DAYS[state] ?? 10
+    const seed    = ca.charCodeAt(0) + ca.charCodeAt(ca.length - 1)
+    const bills   = getCABills(ca, 'monthly')
+    const latestBill = bills[bills.length - 1]
+    const billAmt = latestBill ? latestBill.totalBill : Math.round(180000 + (seed % 50) * 4200)
+    const isPaid    = (seed % 10) < 6
+    const isOverdue = !isPaid && (latestBill ? latestBill.latePayment > 0 : (seed % 10) < 8)
+    const isDueSoon = !isPaid && !isOverdue
+    const thisMonthDue  = new Date(today.getFullYear(), today.getMonth(), dueDay)
+    const nextMonthDue  = new Date(today.getFullYear(), today.getMonth() + 1, dueDay)
+    const dueDate       = thisMonthDue >= today ? thisMonthDue : nextMonthDue
+    const daysUntilDue  = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    const rollingWeek   = Math.min(Math.max(Math.floor(daysUntilDue / 7), 0), 3)
+    return { ca, state, dueDay, dueDate, billAmt, isPaid, isOverdue, isDueSoon, rollingWeek, daysUntilDue }
+  })
+
+  const getWeekLabel = (offset: number) => {
+    const start = new Date(today)
+    start.setDate(today.getDate() + offset * 7 - today.getDay())
+    const end = new Date(start)
+    end.setDate(start.getDate() + 6)
+    const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    return offset === 0 ? `This week (${fmt(start)}–${fmt(end)})` : offset === 1 ? `Next week (${fmt(start)}–${fmt(end)})` : `Week ${offset + 1} (${fmt(start)}–${fmt(end)})`
+  }
+
+  const weeks = [0, 1, 2, 3].map(offset => ({
+    label: getWeekLabel(offset),
+    offset,
+    cas: caSchedule.filter(c => c.rollingWeek === offset),
+  }))
+
+  const weeklyAmounts = weeks.map(w => {
+    const unpaid  = w.cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+    const overdue = w.cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
+    return { ...w, unpaid, overdue, count: w.cas.length, unpaidCount: w.cas.filter(c => !c.isPaid).length }
+  })
+
   const byDay: Record<number, typeof caSchedule> = {}
   caSchedule.forEach(ca => {
-    if (!byDay[ca.dueDay]) byDay[ca.dueDay] = []
-    byDay[ca.dueDay].push(ca)
+    const day = ca.dueDay
+    if (!byDay[day]) byDay[day] = []
+    byDay[day].push(ca)
   })
-  const weeks = [
-    { label: 'Week 1 (1–7)',   days: [1,2,3,4,5,6,7]       },
-    { label: 'Week 2 (8–14)',  days: [8,9,10,11,12,13,14]   },
-    { label: 'Week 3 (15–21)', days: [15,16,17,18,19,20,21] },
-    { label: 'Week 4 (22–28)', days: [22,23,24,25,26,27,28] },
-  ]
-  const weeklyAmounts = weeks.map(w => {
-    const cas     = w.days.flatMap(d => byDay[d] ?? [])
-    const unpaid  = cas.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
-    const overdue = cas.filter(c => c.isOverdue).reduce((s, c) => s + c.billAmt, 0)
-    return { ...w, unpaid, overdue, count: cas.length, unpaidCount: cas.filter(c => !c.isPaid).length }
-  })
-  const totalUnpaid  = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
+
+  const totalUnpaid = caSchedule.filter(c => !c.isPaid).reduce((s, c) => s + c.billAmt, 0)
   const calendarDays = Array.from({ length: 28 }, (_, i) => i + 1)
 
   return (
