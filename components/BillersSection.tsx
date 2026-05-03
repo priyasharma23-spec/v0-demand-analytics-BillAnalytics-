@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { CAS, BRANCHES, STATES, inr } from '@/lib/calculations'
 
 interface BillersSectionProps {
@@ -160,73 +160,65 @@ export default function BillersSection({ appState, onMultiBillReview }: BillersS
             { accent: '#F59E0B', title: 'PENDING > 48 HRS', value: '7', valueSub: 'of 16 pending', detail: 'Bills stalled over 48 hrs — manual intervention needed.', action: 'Review' },
             { accent: '#22C55E', title: 'OPT-IN COVERAGE', value: '75%', valueSub: '120 of 160 CAs', detail: '40 CAs yet to opt in. Consider nudging.', action: 'View' },
             { accent: '#2563EB', title: 'MULTI-BILL BILLERS', value: '4', valueSub: 'billers', detail: '8 CAs received 2+ bills. Review for duplicates.', action: 'Check' },
-          ].map((card, idx) => {
-            const [hov, setHov] = React.useState(false);
-            return (
-              <div
-                key={idx}
-                onMouseEnter={() => setHov(true)}
-                onMouseLeave={() => setHov(false)}
+          ].map((card, idx) => (
+            <div
+              key={idx}
+              style={{
+                background: '#ffffff',
+                border: `1px solid #f0f1f5`,
+                borderTop: `2.5px solid ${card.accent}`,
+                borderRadius: 6,
+                boxShadow: '0 1px 3px rgba(25,39,68,.04)',
+                padding: '18px 20px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0,
+                cursor: 'default',
+                minHeight: 0,
+              }}
+            >
+              {/* Label row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: card.accent, textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: 1 }}>
+                  {card.title}
+                </span>
+              </div>
+
+              {/* Value */}
+              <div style={{ fontSize: 32, fontWeight: 700, color: card.accent, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>
+                {card.value}
+              </div>
+
+              {/* Context + Detail — detail is the hero */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 11, color: '#858ea2', marginBottom: 3 }}>
+                  {card.valueSub}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>
+                  {card.detail}
+                </div>
+              </div>
+
+              {/* CTA link */}
+              <button
                 style={{
-                  background: '#ffffff',
-                  borderLeft: `1px solid ${hov ? card.accent : '#f0f1f5'}`,
-                  borderRight: `1px solid ${hov ? card.accent : '#f0f1f5'}`,
-                  borderBottom: `1px solid ${hov ? card.accent : '#f0f1f5'}`,
-                  borderTop: `2.5px solid ${card.accent}`,
-                  borderRadius: 6,
-                  boxShadow: hov ? '0 4px 16px rgba(25,39,68,.08)' : '0 1px 3px rgba(25,39,68,.04)',
-                  padding: '18px 20px 16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 0,
-                  transition: 'border-color .15s, box-shadow .15s',
-                  cursor: 'default',
-                  minHeight: 0,
+                  alignSelf: 'flex-start',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: card.accent,
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  marginTop: 'auto',
                 }}
               >
-                {/* Label row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: card.accent, flexShrink: 0 }} />
-                  <span style={{ fontSize: 10, fontWeight: 600, color: card.accent, textTransform: 'uppercase', letterSpacing: '0.07em', lineHeight: 1 }}>
-                    {card.title}
-                  </span>
-                </div>
-
-                {/* Value */}
-                <div style={{ fontSize: 32, fontWeight: 700, color: card.accent, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 10 }}>
-                  {card.value}
-                </div>
-
-                {/* Context + Detail — detail is the hero */}
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, color: '#858ea2', marginBottom: 3 }}>
-                    {card.valueSub}
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>
-                    {card.detail}
-                  </div>
-                </div>
-
-                {/* CTA link */}
-                <button
-                  style={{
-                    alignSelf: 'flex-start',
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: card.accent,
-                    background: 'transparent',
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    marginTop: 'auto',
-                  }}
-                >
-                  {card.action} →
-                </button>
-              </div>
-            );
-          })}
+                {card.action} →
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 
