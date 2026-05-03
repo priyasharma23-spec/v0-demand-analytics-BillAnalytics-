@@ -890,13 +890,6 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#192744', marginBottom: '3px' }}>Spend by state</div>
             <div style={{ fontSize: '12px', color: '#858ea2' }}>Total bill spend per state · click a state to drill in</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#858ea2' }}>
-            <span>Low</span>
-            {(['#DBEAFE','#93C5FD','#3B82F6','#1D4ED8','#1E3A8A'] as const).map((bg, bi) => (
-              <div key={bi} style={{ width: '16px', height: '10px', borderRadius: '2px', background: bg }} />
-            ))}
-            <span>High</span>
-          </div>
         </div>
         {(() => {
           const MONTHS = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']
