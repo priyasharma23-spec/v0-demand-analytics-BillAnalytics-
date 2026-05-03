@@ -425,17 +425,6 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           </div>
 
           <div style={{ height: '1px', background: '#F3F4F6' }}/>
-
-          {/* Prepaid Balance */}
-          <PrepaidBalanceSidebar 
-            creditAmount={Math.round((totalBill * 0.12) / 100000)} 
-            creditCount={Math.round(totalCAs * 0.65)} 
-            arrearAmount={Math.round((totalBill * 0.03) / 100000)} 
-            arrearCount={Math.round(totalCAs * 0.08)} 
-            onViewAll={() => console.log('View all prepaid balances')}
-          />
-
-          <div style={{ height: '1px', background: '#F3F4F6' }}/>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Action required</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -458,6 +447,17 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
               ))}
             </div>
           </div>
+
+          <div style={{ height: '1px', background: '#F3F4F6' }}/>
+
+          {/* Prepaid Balance */}
+          <PrepaidBalanceSidebar 
+            creditAmount={Math.round((totalBill * 0.12) / 100000)} 
+            creditCount={Math.round(totalCAs * 0.65)} 
+            arrearAmount={Math.round((totalBill * 0.03) / 100000)} 
+            arrearCount={Math.round(totalCAs * 0.08)} 
+            onViewAll={() => console.log('View all prepaid balances')}
+          />
 
         </div>
       </div>
