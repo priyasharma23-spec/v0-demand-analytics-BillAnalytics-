@@ -312,7 +312,7 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
               <canvas ref={billChartRef}></canvas>
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                 <div style={{ fontSize: '12px', fontWeight: 500, color: '#9AA0B0' }}>total bill</div>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: '#192744' }}>₹42,279L</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#192744' }}>₹42,279L</div>
               </div>
             </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '8px' }}>
