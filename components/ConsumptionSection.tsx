@@ -556,23 +556,27 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
             <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744' }}>Bill composition</div>
             <div style={{ fontSize: '12px', color: '#9aa0b0', marginTop: '2px' }}>Aggregated · All states · Apr 2024 – Mar 2025</div>
           </div>
-          <div style={{ padding: '14px 20px 16px', display: 'flex', gap: '16px' }}>
-            <div style={{ position: 'relative', width: '140px', height: '140px', flexShrink: 0 }}>
+          <div style={{ padding: '14px 20px 16px', display: 'flex', gap: '20px', alignItems: 'stretch' }}>
+            <div style={{ position: 'relative', flex: 1, height: '260px', minWidth: 0 }}>
               <canvas ref={compChartRef}></canvas>
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '10px' }}>
+            <div style={{ width: '180px', display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '20px', paddingBottom: '20px', borderLeft: '1px solid #f0f1f5', paddingLeft: '14px' }}>
               {[
-                { label: 'Energy charges', value: '₹24522L', pct: '58%', color: '#1c5af4' },
-                { label: 'Demand charges', value: '₹7610L', pct: '18%', color: '#8b5cf6' },
-                { label: 'Fixed charges', value: '₹5072L', pct: '12%', color: '#06b6d4' },
-                { label: 'Taxes & duties', value: '₹3382L', pct: '8%', color: '#f59e0b' },
-                { label: 'PF penalty', value: '₹1691L', pct: '4%', color: '#e53935' },
+                { label: 'Energy charges', value: '₹24522L', pct: '58%', color: '#1d9e75' },
+                { label: 'Demand charges', value: '₹7610L', pct: '18%', color: '#ef9f27' },
+                { label: 'Fixed charges', value: '₹5072L', pct: '12%', color: '#85b7eb' },
+                { label: 'Taxes & duties', value: '₹3382L', pct: '8%', color: '#888780' },
+                { label: 'PF penalty', value: '₹1691L', pct: '4%', color: '#e24b4a' },
               ].map(item => (
-                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-                  <span style={{ flex: 1, color: '#858ea2' }}>{item.label}</span>
-                  <span style={{ color: '#192744', fontWeight: 600, minWidth: '45px' }}>{item.value}</span>
-                  <span style={{ color: '#9aa0b0', minWidth: '28px', textAlign: 'right' }}>{item.pct}</span>
+                <div key={item.label} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                    <span style={{ color: '#192744', fontWeight: 500, flex: 1 }}>{item.label}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', fontSize: '11px' }}>
+                    <span style={{ color: '#192744', fontWeight: 600, flex: 1 }}>{item.value}</span>
+                    <span style={{ color: '#9aa0b0', minWidth: '28px', textAlign: 'right' }}>{item.pct}</span>
+                  </div>
                 </div>
               ))}
             </div>
