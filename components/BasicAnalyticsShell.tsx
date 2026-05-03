@@ -798,7 +798,8 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
           {
             color: '#e53935', label: 'CONTRACT REVISION SAVING', colorLight: '#fef2f2', colorBorder: '#fecaca',
             value: fmtL(maxLate.latePayment),
-            sub: 'Highest late fee · ' + maxLate.name,
+            sub: 'Highest late fee',
+            branch: maxLate.name,
             desc: 'This branch has the highest recurring late payment charges. Set up auto-payment or advance funding to eliminate this.',
             cta: 'View CAs →',
           },
@@ -806,20 +807,23 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             color: '#f59e0b', label: 'PF IMPROVEMENT SAVING', colorLight: '#fffbeb', colorBorder: '#fde68a',
             value: fmtL(maxPFPen.pfPenalty),
             sub: 'Maintain PF ≥ 0.95 via capacitor banks',
+            branch: maxPFPen.name,
             desc: maxPFPen.name + ' has the highest PF penalty. Installing capacitor banks can eliminate this charge.',
             cta: 'View CA list →',
           },
           {
             color: '#36b37e', label: 'TOTAL RECOVERABLE', colorLight: '#f0faf6', colorBorder: '#bbf7d0',
             value: fmtL(maxEarly.earlyPayment),
-            sub: 'Max early payment savings · ' + maxEarly.name,
+            sub: 'Max early payment savings',
+            branch: maxEarly.name,
             desc: 'This branch captures the most early payment discounts. Replicate this payment discipline across all branches.',
             cta: 'See breakdown →',
           },
           {
             color: '#1c5af4', label: 'CLEAN BILL RATE', colorLight: '#eef3fe', colorBorder: '#c7d2fe',
             value: fmtL(maxPFInc.pfIncentive),
-            sub: 'Max PF incentive · ' + maxPFInc.name,
+            sub: 'Max PF incentive',
+            branch: maxPFInc.name,
             desc: maxPFInc.name + ' earns the highest PF incentive. Avg PF above 0.95 across all CAs.',
             cta: 'View profile →',
           },
@@ -830,17 +834,52 @@ function BasicLocations({ appState, analyticsMode = 'basic' }: BasicSectionProps
             <div style={{ fontSize: '11px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '12px' }}>Branch highlights</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
               {cards.map((card, i) => (
-                <div key={i} style={{ background: '#fff', border: '1px solid #f0f1f5', borderTop: `3px solid ${card.color}`, borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(25,39,68,.04)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: card.color }} />
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.label}</div>
+                <div key={i}
+                  style={{
+                    background: '#fff',
+                    borderLeft: '1px solid #f0f1f5',
+                    borderRight: '1px solid #f0f1f5',
+                    borderBottom: '1px solid #f0f1f5',
+                    borderTop: `2.5px solid ${card.color}`,
+                    borderRadius: '6px',
+                    boxShadow: '0 1px 3px rgba(25,39,68,.04)',
+                    padding: '18px 20px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 0,
+                    transition: 'border-color .15s, box-shadow .15s',
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.borderLeftColor = card.colorBorder ?? '#f0f1f5';
+                    el.style.borderRightColor = card.colorBorder ?? '#f0f1f5';
+                    el.style.borderBottomColor = card.colorBorder ?? '#f0f1f5';
+                    el.style.boxShadow = '0 4px 16px rgba(25,39,68,.08)';
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.borderLeftColor = '#f0f1f5';
+                    el.style.borderRightColor = '#f0f1f5';
+                    el.style.borderBottomColor = '#f0f1f5';
+                    el.style.boxShadow = '0 1px 3px rgba(25,39,68,.04)';
+                  }}
+                >
+                  {/* Label */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                    <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: card.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{card.label}</span>
                   </div>
-                  <div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '4px' }}>{card.value}</div>
-                    <div style={{ fontSize: '12px', color: card.color, fontWeight: 500 }}>{card.sub}</div>
+                  {/* Value */}
+                  <div style={{ fontSize: '32px', fontWeight: 700, color: card.color, lineHeight: 1, letterSpacing: '-0.02em', marginBottom: '10px' }}>{card.value}</div>
+                  {/* Context + Branch */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <div style={{ fontSize: '11px', color: '#858ea2', marginBottom: '3px' }}>{card.sub}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#192744', letterSpacing: '-0.01em' }}>{card.branch}</div>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.5, flex: 1 }}>{card.desc}</div>
-                  <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 600, color: card.color, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>{card.cta}</button>
+                  {/* Description */}
+                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.5, flex: 1, marginBottom: '16px' }}>{card.desc}</div>
+                  {/* CTA */}
+                  <button style={{ alignSelf: 'flex-start', fontSize: '12px', fontWeight: 500, color: card.color, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>{card.cta}</button>
                 </div>
               ))}
             </div>
