@@ -165,7 +165,7 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
         {[
           { label: 'Portfolio value',       value: inr(totalBill),                                                                          sub: `${totalStates} states · ${totalCAs} active CAs`,                                                 accent: '#4F46E5' },
           { label: 'Avg bill per CA',        value: inr(avgBill),                                                                            sub: 'per billing period',                                                                               accent: '#111827' },
-          { label: 'Period over period',     value: `${momChange > 0 ? '+' : ''}${momChange}%`,                                            sub: `${momLabel} vs ${momPrevLabel}${appState.stateF !== 'all' ? ' · ' + appState.stateF : ''}`,   accent: momChange > 0 ? '#15803D' : momChange < 0 ? '#15803D' : '#B45309' },
+          { label: 'Paid via EnKash',           value: `${Math.round(paid / totalCAs * 100)}%`,                                             sub: `${paid} CAs on platform`,                                                                                                           accent: '#15803D' },
           { label: 'Due this month',         value: `${billsDueCount}`,                                                                    sub: `${inr(billsDueAmount)} · next 30 days`,                                                          accent: '#B45309' },
         ].map((kpi, i) => (
           <div key={kpi.label} style={{ flex: i === 0 ? 1.4 : 1, padding: '20px 24px', position: 'relative' }}>
