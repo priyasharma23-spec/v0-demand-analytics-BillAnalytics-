@@ -332,20 +332,129 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
         ))}
       </div>
 
-      {/* Inline header stats strip */}
-      <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', display: 'flex', overflow: 'hidden' }}>
-        {([
-          { label: 'Avg leakage rate',  value: Math.round((leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1)) * 100) + '%', sub: 'Target <4%', neg: true,  hi: false },
-          { label: 'Biggest type',      value: leakSummary.totalExcess >= leakSummary.totalPF && leakSummary.totalExcess >= leakSummary.totalLP ? 'Excess Demand' : leakSummary.totalPF >= leakSummary.totalLP ? 'Power Factor' : 'Late Payment', sub: '\u20b9' + (Math.max(leakSummary.totalExcess, leakSummary.totalPF, leakSummary.totalLP) / 100000).toFixed(1) + 'L / year', neg: false, hi: false },
-          { label: 'Months leaking',    value: leakSummary.periodsWithLeak + ' / ' + leakSummary.totalPeriods, sub: Math.round((leakSummary.periodsWithLeak / Math.max(leakSummary.totalPeriods, 1)) * 100) + '% of periods affected', neg: false, hi: false },
-          { label: 'Savings potential', value: '\u20b9' + (leakSummary.totalLeak / 100000).toFixed(1) + 'L', sub: 'If fully remediated', neg: false, hi: true },
-        ] as Array<{ label: string; value: string; sub: string; neg: boolean; hi: boolean }>).map((s, i, arr) => (
-          <div key={i} style={{ flex: 1, padding: '12px 20px', borderRight: i < arr.length - 1 ? '1px solid #f0f1f5' : 'none', background: s.hi ? '#eef3fe' : '#fff' }}>
-            <div style={{ fontSize: '10px', fontWeight: 600, color: '#9aa0b0', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>{s.label}</div>
-            <div style={{ fontSize: '20px', fontWeight: 600, lineHeight: 1, marginBottom: '3px', color: s.hi ? '#1c5af4' : s.neg ? '#e53935' : '#192744' }}>{s.value}</div>
-            <div style={{ fontSize: '12px', color: '#9aa0b0' }}>{s.sub}</div>
-          </div>
-        ))}
+      {/* Inline header stats strip - New design with cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+        {(() => {
+          const leakPct = Math.round((leakSummary.totalLeak / Math.max(leakSummary.totalBill, 1)) * 100);
+          const biggestType = leakSummary.totalExcess >= leakSummary.totalPF && leakSummary.totalExcess >= leakSummary.totalLP ? 'Excess Demand' : leakSummary.totalPF >= leakSummary.totalLP ? 'Power Factor' : 'Late Payment';
+          const biggestAmount = Math.max(leakSummary.totalExcess, leakSummary.totalPF, leakSummary.totalLP);
+          const monthsPct = Math.round((leakSummary.periodsWithLeak / Math.max(leakSummary.totalPeriods, 1)) * 100);
+          
+          const cards = [
+            {
+              color: '#1c5af4',
+              bgColor: '#eef3fe',
+              accentColor: '#3b82f6',
+              value: leakPct + '%',
+              label: 'Avg leakage rate',
+              sub: 'Target <4%',
+              percentage: Math.min(leakPct, 100),
+            },
+            {
+              color: '#1c5af4',
+              bgColor: '#eef3fe',
+              accentColor: '#3b82f6',
+              value: biggestType,
+              label: 'Biggest type',
+              sub: '₹' + (biggestAmount / 100000).toFixed(1) + 'L / year',
+              percentage: 78,
+            },
+            {
+              color: '#b45309',
+              bgColor: '#fef9f3',
+              accentColor: '#f59e0b',
+              value: leakSummary.periodsWithLeak + ' / ' + leakSummary.totalPeriods,
+              label: 'Months leaking',
+              sub: monthsPct + '% of periods affected',
+              percentage: monthsPct,
+            },
+            {
+              color: '#1c5af4',
+              bgColor: '#eef3fe',
+              accentColor: '#3b82f6',
+              value: '₹' + (leakSummary.totalLeak / 100000).toFixed(1) + 'L',
+              label: 'Savings potential',
+              sub: 'If fully remediated',
+              percentage: 90,
+            },
+          ];
+
+          return cards.map((card, i) => {
+            const circleRadius = 32;
+            const circumference = 2 * Math.PI * circleRadius;
+            const strokeDashoffset = circumference - (card.percentage / 100) * circumference;
+
+            return (
+              <div key={i} style={{
+                background: card.bgColor,
+                border: `1px solid ${card.accentColor}`,
+                borderRadius: '12px',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: '140px',
+                position: 'relative',
+              }}>
+                {/* Left side content */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: card.color, lineHeight: 1, marginBottom: '8px', letterSpacing: '-0.01em' }}>
+                    {card.value}
+                  </div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: card.color, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>
+                    {card.label}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
+                    {card.sub}
+                  </div>
+                  {/* Colored accent line */}
+                  <div style={{ width: '36px', height: '3px', background: card.accentColor, borderRadius: '2px' }} />
+                </div>
+
+                {/* Right side circular progress */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', marginTop: '12px' }}>
+                  <svg width="68" height="68" style={{ transform: 'rotate(-90deg)' }}>
+                    {/* Background circle */}
+                    <circle
+                      cx="34"
+                      cy="34"
+                      r={circleRadius}
+                      fill="none"
+                      stroke="#e5e7eb"
+                      strokeWidth="3"
+                    />
+                    {/* Progress circle */}
+                    <circle
+                      cx="34"
+                      cy="34"
+                      r={circleRadius}
+                      fill="none"
+                      stroke={card.accentColor}
+                      strokeWidth="3"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                    />
+                    {/* Percentage text */}
+                    <text
+                      x="34"
+                      y="34"
+                      textAnchor="middle"
+                      dy="0.3em"
+                      fontSize="14"
+                      fontWeight="700"
+                      fill={card.accentColor}
+                      style={{ transform: 'rotate(90deg)', transformOrigin: '34px 34px' }}
+                    >
+                      {card.percentage}%
+                    </text>
+                  </svg>
+                </div>
+              </div>
+            );
+          });
+        })()}
       </div>
 
       {/* Stacked leakage chart */}
