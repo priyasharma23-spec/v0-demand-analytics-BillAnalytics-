@@ -250,46 +250,16 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
 
   return (
     <div style={{ background: '#F5F6FA', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Summary cards with colored design */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-        {summaryMetrics.map((m, i) => {
-          const colors = [
-            { bg: '#EFF4FF', border: '#1C5AF4', label: '#1C5AF4', progress: 80 },
-            { bg: '#EFF4FF', border: '#1C5AF4', label: '#1C5AF4', progress: 100 },
-            { bg: '#FFFBF0', border: '#F59E0B', label: '#F59E0B', progress: 20 },
-            { bg: '#F0FAF6', border: '#36B37E', label: '#36B37E', progress: 100 },
-          ]
-          const color = colors[i] || colors[0]
-          
-          return (
-            <div key={m.label} style={{
-              background: color.bg,
-              border: `1px solid ${color.border}`,
-              borderLeft: `4px solid ${color.border}`,
-              borderRadius: '8px',
-              padding: '16px',
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: color.label, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>{m.label}</div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#192744', letterSpacing: '-0.02em', lineHeight: 1 }}>{m.value}</div>
-                </div>
-                <div style={{ position: 'relative', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg style={{ transform: 'rotate(-90deg)' }} width="56" height="56" viewBox="0 0 56 56">
-                    <circle cx="28" cy="28" r="24" fill="none" stroke="#E5E7EB" strokeWidth="3" />
-                    <circle cx="28" cy="28" r="24" fill="none" stroke={color.border} strokeWidth="3" strokeDasharray={`${(color.progress / 100) * 150.8} 150.8`} strokeLinecap="round" />
-                  </svg>
-                  <div style={{ position: 'absolute', fontSize: '11px', fontWeight: 700, color: color.border }}>{color.progress}%</div>
-                </div>
-              </div>
-              <div style={{ fontSize: '11px', color: '#858EA2', lineHeight: '1.4' }}>{m.sub}</div>
-            </div>
-          )
-        })}
+      {/* Summary cards - original simple form */}
+      <div style={{ background: '#fff', border: '1px solid #F0F1F5', borderRadius: '6px', display: 'flex', overflow: 'hidden' }}>
+        {summaryMetrics.map((m, i) => (
+          <div key={m.label} style={{ flex: 1, padding: '20px 24px', position: 'relative' }}>
+            {i > 0 && <div style={{ position: 'absolute', left: 0, top: '16px', bottom: '16px', width: '1px', background: '#F0F1F5' }} />}
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#9AA0B0', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>{m.label}</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#192744', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{m.value}</div>
+            <div style={{ fontSize: '12px', color: m.subColor }}>{m.sub}</div>
+          </div>
+        ))}
       </div>
 
       {/* Total consumption trend */}
@@ -396,15 +366,46 @@ export default function ConsumptionSection({ appState }: ConsumptionSectionProps
         </div>
       </div>
 
-      {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-        {kpiData.map(kpi => (
-          <div key={kpi.label} style={{ background: '#F5F6FA', border: '1px solid #F0F1F5', borderRadius: '8px', padding: '14px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 600, color: '#9AA0B0', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>{kpi.label}</div>
-            <div style={{ fontSize: '20px', fontWeight: 700, color: '#192744', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '4px' }}>{kpi.value}</div>
-            <div style={{ fontSize: '11px', color: '#858EA2' }}>{kpi.description}</div>
-          </div>
-        ))}
+      {/* KPI cards with colored design */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+        {kpiData.map((kpi, i) => {
+          const colors = [
+            { bg: '#EFF4FF', border: '#1C5AF4', label: '#1C5AF4', progress: 80 },
+            { bg: '#EFF4FF', border: '#1C5AF4', label: '#1C5AF4', progress: 100 },
+            { bg: '#FFFBF0', border: '#F59E0B', label: '#F59E0B', progress: 20 },
+            { bg: '#F0FAF6', border: '#36B37E', label: '#36B37E', progress: 100 },
+          ]
+          const color = colors[i] || colors[0]
+          
+          return (
+            <div key={kpi.label} style={{
+              background: color.bg,
+              border: `1px solid ${color.border}`,
+              borderLeft: `4px solid ${color.border}`,
+              borderRadius: '8px',
+              padding: '16px',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: color.label, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>{kpi.label}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#192744', letterSpacing: '-0.02em', lineHeight: 1 }}>{kpi.value}</div>
+                </div>
+                <div style={{ position: 'relative', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg style={{ transform: 'rotate(-90deg)' }} width="56" height="56" viewBox="0 0 56 56">
+                    <circle cx="28" cy="28" r="24" fill="none" stroke="#E5E7EB" strokeWidth="3" />
+                    <circle cx="28" cy="28" r="24" fill="none" stroke={color.border} strokeWidth="3" strokeDasharray={`${(color.progress / 100) * 150.8} 150.8`} strokeLinecap="round" />
+                  </svg>
+                  <div style={{ position: 'absolute', fontSize: '11px', fontWeight: 700, color: color.border }}>{color.progress}%</div>
+                </div>
+              </div>
+              <div style={{ fontSize: '11px', color: '#858EA2', lineHeight: '1.4' }}>{kpi.description}</div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
