@@ -57,12 +57,13 @@ const SortPill = ({ label, active, onClick }: any) => (
   </button>
 );
 
-const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta, iconBg, iconColor, onAnomalyClick, where }: any) => {
+const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta, iconBg, iconColor, onAnomalyClick, where, onStateChange, onBranchChange, onCAChange, onSectionChange, onHeatmapCellClick }: any) => {
   const [hov, setHov] = React.useState(false)
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [isHydrated, setIsHydrated] = React.useState(false);
 
+  const MAX_PINS = 5;
   const [pinnedEntities, setPinnedEntities] = useState([
     { type: 'ca', name: 'Mumbai - Tech Hub', meta: 'CA # 123456' },
     { type: 'branch', name: 'Bangalore East', meta: 'Branch code KA-02' },
@@ -76,14 +77,6 @@ const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta,
     setIsHydrated(true);
   }, []);
 
-  const [recentEntities] = useState([
-    { name: 'Delhi South', type: 'branch' },
-    { name: 'Gujarat', type: 'state' },
-    { name: 'KA-BE-1103', type: 'ca' },
-    { name: 'Tamil Nadu', type: 'state' },
-    { name: 'Bangalore East', type: 'branch' },
-    { name: 'UP-LE-6101', type: 'ca' },
-  ]);
 
   const handleUnpin = (name: string) => {
     setPinnedEntities(prev => prev.filter(e => e.name !== name));
@@ -92,7 +85,7 @@ const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta,
   const handlePin = (entity: { name: string; type: string }) => {
     if (pinnedEntities.length >= MAX_PINS) return;
     if (pinnedEntities.find(e => e.name === entity.name)) return;
-    setPinnedEntities(prev => [...prev, entity]);
+    setPinnedEntities(prev => [...prev, { ...entity, meta: '' }]);
   };
 
   const visibleRecent = recentEntities
@@ -676,5 +669,35 @@ const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta,
       </div>
 
     </div>
+  );
+}
+
+export default function OverviewSection({
+  appState,
+  onStateChange,
+  onBranchChange,
+  onCAChange,
+  onSectionChange,
+  onHeatmapCellClick,
+  onAnomalyClick,
+}: OverviewSectionProps) {
+  return (
+    <AnomalyCard
+      anomalyKey="overview"
+      title=""
+      amount=""
+      amountLabel=""
+      amountColor=""
+      cta=""
+      iconBg=""
+      iconColor=""
+      onAnomalyClick={onAnomalyClick}
+      where={appState}
+      onStateChange={onStateChange}
+      onBranchChange={onBranchChange}
+      onCAChange={onCAChange}
+      onSectionChange={onSectionChange}
+      onHeatmapCellClick={onHeatmapCellClick}
+    />
   );
 }
