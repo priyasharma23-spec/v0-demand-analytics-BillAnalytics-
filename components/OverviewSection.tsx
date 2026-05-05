@@ -57,7 +57,7 @@ const SortPill = ({ label, active, onClick }: any) => (
   </button>
 );
 
-const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta, iconBg, iconColor, onAnomalyClick, where }: any) => {
+const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta, iconBg, iconColor, onAnomalyClick, where, onStateChange, onBranchChange, onCAChange, onSectionChange, onHeatmapCellClick }: any) => {
   const [hov, setHov] = React.useState(false)
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -669,5 +669,35 @@ const AnomalyCard = ({ anomalyKey, title, amount, amountLabel, amountColor, cta,
       </div>
 
     </div>
+  );
+}
+
+export default function OverviewSection({
+  appState,
+  onStateChange,
+  onBranchChange,
+  onCAChange,
+  onSectionChange,
+  onHeatmapCellClick,
+  onAnomalyClick,
+}: OverviewSectionProps) {
+  return (
+    <AnomalyCard
+      anomalyKey="overview"
+      title=""
+      amount=""
+      amountLabel=""
+      amountColor=""
+      cta=""
+      iconBg=""
+      iconColor=""
+      onAnomalyClick={onAnomalyClick}
+      where={appState}
+      onStateChange={onStateChange}
+      onBranchChange={onBranchChange}
+      onCAChange={onCAChange}
+      onSectionChange={onSectionChange}
+      onHeatmapCellClick={onHeatmapCellClick}
+    />
   );
 }
