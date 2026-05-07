@@ -20,9 +20,10 @@ type BreakdownRow = {
 interface LeakagesSectionProps {
   appState?: { view: string; stateF: string; branchF: string; caF: string };
   onDrilldown?: (state: string, month: string, monthIndex: number) => void;
+  onLeakageCardClick?: (key: string) => void;
 }
 
-export default function LeakagesSection({ appState, onDrilldown }: LeakagesSectionProps) {
+export default function LeakagesSection({ appState, onDrilldown, onLeakageCardClick }: LeakagesSectionProps) {
   const stackChartRef = useRef<HTMLCanvasElement>(null);
   const pctChartRef   = useRef<HTMLCanvasElement>(null);
   const donutChartRef = useRef<HTMLCanvasElement>(null);
@@ -317,7 +318,7 @@ export default function LeakagesSection({ appState, onDrilldown }: LeakagesSecti
           { color: '#F59E0B', label: 'Late payment surcharge',value: (breakdownRows.length * 3 || 55) + ' CAs',                       sub: '₹' + (leakSummary.totalLP / 100000).toFixed(1) + 'L monthly leakage',    desc: '3+ consecutive months of late payment charges.',      cta: 'View CAs' },
           { color: '#22C55E', label: 'Under-utilised demand', value: 'TOD mismatch',                                                  sub: '₹' + (leakSummary.totalLeak * 0.05 / 100000).toFixed(1) + 'L recoverable',desc: 'Wrong TOD slot or under-utilised contracted demand.',  cta: 'Fix now'  },
         ] as Array<{ color: string; label: string; value: string; sub: string; desc: string; cta: string }>).map((a, i) => (
-          <div key={i} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + a.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'default', minHeight: 0 }}>
+          <div key={i} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + a.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'pointer', minHeight: 0, transition: 'box-shadow .15s' }} onClick={() => onLeakageCardClick?.(a.label)}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 12 }}>
               <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: a.color, flexShrink: 0 }} />
               <div style={{ fontSize: '10px', fontWeight: 600, color: a.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{a.label}</div>
