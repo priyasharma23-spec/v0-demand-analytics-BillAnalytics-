@@ -288,16 +288,31 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {calendarDays.map(day => {
-                const dayCAs  = byDay[day] ?? []
-                const hasOver = dayCAs.some((c: any) => c.isOverdue)
-                const hasSoon = dayCAs.some((c: any) => c.isDueSoon)
-                const bg      = dayCAs.length === 0 ? '#F9FAFB' : hasOver ? '#FEF2F2' : hasSoon ? '#FFFBEB' : '#F0FDF4'
-                const border  = dayCAs.length === 0 ? '#E5E7EB' : hasOver ? '#FECACA' : hasSoon ? '#FDE68A' : '#BBF7D0'
-                const textCol = dayCAs.length === 0 ? '#9CA3AF' : hasOver ? '#B91C1C' : hasSoon ? '#B45309' : '#15803D'
+                const dayCAs    = byDay[day] ?? []
+                const overCount = dayCAs.filter((c: any) => c.isOverdue).length
+                const soonCount = dayCAs.filter((c: any) => !c.isOverdue && c.isDueSoon).length
+                const paidCount = dayCAs.filter((c: any) => !c.isOverdue && !c.isDueSoon).length
+                const total     = dayCAs.length
+                const border    = total === 0 ? '#E5E7EB' : overCount > 0 ? '#FECACA' : soonCount > 0 ? '#FDE68A' : '#BBF7D0'
                 return (
-                  <div key={day} style={{ background: bg, border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px', textAlign: 'center', minHeight: '44px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: textCol }}>{day}</div>
-                    {dayCAs.length > 0 && <div style={{ fontSize: '9px', color: textCol, marginTop: '1px' }}>{dayCAs.length} CA{dayCAs.length > 1 ? 's' : ''}</div>}
+                  <div key={day} style={{ background: '#fff', border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px 4px', textAlign: 'center', minHeight: '52px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: total === 0 ? '#9CA3AF' : '#192744' }}>{day}</div>
+                    {total > 0 && (
+                      <>
+                        {/* Proportional colour bar */}
+                        <div style={{ display: 'flex', height: '3px', borderRadius: '99px', overflow: 'hidden', margin: '0 2px', gap: '1px' }}>
+                          {paidCount  > 0 && <div style={{ flex: paidCount,  background: '#22C55E' }} />}
+                          {soonCount  > 0 && <div style={{ flex: soonCount,  background: '#F59E0B' }} />}
+                          {overCount  > 0 && <div style={{ flex: overCount,  background: '#EF4444' }} />}
+                        </div>
+                        {/* Per-status counts */}
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                          {paidCount > 0 && <span style={{ fontSize: '8px', fontWeight: 600, color: '#15803D' }}>{paidCount}p</span>}
+                          {soonCount > 0 && <span style={{ fontSize: '8px', fontWeight: 600, color: '#B45309' }}>{soonCount}d</span>}
+                          {overCount > 0 && <span style={{ fontSize: '8px', fontWeight: 600, color: '#B91C1C' }}>{overCount}o</span>}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )
               })}
@@ -2372,7 +2387,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           { biller: 'JVVNL',         state: 'Rajasthan',   opted: 13, received: 11, pending: 1, failed: 1 },
           { biller: 'BBMB Rajpur',   state: 'Multiple',    opted: 7,  received: 7,  pending: 1, failed: 0 },
         ]
-        const [dbcView, setDbcView] = useState<'Biller'|'State'>('Biller')
+        const [dbcView, setDbcView] = useState<'Biller'|'State'|'Branch'>('Biller')
 
         // Aggregate by state for State view
         const stateData = Object.entries(
@@ -2399,6 +2414,8 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
 
         const items = dbcView === 'Biller'
           ? dbcTableData.map(r => ({ ...r, name: r.biller, sub: r.state, pct: r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0 }))
+          : dbcView === 'Branch'
+          ? branchData
           : stateData.map(r => ({ ...r, name: r.state, sub: '', pct: r.opted > 0 ? Math.round(r.received / r.opted * 100) : 0 }))
 
         const cols = items.length <= 5 ? items.length : items.length <= 8 ? 4 : 5
@@ -2486,7 +2503,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                   <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '3px' }}>Opt-in CAs · delivery status and coverage · Apr 2024 – Mar 2025</div>
                 </div>
                 <div style={{ display: 'flex', background: '#f5f6fa', border: '1px solid #f0f1f5', borderRadius: '99px', padding: '2px', gap: '1px' }}>
-                  {(['Biller','State'] as const).map(v => (
+                  {(['Biller','State','Branch'] as const).map(v => (
                     <button key={v} onClick={() => setDbcView(v)} style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '99px', padding: '4px 14px', fontSize: '11px', background: dbcView === v ? '#1c5af4' : 'transparent', color: dbcView === v ? '#fff' : '#858ea2', fontWeight: dbcView === v ? 600 : 400, transition: 'all .12s', textTransform: 'capitalize' }}>{v}</button>
                   ))}
                 </div>
@@ -2582,7 +2599,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
           { biller: 'WBSEDCL',       state: 'West Bengal', opted: 14, received: 11, pending: 1, failed: 2 },
           { biller: 'JVVNL',         state: 'Rajasthan',   opted: 13, received: 11, pending: 1, failed: 1 },
         ]
-        const [basicDbcView, setBasicDbcView] = useState<'Biller'|'State'>('Biller')
+        const [basicDbcView, setBasicDbcView] = useState<'Biller'|'State'|'Branch'>('Biller')
         const basicStateData = Object.entries(
           dbcBasic.reduce((acc, r) => {
             if (!acc[r.state]) acc[r.state] = { state: r.state, opted: 0, received: 0, pending: 0, failed: 0 }
@@ -2601,7 +2618,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             const failed = opted - received - pending
             return { biller: br, state: st, opted, received, pending, failed }
           })).sort((a, b) => b.opted - a.opted).slice(0, 8)
-        const basicItems = basicDbcView === 'Biller' ? dbcBasic : basicStateData
+        const basicItems = basicDbcView === 'Biller' ? dbcBasic : basicDbcView === 'Branch' ? basicBranchData : basicStateData
         const basicCols = basicItems.length <= 5 ? basicItems.length : basicItems.length <= 8 ? 4 : 5
         return (
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', boxShadow: '0 1px 2px rgba(0,0,0,.04)', padding: '20px 24px' }}>
@@ -2611,7 +2628,7 @@ function BasicBillers({ appState, analyticsMode = 'basic' }: BasicSectionProps &
                 <div style={{ fontSize: '12px', color: '#858ea2', marginTop: '2px' }}>BBPS fetch status</div>
               </div>
               <div style={{ display: 'flex', background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: '99px', padding: '3px', gap: '2px' }}>
-                {(['Biller','State'] as const).map(v => (
+                {(['Biller','State','Branch'] as const).map(v => (
                   <button key={v} onClick={() => setBasicDbcView(v)} style={{ background: basicDbcView === v ? '#4F46E5' : 'transparent', color: basicDbcView === v ? '#fff' : '#6B7280', border: 'none', borderRadius: '99px', padding: '4px 14px', fontSize: '11.5px', fontWeight: basicDbcView === v ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s' }}>{v}</button>
                 ))}
               </div>
