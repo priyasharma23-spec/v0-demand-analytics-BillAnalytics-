@@ -24,7 +24,6 @@ interface LeakagesSectionProps {
 }
 
 export default function LeakagesSection({ appState, onDrilldown, onLeakageCardClick }: LeakagesSectionProps) {
-  const [drilldownKey, setDrilldownKey] = React.useState<string | null>(null);
   const stackChartRef = useRef<HTMLCanvasElement>(null);
   const pctChartRef   = useRef<HTMLCanvasElement>(null);
   const donutChartRef = useRef<HTMLCanvasElement>(null);
@@ -311,103 +310,6 @@ export default function LeakagesSection({ appState, onDrilldown, onLeakageCardCl
         })()}
       </div>
 
-      {/* Leakage CA Drilldown */}
-      {drilldownKey && (() => {
-        const allRows = (() => {
-          const _as = appState ?? { view: 'yearly', stateF: 'all', branchF: 'all', caF: 'all' };
-          const bills = getFilteredBills(_as.view as any, _as.stateF, _as.branchF, _as.caF);
-          return bills.map((b: any) => {
-            const pfLeak   = b.pfPenalty ?? 0;
-            const exLeak   = b.excessDemandCharges ?? 0;
-            const lpLeak   = b.latePaymentCharges ?? 0;
-            const todLeak  = Math.round((b.totalBill ?? 0) * 0.03);
-            const leakMap: Record<string, number> = {
-              'Power factor <0.92':      pfLeak,
-              'Demand shrinkage':         exLeak,
-              'Late payment surcharge':   lpLeak,
-              'Under-utilised demand':    todLeak,
-            };
-            return {
-              ca:     b.caNumber ?? b.ca ?? '—',
-              branch: b.branch   ?? '—',
-              state:  b.state    ?? '—',
-              months: b.monthsAffected ?? Math.floor(Math.random() * 8) + 3,
-              amount: leakMap[drilldownKey] ?? 0,
-            };
-          }).filter((r: any) => r.amount > 0)
-            .sort((a: any, b: any) => b.amount - a.amount);
-        })();
-
-        const cfg: Record<string, { color: string; desc: string }> = {
-          'Power factor <0.92':     { color: '#DC2626', desc: 'CAs with PF below 0.92 triggering monthly penalty' },
-          'Demand shrinkage':        { color: '#DC2626', desc: 'CAs where contracted demand exceeded every month' },
-          'Late payment surcharge':  { color: '#F59E0B', desc: 'CAs with 3+ consecutive months of late payment charges' },
-          'Under-utilised demand':   { color: '#22C55E', desc: 'CAs with TOD mismatch or under-utilised contracted demand' },
-        };
-        const { color, desc } = cfg[drilldownKey] ?? { color: '#1c5af4', desc: '' };
-        const totalAmount = allRows.reduce((s: number, r: any) => s + r.amount, 0);
-
-        return (
-          <div style={{ background: '#fff', border: '1px solid #f0f1f5', borderRadius: '8px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', overflow: 'hidden', marginBottom: '14px' }}>
-            {/* Drilldown header */}
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid #f0f1f5', display: 'flex', alignItems: 'center', gap: '12px', borderTop: `3px solid ${color}` }}>
-              <button onClick={() => setDrilldownKey(null)} style={{ fontFamily: 'inherit', fontSize: '12px', fontWeight: 500, color: '#858ea2', background: 'transparent', border: '1px solid #f0f1f5', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer' }}>
-                ← Back
-              </button>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '10px', fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '2px' }}>{drilldownKey}</div>
-                <div style={{ fontSize: '12px', color: '#858ea2' }}>{desc}</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '10px', color: '#858ea2', marginBottom: '1px' }}>Total leakage</div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color, letterSpacing: '-0.01em' }}>₹{(totalAmount / 100000).toFixed(1)}L</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '10px', color: '#858ea2', marginBottom: '1px' }}>CAs affected</div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: '#192744', letterSpacing: '-0.01em' }}>{allRows.length}</div>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                <thead>
-                  <tr style={{ background: '#f5f6fa' }}>
-                    {['CA Number', 'Branch', 'State', 'Months Affected', 'Leakage Amount', 'Share'].map(h => (
-                      <th key={h} style={{ padding: '8px 16px', textAlign: h === 'Leakage Amount' || h === 'Share' || h === 'Months Affected' ? 'right' : 'left', fontSize: '10px', fontWeight: 600, color: '#858ea2', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #f0f1f5', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {allRows.map((r: any, i: number) => {
-                    const sharePct = totalAmount > 0 ? (r.amount / totalAmount) * 100 : 0;
-                    return (
-                      <tr key={i} style={{ borderBottom: '1px solid #f0f1f5', background: i % 2 === 0 ? '#fff' : '#fafafa' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#f5f6fa')}
-                        onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? '#fff' : '#fafafa')}>
-                        <td style={{ padding: '10px 16px', fontWeight: 600, color: '#192744' }}>{r.ca}</td>
-                        <td style={{ padding: '10px 16px', color: '#192744' }}>{r.branch}</td>
-                        <td style={{ padding: '10px 16px', color: '#858ea2' }}>{r.state}</td>
-                        <td style={{ padding: '10px 16px', textAlign: 'right', color: '#192744' }}>{r.months} / 12</td>
-                        <td style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600, color }}>₹{(r.amount / 100000).toFixed(2)}L</td>
-                        <td style={{ padding: '10px 16px', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
-                            <div style={{ width: '60px', height: '4px', background: '#f0f1f5', borderRadius: '99px', overflow: 'hidden' }}>
-                              <div style={{ width: sharePct + '%', height: '100%', background: color, borderRadius: '99px' }} />
-                            </div>
-                            <span style={{ fontSize: '11px', color: '#858ea2', minWidth: '28px', textAlign: 'right' }}>{sharePct.toFixed(1)}%</span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      })()}
-
       {/* Alert insight cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
         {([
@@ -416,7 +318,7 @@ export default function LeakagesSection({ appState, onDrilldown, onLeakageCardCl
           { color: '#F59E0B', label: 'Late payment surcharge',value: (breakdownRows.length * 3 || 55) + ' CAs',                       sub: '₹' + (leakSummary.totalLP / 100000).toFixed(1) + 'L monthly leakage',    desc: '3+ consecutive months of late payment charges.',      cta: 'View CAs' },
           { color: '#22C55E', label: 'Under-utilised demand', value: 'TOD mismatch',                                                  sub: '₹' + (leakSummary.totalLeak * 0.05 / 100000).toFixed(1) + 'L recoverable',desc: 'Wrong TOD slot or under-utilised contracted demand.',  cta: 'Fix now'  },
         ] as Array<{ color: string; label: string; value: string; sub: string; desc: string; cta: string }>).map((a, i) => (
-          <div key={i} onClick={() => onLeakageCardClick ? onLeakageCardClick(a.label) : setDrilldownKey(a.label)} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + a.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'pointer', minHeight: 0, transition: 'box-shadow .15s' }}>
+          <div key={i} style={{ background: '#fff', borderLeft: '1px solid #f0f1f5', borderRight: '1px solid #f0f1f5', borderBottom: '1px solid #f0f1f5', borderTop: '2.5px solid ' + a.color, borderRadius: '6px', boxShadow: '0 1px 3px rgba(25,39,68,.04)', padding: '18px 20px 16px', display: 'flex', flexDirection: 'column', gap: 0, cursor: 'pointer', minHeight: 0, transition: 'box-shadow .15s' }} onClick={() => onLeakageCardClick?.(a.label)}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 12 }}>
               <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: a.color, flexShrink: 0 }} />
               <div style={{ fontSize: '10px', fontWeight: 600, color: a.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{a.label}</div>

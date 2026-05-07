@@ -10,8 +10,8 @@ import ConsumptionSection from '@/components/ConsumptionSection';
 import SavingsSection from '@/components/SavingsSection';
 import HeatmapDrilldownPage from '@/components/HeatmapDrilldownPage';
 import AnomalyDrilldownPage from '@/components/AnomalyDrilldownPage';
-import MultiBillReviewPage from '@/components/MultiBillReviewPage';
 import LeakageDrilldownPage from '@/components/LeakageDrilldownPage';
+import MultiBillReviewPage from '@/components/MultiBillReviewPage';
 import BasicAnalyticsShell from '@/components/BasicAnalyticsShell';
 import { BillCategory } from '@/lib/calculations';
 
@@ -32,8 +32,8 @@ export default function AnalyticsPage() {
 
   const [drilldown, setDrilldown] = useState<{ state: string; month: string; monthIndex: number } | null>(null);
   const [anomalyDrilldown, setAnomalyDrilldown] = useState<'over_contracted_every_month' | 'pf_below_threshold' | 'recurring_late_payment' | 'under_utilised' | null>(null);
-  const [multiBillReview, setMultiBillReview] = useState(false);
   const [leakageDrilldown, setLeakageDrilldown] = useState<string | null>(null);
+  const [multiBillReview, setMultiBillReview] = useState(false);
 
   const handleProductChange = (product: 'bill-payment' | 'vendor-payment' | 'rental-payment' | 'gst') => {
     setActiveProduct(product);
