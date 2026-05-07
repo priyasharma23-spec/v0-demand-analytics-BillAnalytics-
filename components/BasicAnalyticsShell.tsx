@@ -288,16 +288,31 @@ function BasicSummary({ appState, analyticsMode = 'basic' }: BasicSectionProps &
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {calendarDays.map(day => {
-                const dayCAs  = byDay[day] ?? []
-                const hasOver = dayCAs.some((c: any) => c.isOverdue)
-                const hasSoon = dayCAs.some((c: any) => c.isDueSoon)
-                const bg      = dayCAs.length === 0 ? '#F9FAFB' : hasOver ? '#FEF2F2' : hasSoon ? '#FFFBEB' : '#F0FDF4'
-                const border  = dayCAs.length === 0 ? '#E5E7EB' : hasOver ? '#FECACA' : hasSoon ? '#FDE68A' : '#BBF7D0'
-                const textCol = dayCAs.length === 0 ? '#9CA3AF' : hasOver ? '#B91C1C' : hasSoon ? '#B45309' : '#15803D'
+                const dayCAs    = byDay[day] ?? []
+                const overCount = dayCAs.filter((c: any) => c.isOverdue).length
+                const soonCount = dayCAs.filter((c: any) => !c.isOverdue && c.isDueSoon).length
+                const paidCount = dayCAs.filter((c: any) => !c.isOverdue && !c.isDueSoon).length
+                const total     = dayCAs.length
+                const border    = total === 0 ? '#E5E7EB' : overCount > 0 ? '#FECACA' : soonCount > 0 ? '#FDE68A' : '#BBF7D0'
                 return (
-                  <div key={day} style={{ background: bg, border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px', textAlign: 'center', minHeight: '44px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: textCol }}>{day}</div>
-                    {dayCAs.length > 0 && <div style={{ fontSize: '9px', color: textCol, marginTop: '1px' }}>{dayCAs.length} CA{dayCAs.length > 1 ? 's' : ''}</div>}
+                  <div key={day} style={{ background: '#fff', border: `0.5px solid ${border}`, borderRadius: '6px', padding: '6px 4px 4px', textAlign: 'center', minHeight: '52px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: total === 0 ? '#9CA3AF' : '#192744' }}>{day}</div>
+                    {total > 0 && (
+                      <>
+                        {/* Proportional colour bar */}
+                        <div style={{ display: 'flex', height: '3px', borderRadius: '99px', overflow: 'hidden', margin: '0 2px', gap: '1px' }}>
+                          {paidCount  > 0 && <div style={{ flex: paidCount,  background: '#22C55E' }} />}
+                          {soonCount  > 0 && <div style={{ flex: soonCount,  background: '#F59E0B' }} />}
+                          {overCount  > 0 && <div style={{ flex: overCount,  background: '#EF4444' }} />}
+                        </div>
+                        {/* Per-status counts */}
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                          {paidCount > 0 && <span style={{ fontSize: '8px', fontWeight: 600, color: '#15803D' }}>{paidCount}p</span>}
+                          {soonCount > 0 && <span style={{ fontSize: '8px', fontWeight: 600, color: '#B45309' }}>{soonCount}d</span>}
+                          {overCount > 0 && <span style={{ fontSize: '8px', fontWeight: 600, color: '#B91C1C' }}>{overCount}o</span>}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )
               })}
